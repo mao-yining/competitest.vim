@@ -106,11 +106,11 @@ export def Command(arguments: string): void # {{{
     },
   }
 
-  try
+  if has_key(subcommands, args[0])
     subcommands[args[0]]()
-  catch /^Vim\%((\a\+)\)\=:E716:/ # 字典中不存在键
+  else
     echoerr $"command: subcommand {args[0]} doesn't exist!"
-  endtry
+  endif
 enddef # }}}
 
 def EditTestcase(add_testcase: bool, tcnum: number): void
@@ -135,7 +135,7 @@ def EditTestcase(add_testcase: bool, tcnum: number): void
 
     # Save edited testcase
     def SaveData(tc: dict<any>)
-      if config.GetBufferConfig(bufnr).TestcasesUseSingleFile
+      if config.GetBufferConfig(bufnr).testcases_use_single_file
           tctbl[n] = tc
           testcases.SingleFileBufWrite(bufnr, tctbl)
       else
