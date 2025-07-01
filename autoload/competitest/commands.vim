@@ -27,8 +27,8 @@ enddef
 
 export def Command(arguments: string): void
   var args = split(arguments, ' ')
-  if !args[0]
-    echo "command: at least one argument required."
+  if empty(args)
+    echoerr "command: at least one argument required."
     return
   endif
 
@@ -39,9 +39,9 @@ export def Command(arguments: string): void
       return true
     endif
     if min_args == max_args
-      echo $"command: {args[0]}: exactly {min_args} sub-arguments required."
+      echoerr $"command: {args[0]}: exactly {min_args} sub-arguments required."
     else
-      echo $"command: {args[0]}: from {min_args} to {max_args} sub-arguments required."
+      echoerr $"command: {args[0]}: from {min_args} to {max_args} sub-arguments required."
     endif
     return false
   enddef
@@ -54,12 +54,20 @@ export def Command(arguments: string): void
     },
     edit_testcase: () => {
       if CheckSubargs(0, 1)
-        EditTestcase(str2nr(args[1]))
+        if exists("args[1]")
+          EditTestcase(str2nr(args[1]))
+        else
+          EditTestcase(-1)
+        endif
       endif
     },
     delete_testcase: () => {
       if CheckSubargs(0, 1)
-        DeleteTestcase(str2nr(args[1]))
+        if exists("args[1]")
+          DeleteTestcase(str2nr(args[1]))
+        else
+          DeleteTestcase(-1)
+        endif
       endif
     },
     convert: () => {
@@ -69,14 +77,14 @@ export def Command(arguments: string): void
     },
     run: () => {
       var testcases_list: list<string> = []
-      if args[1] != null_string
+      if exists("args[1]")
         testcases_list = args[1 : ]
       endif
       RunTestcases(testcases_list, true)
     },
     run_no_compile: () => {
       var testcases_list: list<string> = []
-      if args[1] != null_string
+      if exists("args[1]")
         testcases_list = args[1 : ]
       endif
       RunTestcases(testcases_list, false)
@@ -93,12 +101,11 @@ export def Command(arguments: string): void
     },
   }
 
-  var Sub: func = subcommands[args[0]]
-  if Sub == null_function
-    echo $"command: subcommand '{args[0]}' doesn't exist!"
-  else
-    Sub()
-  endif
+  try
+    subcommands[args[0]]()
+  catch /^Vim\%((\a\+)\)\=:E716:/ # 字典中不存在键
+    echoerr $"command: subcommand {args[0]} doesn't exist!"
+  endtry
 enddef
 
 def AddTestcase()
