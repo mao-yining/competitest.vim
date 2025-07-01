@@ -1,6 +1,6 @@
 vim9script
 
-export def Complete(_: string, CmdLine: string, CursorPos: number): list<string>
+export def Complete(_: string, CmdLine: string, CursorPos: number): list<string> # {{{
     var prefix = CmdLine[ : CursorPos]
     var ending_space = prefix[-1 : -1] == " "
     var words = split(prefix)
@@ -23,7 +23,11 @@ export def Complete(_: string, CmdLine: string, CursorPos: number): list<string>
         endif
     endif
     return []
-enddef
+enddef # }}}
+
+import autoload "./config.vim"
+import autoload "./testcases.vim"
+import autoload "./runner.vim"
 
 export def Command(arguments: string): void
   var args = split(arguments, ' ')
@@ -80,18 +84,18 @@ export def Command(arguments: string): void
       if exists("args[1]")
         testcases_list = args[1 : ]
       endif
-      RunTestcases(testcases_list, true)
+      RunTestcases(testcases_list, true, false)
     },
     run_no_compile: () => {
       var testcases_list: list<string> = []
       if exists("args[1]")
         testcases_list = args[1 : ]
       endif
-      RunTestcases(testcases_list, false)
+      RunTestcases(testcases_list, false, false)
     },
     show_ui: () => {
       if CheckSubargs(0, 0)
-        ShowUI()
+        RunTestcases(null_list, false, true)
       endif
     },
     receive: () => {
@@ -128,10 +132,43 @@ def Receive(mode: string)
   echo "TODO: Receive"
 enddef
 
-def ShowUI()
-enddef
+var runners: dict<any>
 
-def RunTestcases(testcases_list: list<string>, conpile: bool)
+def RunTestcases(testcases_list: list<string>, compile: bool, only_show: bool)
+    var bufnr = bufnr()
+    config.LoadBufferConfig(bufnr)
+    var tctbl = testcases.BufGetTestcases(bufnr)
+
+    if testcases_list != null_list
+        var new_tctbl = {}
+        for [key, tcnum] in items(testcases_list)
+          echom $"key: {key}, tcnum: {tcnum}"
+            var num = str2nr(tcnum)
+            if num == 0 || !has_key(tctbl, num) # invalid testcase
+              echoerr $"run_testcases: testcase {tcnum} doesn't exist!"
+            else
+                new_tctbl[num] = tctbl[num]
+            endif
+        endfor
+        tctbl = new_tctbl
+    endif
+
+    if !has_key(runners, bufnr) # no runner is associated to buffer
+        runners[bufnr] = runner.New(bufnr)
+        if !has_key(runners, bufnr) # an error occurred
+            return
+        endif
+        # remove runner data when buffer is unloaded
+        execute $"autocmd BufUnload <buffer= {bufnr}> competitest#commands#RemoveRunner({expand('<abuf>')})"
+    endif
+
+    var r = runners[bufnr] # current runner
+    if !only_show
+        r.kill_all_processes()
+        r.run_testcases(tctbl, compile)
+    endif
+    r.SetRestoreWinID(win_getid())
+    r.ShowUI()
 enddef
 
 def RunTestcase(tcnum: number)
