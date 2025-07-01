@@ -26,10 +26,11 @@ export def Complete(_: string, CmdLine: string, CursorPos: number): list<string>
 enddef # }}}
 
 import autoload "./config.vim"
-import autoload "./testcases.vim"
 import autoload "./runner.vim"
+import autoload "./testcases.vim"
+import autoload "./widgets.vim"
 
-export def Command(arguments: string): void
+export def Command(arguments: string): void # {{{
   var args = split(arguments, ' ')
   if empty(args)
     echoerr "command: at least one argument required."
@@ -53,15 +54,15 @@ export def Command(arguments: string): void
   var subcommands: dict<func()> = {
     add_testcase: () => {
       if CheckSubargs(0, 0)
-        AddTestcase()
+        EditTestcase(true, -1)
       endif
     },
     edit_testcase: () => {
       if CheckSubargs(0, 1)
         if exists("args[1]")
-          EditTestcase(str2nr(args[1]))
+          EditTestcase(false, str2nr(args[1]))
         else
-          EditTestcase(-1)
+          EditTestcase(false, -1)
         endif
       endif
     },
@@ -110,14 +111,45 @@ export def Command(arguments: string): void
   catch /^Vim\%((\a\+)\)\=:E716:/ # 字典中不存在键
     echoerr $"command: subcommand {args[0]} doesn't exist!"
   endtry
-enddef
+enddef # }}}
 
-def AddTestcase()
-  echo "TODO: AddTestcase"
-enddef
+def EditTestcase(add_testcase: bool, tcnum: number): void
+  var bufnr = bufnr()
+  var num = tcnum
+  config.LoadBufferConfig(bufnr) # reload buffer configuration since it may have been updated in the meantime
+  var tctbl = testcases.BufGetTestcases(bufnr)
+  if add_testcase
+      num = 0
+      while has_key(tctbl, num)
+          num = num + 1
+      endwhile
+      tctbl[num] = { input: "", output: "" }
+  endif
 
-def EditTestcase(tcnum: number = -1): void
-  echo "TODO: EditTestcase"
+  # Start testcase editor to edit a testcase
+  def StartEditor(n: number)
+    if !has_key(tctbl, n)
+      echoerr $"edit_testcase: testcase {n} doesn't exist!"
+      return
+    endif
+
+    # Save edited testcase
+    def SaveData(tc: dict<any>)
+      if config.GetBufferConfig(bufnr).TestcasesUseSingleFile
+          tctbl[n] = tc
+          testcases.SingleFileBufWrite(bufnr, tctbl)
+      else
+            testcases.IOFilesBufWritePair(bufnr, n, tc.input, tc.output)
+      endif
+    enddef
+
+      widgets.Editor(bufnr, n, tctbl[n].input, tctbl[n].output, SaveData, win_getid())
+  enddef
+  if num == -1
+      widgets.Picker(bufnr, tctbl, "Edit a Testcase", StartEditor, win_getid())
+  else
+      StartEditor(num)
+  endif
 enddef
 
 def DeleteTestcase(tcnum: number = -1): void
@@ -134,7 +166,7 @@ enddef
 
 var runners: dict<any>
 
-def RunTestcases(testcases_list: list<string>, compile: bool, only_show: bool)
+def RunTestcases(testcases_list: list<string>, compile: bool, only_show: bool) # {{{
     var bufnr = bufnr()
     config.LoadBufferConfig(bufnr)
     var tctbl = testcases.BufGetTestcases(bufnr)
@@ -169,7 +201,7 @@ def RunTestcases(testcases_list: list<string>, compile: bool, only_show: bool)
     endif
     r.SetRestoreWinID(win_getid())
     r.ShowUI()
-enddef
+enddef # }}}
 
 def RunTestcase(tcnum: number)
 enddef
