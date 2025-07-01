@@ -1,28 +1,21 @@
 vim9script
 
-import './commands.vim' as cmd
-import './testcases.vim' as tc
-import './runner.vim' as run
-import './utils.vim' as util
-import './receive.vim' as receive
-
-
-export def Setup(user_config: dict<any> = {})
-  g:competitest_config = extend(deepcopy(g:competitest_default_config), user_config)
+import autoload './competitest/config.vim' as config
+export def Setup(opts: dict<any> = {})
+  config.current_setup = config.UpdateConfigTable(config.current_setup, opts)
+  SetupHighlight()
+  autocmd ColorScheme * competitest#SetupHighlight()
+  autocmd VimResized * competitest#ResizeUI()
 enddef
 
-export def AddTestcase()
-  tc.AddTestcase()
+export def SetupHighlight()
+  hi CompetiTestRunning cterm=bold     gui=bold
+  hi CompetiTestDone    cterm=none     gui=none
+  hi CompetiTestCorrect ctermfg=green  guifg=#00ff00
+  hi CompetiTestWarning ctermfg=yellow guifg=orange
+  hi CompetiTestWrong   ctermfg=red    guifg=#ff0000
 enddef
 
-export def RunTestcases()
-  run.RunAllTestcases()
-enddef
-
-export def StartReceiver(): void
-  receive.StartServer()
-enddef
-
-export def StopReceiver(): void
-  receive.StopServer()
+export def ResizeUI()
+  # TODO: ResizeUI
 enddef
