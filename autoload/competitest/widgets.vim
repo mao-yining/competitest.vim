@@ -1,7 +1,9 @@
 vim9script
 
-# CompetiTest UI Module
-# Testcase editor, picker and input widgets
+# File: widgets.vim
+# Author: mao-yining
+# Description: CompetiTest UI Module Testcase editor and picker
+# Last Modified: 2025-07-02
 
 import autoload './config.vim' as cfg
 import autoload './testcases.vim'
@@ -65,7 +67,7 @@ enddef
 
 # PopUp Picker:
 export def Picker(bufnr: number, tctbl: dict<any>, title: string,
-            CallBack: func): void
+    CallBack: func): void
   if empty(tctbl)
     echoerr "there's no testcase to pick from."
     return

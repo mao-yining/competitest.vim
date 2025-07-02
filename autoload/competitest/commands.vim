@@ -1,30 +1,5 @@
 vim9script
 
-export def Complete(_: string, CmdLine: string, CursorPos: number): list<string> # {{{
-    var prefix = CmdLine[ : CursorPos]
-    var ending_space = prefix[-1 : -1] == " "
-    var words = split(prefix)
-    var wlen = len(words)
-
-    if wlen == 1 || wlen == 2 && !ending_space
-        return ["add_testcase", "edit_testcase", "delete_testcase", "convert", "run", "run_no_compile", "show_ui", "receive"]
-    elseif wlen == 2 || wlen == 3 && !ending_space
-        var lastword: string
-        if wlen == 2
-            lastword = words[-1]
-        else
-            lastword = words[-2]
-        endif
-
-        if lastword == "convert"
-            return ["auto", "files_to_singlefile", "singlefile_to_files"]
-        elseif lastword == "receive"
-            return ["testcases", "problem", "contest", "persistently", "status", "stop"]
-        endif
-    endif
-    return []
-enddef # }}}
-
 import autoload "./config.vim"
 import autoload "./runner.vim"
 import autoload "./testcases.vim"
@@ -113,7 +88,8 @@ export def Command(arguments: string): void # {{{
   endif
 enddef # }}}
 
-def EditTestcase(add_testcase: bool, tcnum = -1): void
+def EditTestcase(add_testcase: bool, tcnum = -1): void # {{{
+
   var bufnr = bufnr()
   config.LoadBufferConfig(bufnr) # reload buffer configuration since it may have been updated in the meantime
   var tctbl = testcases.BufGetTestcases(bufnr)
@@ -126,18 +102,18 @@ def EditTestcase(add_testcase: bool, tcnum = -1): void
   enddef
 
   if add_testcase
-      var num = 0
-      while has_key(tctbl, num)
-          num = num + 1
-      endwhile
-      tctbl[num] = { input: "", output: "" }
-      StartEditor(num)
+    var num = 0
+    while has_key(tctbl, num)
+      num = num + 1
+    endwhile
+    tctbl[num] = { input: "", output: "" }
+    StartEditor(num)
   elseif tcnum == -1
     widgets.Picker(bufnr, tctbl, "Edit a Testcase", StartEditor)
   else
     StartEditor(tcnum)
   endif
-enddef
+enddef # }}}
 
 def DeleteTestcase(tcnum: number = -1): void
   echo "TODO: DeleteTestcase"
@@ -154,40 +130,40 @@ enddef
 var runners: dict<any>
 
 def RunTestcases(testcases_list: list<string>, compile: bool, only_show = true) # {{{
-    var bufnr = bufnr()
-    config.LoadBufferConfig(bufnr)
-    var tctbl = testcases.BufGetTestcases(bufnr)
+  var bufnr = bufnr()
+  config.LoadBufferConfig(bufnr)
+  var tctbl = testcases.BufGetTestcases(bufnr)
 
-    if testcases_list != null_list
-        var new_tctbl = {}
-        for [key, tcnum] in items(testcases_list)
-          echom $"key: {key}, tcnum: {tcnum}"
-            var num = str2nr(tcnum)
-            if num == 0 || !has_key(tctbl, num) # invalid testcase
-              echoerr $"run_testcases: testcase {tcnum} doesn't exist!"
-            else
-                new_tctbl[num] = tctbl[num]
-            endif
-        endfor
-        tctbl = new_tctbl
-    endif
+  if testcases_list != null_list
+    var new_tctbl = {}
+    for [key, tcnum] in items(testcases_list)
+      echom $"key: {key}, tcnum: {tcnum}"
+      var num = str2nr(tcnum)
+      if num == 0 || !has_key(tctbl, num) # invalid testcase
+        echoerr $"run_testcases: testcase {tcnum} doesn't exist!"
+      else
+        new_tctbl[num] = tctbl[num]
+      endif
+    endfor
+    tctbl = new_tctbl
+  endif
 
-    if !has_key(runners, bufnr) # no runner is associated to buffer
-        runners[bufnr] = runner.New(bufnr)
-        if !has_key(runners, bufnr) # an error occurred
-            return
-        endif
-        # remove runner data when buffer is unloaded
-        execute $"autocmd BufUnload <buffer= {bufnr}> competitest#commands#RemoveRunner({expand('<abuf>')})"
+  if !has_key(runners, bufnr) # no runner is associated to buffer
+    runners[bufnr] = runner.New(bufnr)
+    if !has_key(runners, bufnr) # an error occurred
+      return
     endif
+    # remove runner data when buffer is unloaded
+    execute $"autocmd BufUnload <buffer= {bufnr}> competitest#commands#RemoveRunner({expand('<abuf>')})"
+  endif
 
-    var r = runners[bufnr] # current runner
-    if !only_show
-        r.KillAllProcesses()
-        r.RunTestcases(tctbl, compile)
-    endif
-    r.SetRestoreWinID(win_getid())
-    r.ShowUI()
+  var r = runners[bufnr] # current runner
+  if !only_show
+    r.KillAllProcesses()
+    r.RunTestcases(tctbl, compile)
+  endif
+  r.SetRestoreWinID(win_getid())
+  r.ShowUI()
 enddef # }}}
 
 def RunTestcase(tcnum: number)

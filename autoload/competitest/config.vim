@@ -1,6 +1,6 @@
 vim9script
 
-import autoload './utils.vim' as utils
+import autoload './utils.vim'
 
 # Define type constants for clarity
 const t_dict = type({})
