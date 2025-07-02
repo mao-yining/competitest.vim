@@ -54,7 +54,7 @@ export def Command(arguments: string): void # {{{
   var subcommands: dict<func()> = {
     add_testcase: () => {
       if CheckSubargs(0, 0)
-        EditTestcase(true, -1)
+        EditTestcase(true)
       endif
     },
     edit_testcase: () => {
@@ -62,7 +62,7 @@ export def Command(arguments: string): void # {{{
         if exists("args[1]")
           EditTestcase(false, str2nr(args[1]))
         else
-          EditTestcase(false, -1)
+          EditTestcase(false)
         endif
       endif
     },
@@ -85,14 +85,14 @@ export def Command(arguments: string): void # {{{
       if exists("args[1]")
         testcases_list = args[1 : ]
       endif
-      RunTestcases(testcases_list, true, false)
+      RunTestcases(testcases_list, true)
     },
     run_no_compile: () => {
       var testcases_list: list<string> = []
       if exists("args[1]")
         testcases_list = args[1 : ]
       endif
-      RunTestcases(testcases_list, false, false)
+      RunTestcases(testcases_list, false)
     },
     show_ui: () => {
       if CheckSubargs(0, 0)
@@ -113,42 +113,29 @@ export def Command(arguments: string): void # {{{
   endif
 enddef # }}}
 
-def EditTestcase(add_testcase: bool, tcnum: number): void
+def EditTestcase(add_testcase: bool, tcnum = -1): void
   var bufnr = bufnr()
-  var num = tcnum
   config.LoadBufferConfig(bufnr) # reload buffer configuration since it may have been updated in the meantime
   var tctbl = testcases.BufGetTestcases(bufnr)
-  if add_testcase
-      num = 0
-      while has_key(tctbl, num)
-          num = num + 1
-      endwhile
-      tctbl[num] = { input: "", output: "" }
-  endif
-
-  # Start testcase editor to edit a testcase
   def StartEditor(n: number)
     if !has_key(tctbl, n)
       echoerr $"edit_testcase: testcase {n} doesn't exist!"
       return
     endif
-
-    # Save edited testcase
-    def SaveData(tc: dict<any>)
-      if config.GetBufferConfig(bufnr).testcases_use_single_file
-          tctbl[n] = tc
-          testcases.SingleFileBufWrite(bufnr, tctbl)
-      else
-            testcases.IOFilesBufWritePair(bufnr, n, tc.input, tc.output)
-      endif
-    enddef
-
-      widgets.Editor(bufnr, n, tctbl[n].input, tctbl[n].output, SaveData, win_getid())
+    widgets.Editor(bufnr, n)
   enddef
-  if num == -1
-      widgets.Picker(bufnr, tctbl, "Edit a Testcase", StartEditor, win_getid())
-  else
+
+  if add_testcase
+      var num = 0
+      while has_key(tctbl, num)
+          num = num + 1
+      endwhile
+      tctbl[num] = { input: "", output: "" }
       StartEditor(num)
+  elseif tcnum == -1
+    widgets.Picker(bufnr, tctbl, "Edit a Testcase", StartEditor)
+  else
+    StartEditor(tcnum)
   endif
 enddef
 
@@ -166,7 +153,7 @@ enddef
 
 var runners: dict<any>
 
-def RunTestcases(testcases_list: list<string>, compile: bool, only_show: bool) # {{{
+def RunTestcases(testcases_list: list<string>, compile: bool, only_show = true) # {{{
     var bufnr = bufnr()
     config.LoadBufferConfig(bufnr)
     var tctbl = testcases.BufGetTestcases(bufnr)
@@ -196,8 +183,8 @@ def RunTestcases(testcases_list: list<string>, compile: bool, only_show: bool) #
 
     var r = runners[bufnr] # current runner
     if !only_show
-        r.kill_all_processes()
-        r.run_testcases(tctbl, compile)
+        r.KillAllProcesses()
+        r.RunTestcases(tctbl, compile)
     endif
     r.SetRestoreWinID(win_getid())
     r.ShowUI()
