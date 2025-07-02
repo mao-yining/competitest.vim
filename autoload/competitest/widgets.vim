@@ -23,13 +23,11 @@ export def Editor(bufnr: number = 0, tcnum: number = 0): void
   # Create input buffer
   win_execute(input_win, 'edit ' .. input_path)
   var input_bufnr = winbufnr(input_win)
-  setbufvar(input_bufnr, '&filetype', 'CompetiTestInput')
   setbufvar(input_bufnr, '&bufhidden', 'delete') # Delete when window closes
 
   # Create output buffer
   win_execute(output_win, 'edit ' .. output_path)
   var output_bufnr = winbufnr(output_win)
-  setbufvar(output_bufnr, '&filetype', 'CompetiTestOutput')
   setbufvar(output_bufnr, '&bufhidden', 'delete') # Delete when window closes
 
   # Set window titles using statusline

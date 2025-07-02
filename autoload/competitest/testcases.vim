@@ -67,8 +67,6 @@ def IOFilesWrite(directory: string, tctbl: dict<any>, input_file_format: string,
   enddef
 
   for [tcnum, tc] in items(tctbl)
-    echom $"tcnum: {tcnum}, tc: {tc}"
-    echom $"type(tcnum): {type(tcnum)}, type(tc): {type(tc)}"
     var input_file = printf(input_file_format, str2nr(tcnum))
     var output_file = printf(output_file_format, str2nr(tcnum))
     var input_content = tc->get('input', v:null)
@@ -136,16 +134,6 @@ export def BufGetTestcasesPath(bufnr: number): string
   return fnamemodify(bufname(bufnr), ':h') .. '/' .. config.GetBufferConfig(bufnr).testcases_directory .. '/'
 enddef
 
-# I/O files: Load for buffer
-export def IOFIlesBufLoad(bufnr: number): dict<any>
-  var conf = config.GetBufferConfig(bufnr)
-  return IOFilesLoadEvalFormatString(
-    BufGetTestcasesPath(bufnr),
-    bufname(bufnr),
-    conf.testcases_input_file_format,
-    conf.testcases_output_file_format)
-enddef
-
 # I/O files: Write for buffer
 export def IOFilesBufWrite(bufnr: number, tctbl: dict<any>)
   var dir = BufGetTestcasesPath(bufnr)
@@ -209,44 +197,20 @@ def IOFileEvalFormatString(directory: string, tctbl: dict<any>, filepath: string
   return ( input_format, output_format )
 enddef
 
-def IOFilesW(directory: string, tctbl: dict<any>, input_file_format: string, output_file_format: string)
-  # Helper: Write or delete file based on content
-  def WriteFile(fpath: string, content: any)
-    if type(content) != v:t_string || content == ''
-      if utils.DoesFileExist(fpath)
-        utils.DeleteFile(fpath)
-      endif
-    else
-      utils.WriteStringOnFile(fpath, content)
-    endif
-  enddef
-
-  for [tcnum, tc] in items(tctbl)
-    echom $"tcnum: {tcnum}, tc: {tc}"
-    echom $"type(tcnum): {type(tcnum)}, type(tc): {type(tc)}"
-    var input_file = printf(input_file_format, str2nr(tcnum))
-    var output_file = printf(output_file_format, str2nr(tcnum))
-    var input_content = tc->get('input', v:null)
-    var output_content = tc->get('output', v:null)
-
-    WriteFile(directory .. input_file, input_content)
-    WriteFile(directory .. output_file, output_content)
-  endfor
-enddef
-
 # I/O files: Write single testcase pair
-export def IOFilesBufWritePair(bufnr: number, tcnum: number, input: any, output: any)
+export def IOFilesBufWritePair(bufnr: number, tcnum: number, input = "", output = "")
   var tctbl = {[tcnum]: {input: input, output: output}}
   IOFilesBufWrite(bufnr, tctbl)
 enddef
 
-#-----------------------------------------------------------------------#
-# Miscellaneous methods
-#-----------------------------------------------------------------------#
-
-# Get testcases for buffer (auto-detect storage)
+# Get testcases for buffer
 export def BufGetTestcases(bufnr: number): dict<any>
-  return IOFIlesBufLoad(bufnr)
+  var conf = config.GetBufferConfig(bufnr)
+  return IOFilesLoadEvalFormatString(
+    BufGetTestcasesPath(bufnr),
+    bufname(bufnr),
+    conf.testcases_input_file_format,
+    conf.testcases_output_file_format)
 enddef
 
 # Write testcases for buffer

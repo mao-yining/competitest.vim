@@ -28,7 +28,7 @@ export def FormatStringModifiers(str: string): string
       if c == '('
         mod_start = i  # 记录 '(' 的位置
       else
-        echo "format_string_modifiers: '$' isn't followed by '(' in:\n" .. str
+        echo "FormatStringModifiers: '$' isn't followed by '(' in:\n" .. str
         return null_string
       endif
     elseif mod_start == 0  # 空闲状态
@@ -42,14 +42,14 @@ export def FormatStringModifiers(str: string): string
         var mod = str[mod_start + 1 : i - 1]  # 提取修饰符名称
         var replacement: string = modifiers->get(mod, null_string)(bufname())
         if replacement == null_string
-          echo 'format_string_modifiers: unrecognized modifier $(' .. mod .. ')'
+          echo 'FormatStringModifiers: unrecognized modifier $(' .. mod .. ')'
           return null_string
         endif
 
         if type(replacement) == v:t_string
           add(evaluated_str, replacement)
         else
-          echo 'format_string_modifiers: invalid modifier type for $(' .. mod .. ')'
+          echo 'FormatStringModifiers: invalid modifier type for $(' .. mod .. ')'
           return null_string
         endif
         mod_start = 0  # 重置状态
@@ -69,10 +69,14 @@ export def FormatStringModifiers(str: string): string
   return evaluated_str->join('')
 enddef
 
+# export def EvalString(filepath: string, str: string): string
+#   return FormatStringModifiers(str)
+# enddef
+
 # 缓冲区上下文评估文件格式字符串
 export def BufEvalString(bufnr: number, str: string, tcnum: any = null): string
-  file_format_modifiers['TCNUM'] = string(tcnum ?? '')
-  return EvalString(bufname(bufnr), str)
+  modifiers['TCNUM'] = string(tcnum ?? '')
+  return FormatStringModifiers(str)
 enddef
 
 # 检查文件是否存在

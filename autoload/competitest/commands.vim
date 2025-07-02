@@ -34,7 +34,7 @@ export def Command(arguments: string): void # {{{
     },
     edit_testcase: () => {
       if CheckSubargs(0, 1)
-        if exists("args[1]")
+        if len(args) == 2
           EditTestcase(false, str2nr(args[1]))
         else
           EditTestcase(false)
@@ -43,23 +43,23 @@ export def Command(arguments: string): void # {{{
     },
     delete_testcase: () => {
       if CheckSubargs(0, 1)
-        if exists("args[1]")
+        if len(args) == 2
           DeleteTestcase(str2nr(args[1]))
         else
-          DeleteTestcase(-1)
+          DeleteTestcase()
         endif
       endif
     },
     run: () => {
       var testcases_list: list<string> = []
-      if exists("args[1]")
+      if len(args) == 2
         testcases_list = args[1 : ]
       endif
       RunTestcases(testcases_list, true)
     },
     run_no_compile: () => {
       var testcases_list: list<string> = []
-      if exists("args[1]")
+      if len(args) == 2
         testcases_list = args[1 : ]
       endif
       RunTestcases(testcases_list, false)
@@ -110,8 +110,25 @@ def EditTestcase(add_testcase: bool, tcnum = -1): void # {{{
   endif
 enddef # }}}
 
-def DeleteTestcase(tcnum: number = -1): void
-  echo "TODO: DeleteTestcase"
+def DeleteTestcase(tcnum = -1): void
+  var bufnr = bufnr()
+  var tctbl = testcases.BufGetTestcases(bufnr)
+  def Delete(num: number)
+    if !has_key(tctbl, num)
+      echoerr $"delete_testcase: testcase {num} doesn't exist!"
+      return
+    endif
+    var choice = confirm($"Are you sure you want to delete Testcase {num} ?", "Yes\nNo")
+    if choice == 0 || choice == 2 # user pressed <esc> or chose "No"
+      return
+    endif
+    testcases.IOFilesBufWritePair(bufnr, num)
+  enddef
+  if tcnum == -1
+    widgets.Picker(bufnr, tctbl, "Delete a Testcase", Delete)
+  else
+    Delete(tcnum)
+  endif
 enddef
 
 def Receive(mode: string)
