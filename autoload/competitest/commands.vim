@@ -50,11 +50,6 @@ export def Command(arguments: string): void # {{{
         endif
       endif
     },
-    convert: () => {
-      if CheckSubargs(1, 1)
-        ConvertTestcases(args[1])
-      endif
-    },
     run: () => {
       var testcases_list: list<string> = []
       if exists("args[1]")
@@ -116,10 +111,6 @@ def EditTestcase(add_testcase: bool, tcnum = -1): void # {{{
 enddef # }}}
 
 def DeleteTestcase(tcnum: number = -1): void
-  echo "TODO: DeleteTestcase"
-enddef
-
-def ConvertTestcases(mode: string): void
   echo "TODO: DeleteTestcase"
 enddef
 

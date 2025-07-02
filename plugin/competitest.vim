@@ -1,7 +1,7 @@
 vim9script noclear
 # Vim global plugin for competitive programing
 # Last Change:  2025-06-29
-# Maintainer:   毛同学 <stu_mao@outlook.com>
+# Maintainer:   mao-yining <mao.yining@outlook.com>
 
 if exists("g:loaded_competitest")
   finish
@@ -21,7 +21,7 @@ def Complete(_: string, CmdLine: string, CursorPos: number): list<string> # {{{
     var wlen = len(words)
 
     if wlen == 1 || wlen == 2 && !ending_space
-        return ["add_testcase", "edit_testcase", "delete_testcase", "convert", "run", "run_no_compile", "show_ui", "receive"]
+        return ["add_testcase", "edit_testcase", "delete_testcase", "run", "run_no_compile", "show_ui", "receive"]
     elseif wlen == 2 || wlen == 3 && !ending_space
         var lastword: string
         if wlen == 2
@@ -30,9 +30,7 @@ def Complete(_: string, CmdLine: string, CursorPos: number): list<string> # {{{
             lastword = words[-2]
         endif
 
-        if lastword == "convert"
-            return ["auto", "files_to_singlefile", "singlefile_to_files"]
-        elseif lastword == "receive"
+        if lastword == "receive"
             return ["testcases", "problem", "contest", "persistently", "status", "stop"]
         endif
     endif
