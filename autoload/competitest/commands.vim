@@ -110,7 +110,7 @@ def EditTestcase(add_testcase: bool, tcnum = -1): void # {{{
   endif
 enddef # }}}
 
-def DeleteTestcase(tcnum = -1): void
+def DeleteTestcase(tcnum = -1): void # {{{
   var bufnr = bufnr()
   var tctbl = testcases.BufGetTestcases(bufnr)
   def Delete(num: number)
@@ -129,15 +129,15 @@ def DeleteTestcase(tcnum = -1): void
   else
     Delete(tcnum)
   endif
-enddef
+enddef # }}}
 
 def Receive(mode: string)
   echo "TODO: Receive"
 enddef
 
-var runners: dict<any>
+var runners: dict<runner.TCRunner>
 
-def RunTestcases(testcases_list: list<string>, compile: bool, only_show = true) # {{{
+def RunTestcases(testcases_list: list<string>, compile: bool, only_show = false) # {{{
   var bufnr = bufnr()
   config.LoadBufferConfig(bufnr)
   var tctbl = testcases.BufGetTestcases(bufnr)
