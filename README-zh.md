@@ -114,31 +114,31 @@
 - 固定接收问题的目录（非比赛）：
 
   ```vim
-  received_problems_path = "$(HOME)/Competitive Programming/$(JUDGE)/$(CONTEST)/$(PROBLEM).$(FEXT)"
+  received_problems_path: "$(HOME)/Competitive Programming/$(JUDGE)/$(CONTEST)/$(PROBLEM).$(FEXT)"
   ```
 
 - 固定接收比赛的目录：
 
   ```vim
-  received_contests_directory = "$(HOME)/Competitive Programming/$(JUDGE)/$(CONTEST)"
+  received_contests_directory: "$(HOME)/Competitive Programming/$(JUDGE)/$(CONTEST)"
   ```
 
 - 将比赛的每个问题放在不同目录：
 
   ```vim
-  received_contests_problems_path = "$(PROBLEM)/main.$(FEXT)"
+  received_contests_problems_path: "$(PROBLEM)/main.$(FEXT)"
   ```
 
 - Java 比赛的文件命名示例：
 
   ```vim
-  received_contests_problems_path = "$(PROBLEM)/$(JAVA_MAIN_CLASS).$(FEXT)"
+  received_contests_problems_path: "$(PROBLEM)/$(JAVA_MAIN_CLASS).$(FEXT)"
   ```
 
 - 简化的文件名，适用于 Java 和其他语言，因为修饰符 `$(JAVA_TASK_CLASS)` 会从问题名中移除所有非字母和非数字字符，包括空格和标点：
 
   ```vim
-  received_contests_problems_path = "$(JAVA_TASK_CLASS).$(FEXT)"
+  received_contests_problems_path: "$(JAVA_TASK_CLASS).$(FEXT)"
   ```
 
 #### 接收问题和比赛的模板
@@ -159,9 +159,9 @@
 #include <iostream>
 using namespace std;
 int main() {
-	cout << "这是一个模板文件" << endl;
-	cerr << "问题名称是 $(PROBLEM)" << endl;
-	return 0;
+    cout << "这是一个模板文件" << endl;
+    cerr << "问题名称是 $(PROBLEM)" << endl;
+    return 0;
 }
 ```
 
@@ -275,13 +275,13 @@ const default_config = {
   - 自定义函数：可以使用接受两个参数的函数，两个字符串表示输出和预期输出。如果给定输出可接受则返回 true，否则返回 false。示例：
     ```vim
     {
-    	output_compare_method = (output: string, expected_output: string): bool => {
-    		if output == expected_output then
-    			return true
-    		else
-    			return false
-    		end
-    	},
+    output_compare_method: (output: string, expected_output: string): bool => {
+            if output == expected_output then
+                return true
+            else
+                return false
+            end
+        },
     }
     ```
 - `view_output_diff`：在各自的窗口中查看实际输出与预期输出的差异
@@ -297,14 +297,14 @@ const default_config = {
   - `false`：不使用模板
   - 带有[文件格式修饰符](#文件格式修饰符)的字符串：当不同类型的模板有规律的文件命名时有用
     ```vim
-    template_file = "~/path/to/template.$(FEXT)"
+    template_file: "~/path/to/template.$(FEXT)"
     ```
   - 带有路径的表格：将文件扩展名与模板文件关联的表格
     ```vim
-    template_file = {
-    	c = "~/path/to/file.c",
-    	cpp = "~/path/to/file.cpp",
-    	py = "~/path/to/file.py",
+    template_file: {
+        c: "~/path/to/file.c",
+        cpp: "~/path/to/file.cpp",
+        py: "~/path/to/file.py",
     }
     ```
 - `evaluate_template_modifiers`：是否在模板文件中评估[接收修饰符](#接收修饰符)
@@ -356,7 +356,7 @@ const default_config = {
 
 ```vim
 {
-	template_file: "D:/Competitive-Programming/Codeforces/template.$(FEXT)",
+    template_file: "D:/Competitive-Programming/Codeforces/template.$(FEXT)",
   output_compare_method: (output: string, ans: string) => tolower(output) == tolower(ans),
 }
 ```
@@ -411,14 +411,14 @@ const default_config = {
 
 ```vim
 {
-	compile_command = {
-		cpp       = { exec = 'g++',           args = {'$(FNAME)', '-o', '$(FNOEXT)'} },
-		some_lang = { exec = 'some_compiler', args = {'$(FNAME)'} },
-	},
-	run_command = {
-		cpp       = { exec = './$(FNOEXT)' },
-		some_lang = { exec = 'some_interpreter', args = {'$(FNAME)'} },
-	},
+    compile_command: {
+        cpp: { exec: 'g++',           args: {'$(FNAME)', '-o', '$(FNOEXT)'} },
+        some_lang: { exec: 'some_compiler', args: {'$(FNAME)'} },
+    },
+    run_command: {
+        cpp      : { exec: './$(FNOEXT)' },
+        some_lang: { exec: 'some_interpreter', args: {'$(FNAME)'} },
+    },
 }
 ```
 
