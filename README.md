@@ -146,25 +146,25 @@ Here are some tips:
 - Fixed directory for received problems (not contests):
 
   ```vim
-  received_problems_path = "$(HOME)/Competitive Programming/$(JUDGE)/$(CONTEST)/$(PROBLEM).$(FEXT)"
+  received_problems_path: "$(HOME)/Competitive Programming/$(JUDGE)/$(CONTEST)/$(PROBLEM).$(FEXT)"
   ```
 
 - Fixed directory for received contests:
 
   ```vim
-  received_contests_directory = "$(HOME)/Competitive Programming/$(JUDGE)/$(CONTEST)"
+  received_contests_directory: "$(HOME)/Competitive Programming/$(JUDGE)/$(CONTEST)"
   ```
 
 - Put every problem of a contest in a different directory:
 
   ```vim
-  received_contests_problems_path = "$(PROBLEM)/main.$(FEXT)"
+  received_contests_problems_path: "$(PROBLEM)/main.$(FEXT)"
   ```
 
 - Example of file naming for Java contests:
 
   ```vim
-  received_contests_problems_path = "$(PROBLEM)/$(JAVA_MAIN_CLASS).$(FEXT)"
+  received_contests_problems_path: "$(PROBLEM)/$(JAVA_MAIN_CLASS).$(FEXT)"
   ```
 
 - Simplified file names, it works with Java and any other language because the
@@ -172,7 +172,7 @@ Here are some tips:
   non-alphabetic and non-numeric characters, including spaces and punctuation:
 
   ```vim
-  received_contests_problems_path = "$(JAVA_TASK_CLASS).$(FEXT)"
+  received_contests_problems_path: "$(JAVA_TASK_CLASS).$(FEXT)"
   ```
 
 #### Templates for Received Problems and Contests
@@ -197,9 +197,9 @@ insert details about received problems. To enable this feature set
 #include <iostream>
 using namespace std;
 int main() {
-	cout << "This is a template file" << endl;
-	cerr << "Problem name is $(PROBLEM)" << endl;
-	return 0;
+    cout << "This is a template file" << endl;
+    cerr << "Problem name is $(PROBLEM)" << endl;
+    return 0;
 }
 ```
 
@@ -319,13 +319,13 @@ const default_config = {
 
     ```vim
     {
-    	output_compare_method = (output: string, expected_output: string): bool => {
-    		if output == expected_output then
-    			return true
-    		else
-    			return false
-    		end
-    	},
+        output_compare_method: (output: string, expected_output: string): bool => {
+            if output == expected_output then
+                return true
+            else
+                return false
+            end
+        },
     }
     ```
 
@@ -344,16 +344,16 @@ const default_config = {
   - string with [file-format modifiers](#file-format-modifiers): useful when templates for different file types have a regular file naming
 
     ```vim
-    template_file = "~/path/to/template.$(FEXT)"
+    template_file: "~/path/to/template.$(FEXT)"
     ```
 
   - table with paths: table associating file extension to template file
 
     ```vim
-    template_file = {
-    	c = "~/path/to/file.c",
-    	cpp = "~/path/to/file.cpp",
-    	py = "~/path/to/file.py",
+    template_file: {
+        c: "~/path/to/file.c",
+        cpp: "~/path/to/file.cpp",
+        py: "~/path/to/file.py",
     }
     ```
 
@@ -410,7 +410,7 @@ see the following example.
 
 ```vim
 {
-	template_file: "D:/Competitive-Programming/Codeforces/template.$(FEXT)",
+    template_file: "D:/Competitive-Programming/Codeforces/template.$(FEXT)",
   output_compare_method: (output: string, ans: string) => tolower(output) == tolower(ans),
 }
 ```
@@ -471,14 +471,14 @@ programs. You can also add languages that aren't supported by default.
 
 ```vim
 {
-	compile_command = {
-		cpp       = { exec = 'g++',           args = {'$(FNAME)', '-o', '$(FNOEXT)'} },
-		some_lang = { exec = 'some_compiler', args = {'$(FNAME)'} },
-	},
-	run_command = {
-		cpp       = { exec = './$(FNOEXT)' },
-		some_lang = { exec = 'some_interpreter', args = {'$(FNAME)'} },
-	},
+    compile_command: {
+        cpp      : { exec: 'g++',           args: {'$(FNAME)', '-o', '$(FNOEXT)'} },
+        some_lang: { exec: 'some_compiler', args: {'$(FNAME)'} },
+    },
+    run_command: {
+        cpp      : { exec: './$(FNOEXT)' },
+        some_lang: { exec: 'some_interpreter', args: {'$(FNAME)'} },
+    },
 }
 ```
 
