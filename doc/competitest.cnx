@@ -1,0 +1,552 @@
+*competitest.txt* 使用 Vim 进行竞赛编程变得简单
+
+基于 vim9script 重构自 https://github.com/xeluxee/competitest.nvim。
+
+*competitest.vim* 是一个面向竞赛编程的测试用例管理器与检查器。
+它自动化测试用例管理任务，帮助您通过交互式 UI 编译、运行和测试多个样例。
+
+==============================================================================
+目录                                                           *competitest*
+
+1. 功能 ................................................. |competitest-features|
+2. 安装 ............................................. |competitest-installation|
+3. 使用 .................................................... |competitest-usage|
+   - 使用须知 ........................................ |competitest-usage-notes|
+   - 存储测试用例 .............................. |competitest-storing-testcases|
+   - 命令 ............................................... |competitest-commands|
+   - 测试用例编辑器 .............................. |competitest-editor-controls|
+   - 测试用例运行器 .............................. |competitest-runner-controls|
+4. 接收测试用例 ........................................ |competitest-receiving|
+   - 文件夹结构 .................................... |competitest-custom-folder|
+   - 模板 .............................................. |competitest-templates|
+5. 配置 ............................................ |competitest-configuration|
+   - 本地配置 ....................................... |competitest-local-config|
+   - 修饰符 ............................................ |competitest-modifiers|
+   - 默认配置 ..................................... |competitest-default-config|
+   - 配置说明 ................................. |competitest-config-explanation|
+6. 集成 .............................................. |competitest-integration|
+   - 状态栏 ........................................... |competitest-statusline|
+   - 高亮 ............................................. |competitest-highlights|
+7. 贡献 ............................................. |competitest-contributing|
+8. 维护者 ............................................ |competitest-maintainers|
+9. 许可证 ................................................ |competitest-license|
+
+==============================================================================
+功能                                                  *competitest-features*
+
+- 多语言支持: 支持 C, C++, Rust, Java, Python + 可配置其他语言
+- 灵活的工作流: 无严格的命名规则，可选的文件夹结构
+- 可配置性: 全局和每文件夹设置 (|competitest-local-config|)
+- 测试用例存储: 单个文件或多个文本文件
+- 测试用例管理: 轻松添加/编辑/删除测试用例
+- 交互式测试: 运行所有测试并可视化结果
+- 平台集成: 从竞赛编程网站下载
+- 模板: 用于题目和比赛
+- 输出差异对比: 比较实际输出与期望输出
+- 状态栏集成
+- 可定制的高亮
+
+==============================================================================
+安装                                              *competitest-installation*
+
+要求: Vim > 9.1
+
+使用插件管理器安装:
+
+插件管理器        安装命令 ~
+NeoBundle         NeoBundle 'mao-yining/competitest.vim'
+Vundle            Plugin 'mao-yining/competitest.vim'
+Plug              Plug 'mao-yining/competitest.vim'
+Dein              call dein#add('mao-yining/competitest.vim')
+minpac            call minpac#add('mao-yining/competitest.vim')
+
+原生包管理: >
+    git clone https://github.com/mao-yining/competitest.vim
+    ~/.vim/pack/dist/start/competitest.vim
+    :helptags ALL
+<
+手动安装: 复制文件到 ~/.vim 目录
+
+==============================================================================
+使用                                                        *competitest-usage*
+
+使用须知                                            *competitest-usage-notes*
+
+- 程序必须从 stdin 读取数据并向 stdout 写入结果
+- 测试用例需要输入；期望输出是可选的
+
+存储测试用例                                *competitest-storing-testcases*
+
+默认命名 (源文件: task-A.cpp): >
+    task-A0.in    [输入]
+    task-A0.ans   [期望输出]
+<
+通过以下选项自定义: >
+    testcases_input_file_format
+    testcases_output_file_format
+<
+
+命令                                            *competitest-commands*
+
+在聚焦于源文件缓冲区时执行:
+
+命令                                操作 ~
+:CompetiTest add_testcase           添加新测试用例
+:CompetiTest edit_testcase [x]     编辑测试用例 (可选编号)
+:CompetiTest delete_testcase [x]   删除测试用例 (可选编号)
+:CompetiTest run                   运行所有测试用例 (编译 + 执行)
+:CompetiTest run_no_compile        运行但不编译
+:CompetiTest show_ui               显示 UI 但不重新运行
+
+测试用例编辑器控件                      *competitest-editor-controls*
+
+按键绑定                操作 ~
+<C-h>, <C-l>, <C-i>    在输入/输出窗口间切换
+<C-s>                  保存并关闭
+:wq                    保存并关闭
+
+测试用例运行器控件                      *competitest-runner-controls*
+
+按键   操作 ~
+r     重新运行当前测试用例
+R     重新运行所有测试用例
+x     终止当前测试用例进程
+X     终止所有进程
+i/I   查看输入 (当前/所有)
+a/A   查看期望答案 (当前/所有)
+o/O   查看 stdout (当前/所有)
+e/E   查看 stderr (当前/所有)
+d/D   切换差异视图 (当前/所有)
+q/Q   关闭 UI
+
+==============================================================================
+接收测试用例                                *competitest-receiving*
+
+要求: competitive-companion 浏览器扩展
+    https://github.com/jmerle/competitive-companion
+
+命令                            操作 ~
+:CompetiTest receive testcases  接收单个测试用例集
+:CompetiTest receive problem    接收题目 (创建源文件)
+:CompetiTest receive contest    接收整个比赛
+:CompetiTest receive status     显示接收状态
+:CompetiTest receive stop       停止接收
+
+执行命令后，点击浏览器扩展中的绿色 "+" 号。
+
+自定义文件夹结构                        *competitest-custom-folder*
+
+配置示例: >
+    received_problems_path = "$(HOME)/CP/$(JUDGE)/$(CONTEST)/$(PROBLEM).$(FEXT)"
+    received_contests_directory = "$(HOME)/CP/$(JUDGE)/$(CONTEST)"
+    received_contests_problems_path = "$(PROBLEM)/main.$(FEXT)"
+<
+
+模板                                        *competitest-templates*
+
+使用 `template_file` 选项启用。C++ 示例: >
+    // Problem: $(PROBLEM)
+    // Contest: $(CONTEST)
+    // Judge: $(JUDGE)
+    // URL: $(URL)
+    // Memory: $(MEMLIM)
+    // Time: $(TIMELIM)
+    // Start: $(DATE)
+
+    #include <iostream>
+    using namespace std;
+    int main() {
+        cout << "Template for $(PROBLEM)" << endl;
+        return 0;
+    }
+<
+
+==============================================================================
+配置                                    *competitest-configuration*
+
+本地配置                          *competitest-local-config*
+
+在项目文件夹中创建 `.competitest.vim`: >
+    {
+        template_file: "~/templates/cp.$(FEXT)",
+        output_compare_method: (out, ans) => tolower(out) == tolower(ans),
+    }
+<
+
+修饰符                                        *competitest-modifiers*
+
+文件格式修饰符 ~
+$(HOME)       用户主目录
+$(FNAME)      完整文件名
+$(FNOEXT)     无扩展名的文件名
+$(FEXT)       文件扩展名
+$(FABSPATH)   文件的绝对路径
+$(ABSDIR)     绝对目录路径
+$(TCNUM)      测试用例编号
+
+接收修饰符 ~
+$(CWD)        当前工作目录
+$(PROBLEM)    题目名称
+$(JUDGE)      平台名称 (Codeforces 等)
+$(CONTEST)    比赛名称
+$(URL)        题目 URL
+$(MEMLIM)     内存限制
+$(TIMELIM)    时间限制
+$(DATE)       当前日期/时间
+
+==============================================================================
+默认配置                        *competitest-default-config*
+
+完整配置 (g:competitest_configs): >
+  {
+      local_config_file_name: ".competitest.vim",
+      floating_border: "rounded",
+      floating_border_highlight: "FloatBorder",
+      editor_ui: {
+          normal_mode_mappings: {
+              switch_window: ["<C-h>", "<C-l>", "<C-i>"],
+              save_and_close: "<C-s>",
+              cancel: ["q", "Q"],
+          },
+      },
+      runner_ui: {
+          mappings: {
+              run_again: "r",
+              run_all_again: "R",
+              kill: "x",
+              kill_all: "X",
+              view_input: ["i", "I"],
+              view_output: ["a", "A"],
+              view_stdout: ["o", "O"],
+              view_stderr: ["e", "E"],
+              toggle_diff: ["d", "D"],
+              close: ["q", "Q"],
+          },
+          open_when_compilation_fails: true,
+      },
+      save_current_file: true,
+      save_all_files: false,
+      compile_directory: ".",
+      compile_command: {
+          c: { exec: "gcc", args: ["-Wall", "$(FNAME)", "-o", "$(FNOEXT)"] },
+          cpp: { exec: "g++", args: ["-Wall", "$(FNAME)", "-o", "$(FNOEXT)"] },
+          rust: { exec: "rustc", args: ["$(FNAME)"] },
+          java: { exec: "javac", args: ["$(FNAME)"] },
+      },
+      running_directory: ".",
+      run_command: {
+          c: { exec: "./$(FNOEXT)" },
+          cpp: { exec: "./$(FNOEXT)" },
+          rust: { exec: "./$(FNOEXT)" },
+          python: { exec: "python", args: ["$(FNAME)"] },
+          java: { exec: "java", args: ["$(FNOEXT)"] },
+      },
+      multiple_testing: -1,
+      maximum_time: 5000,
+      output_compare_method: "squish",
+      view_output_diff: false,
+      testcases_auto_detect_storage: true,
+      testcases_input_file_format: "$(FNOEXT)$(TCNUM).in",
+      testcases_output_file_format: "$(FNOEXT)$(TCNUM).ans",
+      testcases_directory: ".",
+      companion_port: 27121,
+      receive_print_message: true,
+      template_file: false,
+      evaluate_template_modifiers: true,
+      date_format: "%c",
+      received_files_extension: "cpp",
+      received_problems_path: "$(CWD)/$(PROBLEM).$(FEXT)",
+      received_problems_prompt_path: true,
+      received_contests_directory: "$(CWD)",
+      received_contests_problems_path: "$(PROBLEM).$(FEXT)",
+      received_contests_prompt_directory: true,
+      received_contests_prompt_extension: true,
+      open_received_problems: true,
+      open_received_contests: true,
+      replace_received_testcases: false,
+  }
+<
+==============================================================================
+配置说明                       *competitest-config-explanation*
+
+local_config_file_name               *competitest-config-local_config_file_name*
+  类型: 字符串
+  默认: ".competitest.vim"
+  每文件夹配置文件名。参见 |competitest-local-config|
+
+floating_border                              *competitest-config-floating_border*
+  类型: 字符串
+  默认: "rounded"
+  浮动窗口的边框样式 (同 nvim_open_win() 的 border 选项)
+
+floating_border_highlight                    *competitest-config-floating_border_highlight*
+  类型: 字符串
+  默认: "FloatBorder"
+  浮动窗口边框的高亮组
+
+editor_ui                                    *competitest-config-editor_ui*
+  类型: 字典
+  测试用例编辑器 UI 设置
+
+editor_ui.normal_mode_mappings               *competitest-config-editor_ui-normal_mode_mappings*
+  类型: 字典
+  普通模式下的按键映射:
+      switch_window:  在输入/输出窗口间切换
+      save_and_close: 保存测试用例并关闭 UI
+      cancel:         不保存关闭 UI
+
+runner_ui                                    *competitest-config-runner_ui*
+  类型: 字典
+  测试用例运行器 UI 设置
+
+runner_ui.mappings                           *competitest-config-runner_ui-mappings*
+  类型: 字典
+  运行器 UI 中的按键映射:
+      run_again:      重新运行当前测试用例
+      run_all_again:  重新运行所有测试用例
+      kill:           终止当前进程
+      kill_all:       终止所有进程
+      view_input:     查看输入 (当前/所有)
+      view_output:    查看期望输出 (当前/所有)
+      view_stdout:    查看 stdout (当前/所有)
+      view_stderr:    查看 stderr (当前/所有)
+      toggle_diff:    切换差异视图 (当前/所有)
+      close:          关闭 UI
+
+runner_ui.open_when_compilation_fails        *competitest-config-runner_ui-open_when_compilation_fails*
+  类型: 布尔值
+  默认: true
+  编译失败时打开错误窗口
+
+save_current_file                            *competitest-config-save_current_file*
+  类型: 布尔值
+  默认: true
+  运行测试前保存当前文件
+
+save_all_files                               *competitest-config-save_all_files*
+  类型: 布尔值
+  默认: false
+  运行测试前保存所有打开的文件
+
+compile_directory                            *competitest-config-compile_directory*
+  类型: 字符串
+  默认: "."
+  编译执行目录 (相对于当前文件)
+
+compile_command                              *competitest-config-compile_command*
+  类型: 字典
+  默认: 见上文
+  每种语言的编译命令。支持: c, cpp, rust, java
+  添加新语言: >
+      some_lang: { exec: 'compiler', args: ['$(FNAME)'] }
+<
+
+running_directory                             *competitest-config-running_directory*
+  类型: 字符串
+  默认: "."
+  程序执行目录 (相对于当前文件)
+
+run_command                                  *competitest-config-run_command*
+  类型: 字典
+  默认: 见上文
+  每种语言的执行命令。支持: c, cpp, rust, python, java
+  添加新语言: >
+      some_lang: { exec: 'interpreter', args: ['$(FNAME)'] }
+<
+
+multiple_testing                             *competitest-config-multiple_testing*
+  类型: 数字
+  默认: -1
+  并发测试执行数:
+      -1 = 使用所有 CPU 核心
+       0 = 全部一起运行
+      >0 = 指定并发数
+
+maximum_time                                 *competitest-config-maximum_time*
+  类型: 数字
+  默认: 5000
+  进程最大运行时间 (毫秒)
+
+output_compare_method                        *competitest-config-output_compare_method*
+  类型: 字符串 或 函数
+  默认: "squish"
+  输出比较方法:
+      "exact"   : 逐字符比较
+      "squish"  : 忽略末尾空白/换行符
+      自定义函数: (output: string, expected: string) => bool
+
+view_output_diff                             *competitest-config-view_output_diff*
+  类型: 布尔值
+  默认: false
+  显示实际输出与期望输出的差异
+
+testcases_auto_detect_storage                *competitest-config-testcases_auto_detect_storage*
+  类型: 布尔值
+  默认: true
+  自动检测测试用例存储格式
+
+testcases_input_file_format                  *competitest-config-testcases_input_file_format*
+  类型: 字符串
+  默认: "$(FNOEXT)$(TCNUM).in"
+  测试用例输入文件名格式
+
+testcases_output_file_format                 *competitest-config-testcases_output_file_format*
+  类型: 字符串
+  默认: "$(FNOEXT)$(TCNUM).ans"
+  测试用例期望输出文件名格式
+
+testcases_directory                          *competitest-config-testcases_directory*
+  类型: 字符串
+  默认: "."
+  测试用例存储目录 (相对于当前文件)
+
+companion_port                               *competitest-config-companion_port*
+  类型: 数字
+  默认: 27121
+  Competitive Companion 端口号
+
+receive_print_message                        *competitest-config-receive_print_message*
+  类型: 布尔值
+  默认: true
+  准备接收/接收内容时通知
+
+template_file                                *competitest-config-template_file*
+  类型: 字符串, 布尔值 或 字典
+  默认: false
+  源文件模板:
+      false:        无模板
+      string:       带修饰符的模板路径
+      dictionary:   每种语言的模板 (例如, {cpp: "~/template.cpp"})
+
+evaluate_template_modifiers                  *competitest-config-evaluate_template_modifiers*
+  类型: 布尔值
+  默认: true
+  在模板文件中展开修饰符
+
+date_format                                  *competitest-config-date_format*
+  类型: 字符串
+  默认: "%c"
+  $(DATE) 修饰符的 strftime() 格式
+
+received_files_extension                     *competitest-config-received_files_extension*
+  类型: 字符串
+  默认: "cpp"
+  接收文件的默认扩展名
+
+received_problems_path                       *competitest-config-received_problems_path*
+  类型: 字符串 或 函数
+  默认: "$(CWD)/$(PROBLEM).$(FEXT)"
+  接收题目的存储路径
+  自定义函数: >
+  (task, file_extension): string => {
+      var hyphen = stridx(task.group, " - ")
+      var judge: string
+      var contest: string
+      if hyphen == -1
+          judge = task.group
+          contest = "problems"
+      else
+          judge = strpart(task.group, 0, hyphen)
+          contest = strpart(task.group, hyphen + 3)
+      endif
+
+      var safe_contest = substitute(substitute(contest, '[<>:"/\\|?*]', '_', 'g'), '#', '', 'g')
+      var safe_name = substitute(substitute(task.name, '[<>:"/\\|?*]', '_', 'g'), '#', '', 'g')
+
+      return printf(
+          "D:/Competitive-Programming/%s/%s/%s/_.%s",
+          judge,
+          safe_contest,
+          safe_name,
+          file_extension
+      )
+  },
+<
+received_problems_prompt_path                *competitest-config-received_problems_prompt_path*
+  类型: 布尔值
+  默认: true
+  提示题目存储路径
+
+received_contests_directory                  *competitest-config-received_contests_directory*
+  类型: 字符串 或 函数
+  默认: "$(CWD)"
+  接收比赛的存储目录
+
+received_contests_problems_path              *competitest-config-received_contests_problems_path*
+  类型: 字符串 或 函数
+  默认: "$(PROBLEM).$(FEXT)"
+  题目相对于比赛目录的路径
+
+received_contests_prompt_directory           *competitest-config-received_contests_prompt_directory*
+  类型: 布尔值
+  默认: true
+  提示比赛存储目录
+
+received_contests_prompt_extension           *competitest-config-received_contests_prompt_extension*
+  类型: 布尔值
+  默认: true
+  提示文件扩展名
+
+open_received_problems                       *competitest-config-open_received_problems*
+  类型: 布尔值
+  默认: true
+  自动打开接收的题目
+
+open_received_contests                       *competitest-config-open_received_contests*
+  类型: 布尔值
+  默认: true
+  自动打开接收的比赛
+
+replace_received_testcases                   *competitest-config-replace_received_testcases*
+  类型: 布尔值
+  默认: false
+  接收时替换已存在的测试用例
+
+==============================================================================
+集成                                        *competitest-integration*
+
+状态栏                                        *competitest-statusline*
+
+UI 窗口有特殊的文件类型:
+competitest_testcases, competitest_out, competitest_in, competitest_err, competitest_ans
+
+用于 vim-airline: >
+    if !exists("g:airline_filetype_overrides")
+        let g:airline_filetype_overrides = {}
+    endif
+    let g:airline_filetype_overrides.competitest_in = ['输入', '']
+    let g:airline_filetype_overrides.competitest_out = ['输出', '']
+    let g:airline_filetype_overrides.competitest_ans = ['答案', '']
+    let g:airline_filetype_overrides.competitest_err = ['错误', '']
+    let g:airline_filetype_overrides.competitest_testcases = ['测试用例', '']
+<
+
+高亮                                        *competitest-highlights*
+
+默认高亮组: >
+    hi CompetiTestRunning cterm=bold     gui=bold
+    hi CompetiTestDone    cterm=none     gui=none
+    hi CompetiTestCorrect ctermfg=green  guifg=#00ff00
+    hi CompetiTestWarning ctermfg=yellow guifg=orange
+    hi CompetiTestWrong   ctermfg=red    guifg=#ff0000
+<
+
+==============================================================================
+贡献                                    *competitest-contributing*
+
+欢迎通过 issues 提交建议和报告错误。
+欢迎 Pull Requests！
+
+==============================================================================
+维护者                                      *competitest-maintainers*
+
+Mao-Yining <mao.yining@outlook.com>
+
+==============================================================================
+许可证                                              *competitest-license*
+
+GNU 通用公共许可证第3版 (GPL v3) 或更高版本
+
+版权所有 © 2025 Mao-Yining <mao.yining@outlook.com>
+
+ vim:tw=78:ts=8:ft=help:norl:
