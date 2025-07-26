@@ -11,19 +11,18 @@
 - 支持多语言：开箱即用支持 C、C++、Rust、Java 和 Python，其他语言也可配置
 - 灵活。没有严格的命名规则，可选择是否使用固定文件夹结构。你可以自由选择源代码文件、测试用例、接收的问题和比赛的存放位置，以及程序的执行位置等
 - 可配置（见[配置](#配置)）。你甚至可以[为每个文件夹单独配置](#本地配置)
-- 测试用例可以存储在单个文件或多个文本文件中，见[使用说明](#使用说明)
 - 轻松[添加](#添加或编辑测试用例)、[编辑](#添加或编辑测试用例)和[删除](#删除测试用例)测试用例
 - [运行](#运行测试用例)你的程序在所有测试用例上，通过精美的交互式 UI 展示结果和执行数据
 - [自动下载](#接收测试用例、问题和比赛)竞技编程平台上的测试用例、问题和比赛
 - 接收问题和比赛的[模板](#接收问题和比赛的模板)
 - 查看实际输出与预期输出的差异
-- [可自定义界面](#自定义-ui-布局)，在 Neovim 窗口调整大小时自动适应
 - 与[状态栏和窗口栏集成](#状态栏和窗口栏集成)
 - 可自定义的[高亮组](#高亮)
 
 ## 安装
 
 **注意：** 本插件需要 Vim > 9.1
+
 本插件遵循标准运行时路径结构，因此可以通过多种插件管理器安装：
 
 | 插件管理器        | 安装命令                                                                                                                                                                |
@@ -33,14 +32,14 @@
 | `Plug`            | `Plug 'mao-yining/competitest.vim'`                                                                                                                                     |
 | `Dein`            | `call dein#add('mao-yining/competitest.vim')`                                                                                                                           |
 | `minpac`          | `call minpac#add('mao-yining/competitest.vim')`                                                                                                                         |
-| 原生 Vim 8 包管理 | `git clone https://github.com/mao-yining/competitest.vim ~/.vim/pack/dist/start/competitest.vim`<br/>运行`:helptags ~/.vim/pack/dist/start/vim-airline/doc`生成帮助标签 |
+| 原生 Vim 8 包管理 | `git clone https://github.com/mao-yining/competitest.vim ~/.vim/pack/dist/start/competitest.vim`<br/>运行`:helptags ~/.vim/pack/dist/start/competitest.vim/doc`生成帮助标签 |
 | 手动安装          | 复制所有文件到你的 `~/.vim` 目录                                                                                                                                        |
 
 ### 使用说明
 
-- 你的程序必须从 `stdin` 读取并输出到 `stdout`。如果使用 `stderr`，其内容也会被显示
-- 一个测试用例由输入和输出（包含正确答案）组成
-- 输入是测试用例必需的，而输出可以不提供
+- 你的程序必须从 `stdin` 读取并输出到 `stdout`。如果使用 `stderr`，其内容也会被显示。
+- 一个测试用例由输入和输出（包含正确答案）组成。
+- 输入是测试用例必需的，而输出可以不提供。
 
 #### 存储测试用例
 
@@ -54,15 +53,15 @@
 
 执行 `:CompetiTest add_testcase` 添加新测试用例。
 
-执行 `:CompetiTest edit_testcase` 编辑现有测试用例。如果想直接在命令行指定测试用例编号，可以使用 `:CompetiTest edit_testcase x`，其中 `x` 是要编辑的测试用例编号。
+执行 `:CompetiTest edit_testcase` 编辑现有测试用例。如果想直接在命令行指定测试用例编号，可以使用 `:CompetiTest edit_testcase {num}`。
 
 在输入和输出窗口之间切换，可以按 `<C-h>`、`<C-l>` 或 `<C-i>`。保存并关闭测试用例编辑器，按 `<C-s>` 或 `:wq`。
 
-当然这些快捷键可以自定义：见[配置](#配置)中的 `editor_ui` ➤ `normal_mode_mappings` 和 `editor_ui` ➤ `insert_mode_mappings`
+当然这些快捷键可以自定义：见[配置](#配置)中的 `editor_ui` ➤ `normal_mode_mappings`
 
 ### 删除测试用例
 
-执行 `:CompetiTest delete_testcase`。如果想直接在命令行指定测试用例编号，可以使用 `:CompetiTest delete_testcase x`，其中 `x` 是要删除的测试用例编号。
+执行 `:CompetiTest delete_testcase`。如果想直接在命令行指定测试用例编号，可以使用 `:CompetiTest delete_testcase {num}`。
 
 ### 运行测试用例
 
@@ -172,7 +171,8 @@ int main() {
 以下是 CompetiTest 的默认配置：
 
 ```vim
-const default_config = {
+vim9script
+g:competitest_configs = {
   local_config_file_name: ".competitest.vim",
   floating_border: "rounded",
   floating_border_highlight: "FloatBorder",
@@ -275,20 +275,17 @@ const default_config = {
   - 自定义函数：可以使用接受两个参数的函数，两个字符串表示输出和预期输出。如果给定输出可接受则返回 true，否则返回 false。示例：
     ```vim
     {
-    output_compare_method: (output: string, expected_output: string): bool => {
-            if output == expected_output then
+        output_compare_method: (output: string, expected_output: string): bool => {
+            if output == expected_output
                 return true
             else
                 return false
-            end
+            endif
         },
     }
     ```
 - `view_output_diff`：在各自的窗口中查看实际输出与预期输出的差异
 - `testcases_directory`：测试用例文件的存放位置，相对于当前文件的路径
-- `testcases_use_single_file`：如果为 true，测试用例将存储在单个文件中而不是多个文本文件中。如果想更改已有测试用例的存储方式，见[转换](#转换测试用例)
-- `testcases_auto_detect_storage`：如果为 true，将自动检测测试用例的存储方式。当文本文件和单个文件都可用时，将根据 `testcases_use_single_file` 中的偏好加载测试用例
-- `testcases_single_file_format`：表示单个测试用例文件应如何命名的字符串（见[文件格式修饰符](#文件格式修饰符)）
 - `testcases_input_file_format`：表示测试用例输入文件应如何命名的字符串（见[文件格式修饰符](#文件格式修饰符)）
 - `testcases_output_file_format`：表示测试用例输出文件应如何命名的字符串（见[文件格式修饰符](#文件格式修饰符)）
 - `companion_port`：competitive companion 端口号
@@ -311,7 +308,6 @@ const default_config = {
 - `date_format`：用于格式化 `$(DATE)` 修饰符的字符串（见[接收修饰符](#接收修饰符)）。此函数使用 Vim 内置的 `strftime()`
 - `received_files_extension`：接收问题的默认文件扩展名
 - `received_problems_path`：接收的问题（非比赛）的存储路径。可以是以下之一：
-
   - 带有[接收修饰符](#接收修饰符)的字符串
   - 函数：接受两个参数的函数，一个包含[任务详情](https://github.com/jmerle/competitive-companion/#the-format)的表格和一个带有首选文件扩展名的字符串。应返回接收问题的绝对路径。示例：
 
@@ -430,7 +426,7 @@ const default_config = {
 
 ## 状态栏和窗口栏集成
 
-每个 UI 窗口都设置了特殊的文件类型。分别是 `competitest\_testcases`、`competitest\_out`、`competitest\_in`、`competitest\_err`、`competitest\_ans`。
+每个 UI 窗口都设置了特殊的文件类型。分别是 `competitest_testcases`、`competitest_out`、`competitest_in`、`competitest_err`、`competitest_ans`。
 
 如果使用 `vim-airline`，可以设置：
 

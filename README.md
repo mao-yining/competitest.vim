@@ -4,31 +4,26 @@
 
 A refactation of <https://github.com/xeluxee/competitest.nvim> in vim9script.
 
-`competitest.vim` is a testcase manager and checker. It saves you time in
-competitive programming contests by automating common tasks related to testcase
-management. It can compile, run and test your solutions across all the
-available testcases, displaying results in a nice interactive user interface.
+`competitest.vim` is a testcase manager and checker. It saves you time in competitive programming contests by automating common tasks related to testcase management. It can compile, run and test your solutions across all the available testcases, displaying results in a nice interactive user interface.
 
 ## Features
 
 - Multiple languages supported: it works out of the box with C, C++, Rust, Java and Python, but other languages can be configured
 - Flexible. No strict file-naming rules, optional fixed folder structure. You can choose where to put the source code file, the testcases, the received problems and contests, where to execute your programs and much more
 - Configurable (see [Configuration](#configuration)). You can even configure [every folder individually](#local-configuration)
-- Testcases can be stored in a single file or in multiple text files, see [usage notes](#usage-notes)
 - Easily [add](#add-or-edit-a-testcase), [edit](#add-or-edit-a-testcase) and [delete](#remove-a-testcase) testcases
 - [Run](#run-testcases) your program across all the testcases, showing results and execution data in a nice interactive UI
 - [Download](#receive-testcases-problems-and-contests) testcases, problems and contests automatically from competitive programming platforms
 - [Templates](#templates-for-received-problems-and-contests) for received problems and contests
 - View diff between actual and expected output
-- [Customizable interface](#customize-ui-layout) that resizes automatically when Neovim window is resized
 - Integration with [statusline and winbar](#statusline-and-winbar-integration)
 - Customizable [highlight groups](#highlights)
 
 ## Installation
 
 **NOTE:** this plugins requires Vim > 9.1
-This plugin follows the standard runtime path structure, and as such it can be
-installed with a variety of plugin managers:
+
+This plugin follows the standard runtime path structure, and as such it can be installed with a variety of plugin managers:
 
 | Plugin Manager                              | Install with...                                                                                                                                                                               |
 | ------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -37,27 +32,20 @@ installed with a variety of plugin managers:
 | `Plug`                                      | `Plug 'mao-yining/competitest.vim'`                                                                                                                                                           |
 | `Dein`                                      | `call dein#add('mao-yining/competitest.vim')`                                                                                                                                                 |
 | `minpac`                                    | `call minpac#add('mao-yining/competitest.vim')`                                                                                                                                               |
-| pack feature (native Vim 8 package feature) | `git clone https://github.com/mao-yining/competitest.vim ~/.vim/pack/dist/start/competitest.vim`<br/>Remember to run `:helptags ~/.vim/pack/dist/start/vim-airline/doc` to generate help tags |
+| pack feature (native Vim 8 package feature) | `git clone https://github.com/mao-yining/competitest.vim ~/.vim/pack/dist/start/competitest.vim`<br/>Remember to run `:helptags ~/.vim/pack/dist/start/competitest.vim/doc` to generate help tags |
 | manual                                      | copy all of the files into your `~/.vim` directory                                                                                                                                            |
 
 ### Usage Notes
 
-- Your programs must read from `stdin` and print to `stdout`. If `stderr` is used its content will be displayed
-- A testcase is made by an input and an output (containing the correct answer)
-- Input is necessary for a testcase to be considered, while an output hasn't to be provided necessarily
+- Your programs must read from `stdin` and print to `stdout`. If `stderr` is used its content will be displayed.
+- A testcase is made by an input and an output (containing the correct answer).
+- Input is necessary for a testcase to be considered, while an output hasn't to be provided necessarily.
 
 #### Storing Testcases
 
-- Files naming shall follow a rule to be recognized. Let's say your file is
-  called `task-A.cpp`. If using the default configuration testcases associated
-  with that file will be named `task-A_input0.txt`, `task-A_output0.txt`,
-  `task-A_input1.txt`, `task-A_output1.txt` and so on. The counting starts from 0.
-
-- Of course files naming can be configured: see `testcases_input_file_format`
-  and `testcases_output_file_format` in [configuration](#configuration)
-- Testcases files can be put in the same folder of the source code file, but
-  you can customize their path (see `testcases_directory` in [configuration]
-  (#configuration))
+- Files naming shall follow a rule to be recognized. Let's say your file is called `task-A.cpp`. If using the default configuration testcases associated with that file will be named `task-A_input0.txt`, `task-A_output0.txt`, `task-A_input1.txt`, `task-A_output1.txt` and so on. The counting starts from 0.
+- Of course files naming can be configured: see `testcases_input_file_format` and `testcases_output_file_format` in [configuration](#configuration)
+- Testcases files can be put in the same folder of the source code file, but you can customize their path (see `testcases_directory` in [configuration] (#configuration))
 
 When launching the following commands make sure the focused buffer is the one containing the source code file.
 
@@ -65,35 +53,23 @@ When launching the following commands make sure the focused buffer is the one co
 
 Launch `:CompetiTest add_testcase` to add a new testcase.
 
-Launch `:CompetiTest edit_testcase` to edit an existing testcase. If you want
-to specify testcase number directly in the command line you can use `:
-CompetiTest edit_testcase x`, where `x` is a number representing the testcase
-you want to edit.
+Launch `:CompetiTest edit_testcase` to edit an existing testcase. If you want to specify testcase number directly in the command line you can use `: CompetiTest edit_testcase {num}`.
 
-To jump between input and output windows press either `<C-h>`, `<C-l>`, or
-`<C-i>`. To save and close testcase editor press `<C-s>` or `:wq`.
+To jump between input and output windows press either `<C-h>`, `<C-l>`, or `<C-i>`. To save and close testcase editor press `<C-s>` or `:wq`.
 
-Of course these keybindings can be customized: see `editor_ui`
-➤ `normal_mode_mappings` and `editor_ui` ➤ `insert_mode_mappings` in
-[configuration](#configuration)
+Of course these keybindings can be customized: see `editor_ui`➤ `normal_mode_mappings` in [configuration](#configuration)
 
 ### Remove a Testcase
 
-Launch `:CompetiTest delete_testcase`. If you want to specify testcase number
-directly in the command line you can use `:CompetiTest delete_testcase x`,
-where `x` is a number representing the testcase you want to remove.
+Launch `:CompetiTest delete_testcase`. If you want to specify testcase number directly in the command line you can use `:CompetiTest delete_testcase {num}`.
 
 ### Run Testcases
 
-Launch `:CompetiTest run`. CompetiTest's interface will appear and you'll be
-able to view details about a testcase by moving the cursor over its entry. You
-can close the UI by pressing `q`, `Q` or `:q`.
+Launch `:CompetiTest run`. CompetiTest's interface will appear and you'll be able to view details about a testcase by moving the cursor over its entry. You can close the UI by pressing `q`, `Q` or `:q`.
 
-If you're using a compiled language and you don't want to recompile your
-program launch `:CompetiTest run_no_compile`.
+If you're using a compiled language and you don't want to recompile your program launch `:CompetiTest run_no_compile`.
 
-If you have previously closed the UI and you want to re-open it without
-re-executing testcases or recompiling launch `:CompetiTest show_ui`.
+If you have previously closed the UI and you want to re-open it without re-executing testcases or recompiling launch `:CompetiTest show_ui`.
 
 #### Control Processes
 
@@ -110,18 +86,13 @@ re-executing testcases or recompiling launch `:CompetiTest show_ui`.
 - View stderr in a bigger window by pressing `e` or `E`
 - Toggle diff view between actual and expected output by pressing `d` or `D`
 
-Of course all these keybindings can be customized: see `runner_ui` ➤ `mappings`
-in [configuration](#configuration)
+Of course all these keybindings can be customized: see `runner_ui` ➤ `mappings` in [configuration](#configuration)
 
 ### Receive Testcases, Problems and Contests
 
-**NOTE:** to get this feature working you need to install
-[competitive-companion](https://github.com/jmerle/competitive-companion)
-extension in your browser.
+**NOTE:** to get this feature working you need to install [competitive-companion](https://github.com/jmerle/competitive-companion) extension in your browser.
 
-Thanks to its integration with [competitive-companion](https: //github.com/jmerle/competitive-companion),
-CompetiTest can download contents
-from competitive programming platforms:
+Thanks to its integration with [competitive-companion](https: //github.com/jmerle/competitive-companion), CompetiTest can download contents from competitive programming platforms:
 
 - Launch `:CompetiTest receive testcases` to only receive testcases _once_
 - Launch `:CompetiTest receive problem` to receive a problem _once_ (source file is automatically created along with testcases)
@@ -135,11 +106,7 @@ For further customization see receive options in [configuration](#configuration)
 
 #### Customize Folder Structure
 
-By default CompetiTest stores received problems and contests in current working
-directory. You can change this behavior through the options
-`received_problems_path`, `received_contests_directory` and
-`received_contests_problems_path`. See [receive modifiers](#receive-modifiers)
-for further details.
+By default CompetiTest stores received problems and contests in current working directory. You can change this behavior through the options `received_problems_path`, `received_contests_directory` and `received_contests_problems_path`. See [receive modifiers](#receive-modifiers) for further details.
 
 Here are some tips:
 
@@ -167,9 +134,7 @@ Here are some tips:
   received_contests_problems_path: "$(PROBLEM)/$(JAVA_MAIN_CLASS).$(FEXT)"
   ```
 
-- Simplified file names, it works with Java and any other language because the
-  modifier `$(JAVA_TASK_CLASS)` is generated from problem name removing all
-  non-alphabetic and non-numeric characters, including spaces and punctuation:
+- Simplified file names, it works with Java and any other language because the modifier `$(JAVA_TASK_CLASS)` is generated from problem name removing all non-alphabetic and non-numeric characters, including spaces and punctuation:
 
   ```vim
   received_contests_problems_path: "$(JAVA_TASK_CLASS).$(FEXT)"
@@ -177,13 +142,9 @@ Here are some tips:
 
 #### Templates for Received Problems and Contests
 
-When downloading a problem or a contest, source code templates can be
-configured for different file types. See `template_file` option in
-[configuration](#configuration).
+When downloading a problem or a contest, source code templates can be configured for different file types. See `template_file` option in [configuration](#configuration).
 
-[Receive modifiers](#receive-modifiers) can be used inside template files to
-insert details about received problems. To enable this feature set
-`evaluate_template_modifiers` to `true`. Template example for C++:
+[Receive modifiers](#receive-modifiers) can be used inside template files to insert details about received problems. To enable this feature set `evaluate_template_modifiers` to `true`. Template example for C++:
 
 ```cpp
 // Problem: $(PROBLEM)
@@ -210,7 +171,8 @@ int main() {
 Here you can find CompetiTest default configuration
 
 ```vim
-const default_config = {
+vim9script
+g:competitest_configs = {
   local_config_file_name: ".competitest.vim",
   floating_border: "rounded",
   floating_border_highlight: "FloatBorder",
@@ -307,48 +269,33 @@ const default_config = {
   - set it to `0` if you want to run all the testcases together
   - set it to any positive integer to run that number of testcases contemporarily
 - `maximum_time`: maximum time, in milliseconds, given to processes. If it's exceeded process will be killed
-- `output_compare_method`: how given output (stdout) and expected output should
-  be compared. It can be a string, representing the method to use, or a custom
-  function. Available options follows:
-
+- `output_compare_method`: how given output (stdout) and expected output should be compared. It can be a string, representing the method to use, or a custom function. Available options follows:
   - `"exact"`: character by character comparison
   - `"squish"`: compare stripping extra white spaces and newlines
-  - custom function: you can use a function accepting two arguments, two
-    strings representing output and expected output. It should return true if
-    the given output is acceptable, false otherwise. Example:
-
+  - custom function: you can use a function accepting two arguments, two strings representing output and expected output. It should return true if the given output is acceptable, false otherwise. Example:
     ```vim
     {
         output_compare_method: (output: string, expected_output: string): bool => {
-            if output == expected_output then
+            if output == expected_output
                 return true
             else
                 return false
-            end
+            endif
         },
     }
     ```
-
-- `view_output_diff`: view diff between actual output and expected output in their respective windows
-- `testcases_directory`: where testcases files are located, relatively to current file's path
-- `testcases_use_single_file`: if true testcases will be stored in a single file instead of using multiple text files. If you want to change the way already existing testcases are stored see [conversion](#convert-testcases)
-- `testcases_auto_detect_storage`: if true testcases storage method will be detected automatically. When both text files and single file are available, testcases will be loaded according to the preference specified in `testcases_use_single_file`
-- `testcases_single_file_format`: string representing how single testcases files should be named (see [file-format modifiers](#file-format-modifiers))
+- `view_output_diff`: view diff between actual output and expected output in their respective windows `testcases_directory`: where testcases files are located, relatively to current file's path
 - `testcases_input_file_format`: string representing how testcases input files should be named (see [file-format modifiers](#file-format-modifiers))
 - `testcases_output_file_format`: string representing how testcases output files should be named (see [file-format modifiers](#file-format-modifiers))
 - `companion_port`: competitive companion port number
 - `receive_print_message`: if true notify user that plugin is ready to receive testcases, problems and contests or that they have just been received
 - `template_file`: templates to use when creating source files for received problems or contests. Can be one of the following:
-
   - `false`: do not use templates
   - string with [file-format modifiers](#file-format-modifiers): useful when templates for different file types have a regular file naming
-
     ```vim
     template_file: "~/path/to/template.$(FEXT)"
     ```
-
   - table with paths: table associating file extension to template file
-
     ```vim
     template_file: {
         c: "~/path/to/file.c",
@@ -356,12 +303,10 @@ const default_config = {
         py: "~/path/to/file.py",
     }
     ```
-
-- `evaluate_template_modifiers`: whether to evaluate [receive modifiers](#receive-modifiers) inside a template file or not
-- `date_format`: string used to format `$(DATE)` modifier (see [receive modifiers](#receive-modifiers)). This function use Vim's builtin `strftime()`
-- `received_files_extension`: default file extension for received problems
+- `evaluate_template_modifiers`: whether to evaluate [receive modifiers](#receive-modifiers) inside a template file or not.
+- `date_format`: string used to format `$(DATE)` modifier (see [receive modifiers](#receive-modifiers)). This function use Vim's builtin `strftime()`.
+- `received_files_extension`: default file extension for received problems.
 - `received_problems_path`: path where received problems (not contests) are stored. Can be one of the following:
-
   - string with [receive modifiers](#receive-modifiers)
   - function: function accepting two arguments, a table with [task details](https://github.com/jmerle/competitive-companion/#the-format) and a string with preferred file extension. It should return the absolute path to store received problem. Example:
 
@@ -402,11 +347,7 @@ const default_config = {
 
 ### Local Configuration
 
-You can use a different configuration for every different folder by creating
-a file called `.competitest.vim` (this name can be changed configuring the
-option `local_config_file_name`). It will affect every file contained in that
-folder and in subfolders. A table containing valid options must be returned,
-see the following example.
+You can use a different configuration for every different folder by creating a file called `.competitest.vim` (this name can be changed configuring the option `local_config_file_name`). It will affect every file contained in that folder and in subfolders. A table containing valid options must be returned, see the following example.
 
 ```vim
 {
@@ -417,13 +358,11 @@ see the following example.
 
 ### Available Modifiers
 
-Modifiers are substrings that will be replaced by another string, depending on
-the modifier and the context. They're used to tweak some options.
+Modifiers are substrings that will be replaced by another string, depending on the modifier and the context. They're used to tweak some options.
 
 #### File-format Modifiers
 
-You can use them to [define commands](#customize-compile-and-run-commands) or
-to customize testcases files naming through options `testcases_input_file_format` and `testcases_output_file_format`.
+You can use them to [define commands](#customize-compile-and-run-commands) or to customize testcases files naming through options `testcases_input_file_format` and `testcases_output_file_format`.
 
 | Modifier      | Meaning                                    |
 | ------------- | ------------------------------------------ |
@@ -438,10 +377,7 @@ to customize testcases files naming through options `testcases_input_file_format
 
 #### Receive Modifiers
 
-You can use them to customize the options `received_problems_path`,
-`received_contests_directory`, `received_contests_problems_path` and to [insert
-problem details inside template files] (#templates-for-received-problems-and-contests). See also [tips for customizing
-folder structure for received problems and contests] (#customize-folder-structure).
+You can use them to customize the options `received_problems_path`, `received_contests_directory`, `received_contests_problems_path` and to [insert problem details inside template files] (#templates-for-received-problems-and-contests). See also [tips for customizing folder structure for received problems and contests] (#customize-folder-structure).
 
 | Modifier             | Meaning                                                                                                                                                    |
 | -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -466,8 +402,7 @@ Fields are referred to [received tasks](https://github.com/jmerle/competitive-co
 
 Languages as C, C++, Rust, Java and Python are supported by default.
 
-Of course you can customize commands used for compiling and for running your
-programs. You can also add languages that aren't supported by default.
+Of course you can customize commands used for compiling and for running your programs. You can also add languages that aren't supported by default.
 
 ```vim
 {
@@ -482,20 +417,17 @@ programs. You can also add languages that aren't supported by default.
 }
 ```
 
-See [file-format modifiers](#file-format-modifiers) to better understand how
-dollar notation works.
+See [file-format modifiers](#file-format-modifiers) to better understand how dollar notation works.
 
-**NOTE:** if your language isn't compiled you can ignore `compile_command`
-section.
+**NOTE:** if your language isn't compiled you can ignore `compile_command` section.
 
-Feel free to open a PR or an issue if you think it's worth adding a new
-language among default ones.
+Feel free to open a PR or an issue if you think it's worth adding a new language among default ones.
 
 ## Statusline and Winbar Integration
 
 Each UI windows is set with a special filetype. Each is
-`competitest\_testcases` , `competitest\_out` , `competitest\_in`
-, `competitest\_err` , `competitest\_ans`.
+`competitest_testcases` , `competitest_out` , `competitest_in`
+, `competitest_err` , `competitest_ans`.
 
 If you use `vim-airline`, you can set:
 
@@ -524,8 +456,7 @@ hi CompetiTestWrong   ctermfg=red    guifg=#ff0000
 
 ## Contributing
 
-If you have any suggestion to give or if you encounter any trouble don't
-hesitate to open a new issue.
+If you have any suggestion to give or if you encounter any trouble don't hesitate to open a new issue.
 
 Pull Requests are welcome! 🎉
 
@@ -539,15 +470,9 @@ GNU General Public License version 3 (GPL v3) or, at your option, any later vers
 
 Copyright © 2025 Mao-Yining <mao.yining@outlook.com>
 
-CompetiTest.vim is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+CompetiTest.vim is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
-CompetiTest.vim is distributed in the hope that it will be useful, but
-**without any warranty**; without even the implied warranty of
-**merchantability**or **fitness for a particular purpose**. See the GNU General
-Public License for more details.
+CompetiTest.vim is distributed in the hope that it will be useful, but **without any warranty**; without even the implied warranty of **merchantability**or **fitness for a particular purpose**. See the GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with CompetiTest.Vim. If not, see <https://www.gnu.org/licenses/>.
