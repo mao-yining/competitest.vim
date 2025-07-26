@@ -1,274 +1,535 @@
-*CompetiTest.Vim* Competitive Programming with Vim Made Easy
+*competitest.txt* Competitive Programming with Vim Made Easy
 
 A refactoring of https://github.com/xeluxee/competitest.nvim in vim9script.
 
-*competitest.vim* is a testcase manager and checker. It saves you time in
-competitive programming contests by automating common tasks related to testcase
-management. It can compile, run and test your solutions across all the
-available testcases, displaying results in a nice interactive user interface.
+*competitest.vim* is a testcase manager and checker for competitive programming.
+It automates testcase management tasks, allowing you to compile, run, and test
+solutions across multiple testcases with an interactive UI.
 
 ==============================================================================
-FEATURES                                                        *competitest*
+CONTENTS                                                           *competitest*
 
-- Multiple languages supported: works out of the box with C, C++, Rust, Java
-  and Python, but other languages can be configured
-- Flexible. No strict file-naming rules, optional fixed folder structure
-- Configurable (see |competitest-configuration|). You can even configure every
-  folder individually (see |competitest-local-config|)
-- Testcases can be stored in a single file or in multiple text files
-- Easily add, edit and delete testcases
-- Run your program across all testcases, showing results in an interactive UI
-- Download testcases, problems and contests automatically from competitive
-  programming platforms
-- Templates for received problems and contests
-- View diff between actual and expected output
-- Customizable interface that resizes automatically when window is resized
-- Integration with statusline and winbar
-- Customizable highlight groups
-
-==============================================================================
-INSTALLATION                                            *competitest-install*
-
-NOTE: This plugin requires Vim > 9.1
-
-This plugin follows the standard runtime path structure and can be installed
-with various plugin managers:
-
-Plugin Manager          Install Command ~
-NeoBundle              NeoBundle 'mao-yining/competitest.vim'
-Vundle                 Plugin 'mao-yining/competitest.vim'
-Plug                   Plug 'mao-yining/competitest.vim'
-Dein                   call dein#add('mao-yining/competitest.vim')
-minpac                 call minpac#add('mao-yining/competitest.vim')
-Native package         git clone https://github.com/mao-yining/competitest.vim
-                       ~/.vim/pack/dist/start/competitest.vim
-                       Remember to run :helptags to generate help tags
-Manual                 Copy all files to your ~/.vim directory
+1. Features ............................................. |competitest-features|
+2. Installation ..................................... |competitest-installation|
+3. Usage ................................................... |competitest-usage|
+   - Usage Notes ..................................... |competitest-usage-notes|
+   - Storing Testcases ......................... |competitest-storing-testcases|
+   - Commands ........................................... |competitest-commands|
+   - Testcase Editor ............................. |competitest-editor-controls|
+   - Testcase Runner ............................. |competitest-runner-controls|
+4. Receiving Testcases ................................. |competitest-receiving|
+   - Folder Structure .............................. |competitest-custom-folder|
+   - Templates ......................................... |competitest-templates|
+5. Configuration ................................... |competitest-configuration|
+   - Local Configuration ............................ |competitest-local-config|
+   - Modifiers ......................................... |competitest-modifiers|
+   - Default Configuration ........................ |competitest-default-config|
+   - Config Explanation ....................... |competitest-config-explanation|
+6. Integration ....................................... |competitest-integration|
+   - Statusline ....................................... |competitest-statusline|
+   - Highlights ....................................... |competitest-highlights|
+7. Contributing ..................................... |competitest-contributing|
+8. Maintainers ....................................... |competitest-maintainers|
+9. License ............................................... |competitest-license|
 
 ==============================================================================
-USAGE                                                        *competitest-use*
+FEATURES                                                  *competitest-features*
 
-USAGE NOTES ~
-
-- Programs must read from stdin and print to stdout
-- A testcase consists of an input and output (correct answer)
-- Input is required, output is optional
-
-STORING TESTCASES ~
-
-- Default naming: task-A.cpp -> task-A_input0.txt, task-A_output0.txt, etc.
-- Counting starts from 0
-- Customize naming with testcases_input_file_format and testcases_output_file_format
-- Testcases can be in same folder as source or configured path
-
-COMMANDS ~
-
-Make sure focused buffer contains the source code file.
-
-:CompetiTest add_testcase                 Add new testcase
-:CompetiTest edit_testcase [x]            Edit testcase (optionally specify number)
-:CompetiTest delete_testcase [x]          Remove testcase (optionally specify number)
-:CompetiTest run                          Run all testcases
-:CompetiTest run_no_compile               Run without recompiling
-:CompetiTest show_ui                      Show UI without re-running
-
-TESTCASE EDITOR CONTROLS ~
-<C-h>, <C-l>, <C-i>       Switch between input/output windows
-<C-s>, :wq                Save and close
-
-TESTCASE RUNNER CONTROLS ~
-r                         Run testcase again
-R                         Run all testcases again
-x                         Kill testcase process
-X                         Kill all processes
-i/I                       View input
-a/A                       View answer
-o/O                       View stdout
-e/E                       View stderr
-d/D                       Toggle diff view
-q/Q                       Close UI
+- Multi-language support: Works with C, C++, Rust, Java, Python + configurable
+- Flexible workflow: No strict naming rules, optional folder structures
+- Configurable: Global and per-folder settings (|competitest-local-config|)
+- Testcase storage: Single file or multiple text files
+- Testcase management: Add/edit/delete testcases easily
+- Interactive testing: Run all tests with visual results
+- Platform integration: Download from competitive programming sites
+- Templates: For problems and contests
+- Output diff: Compare actual vs expected output
+- Statusline integration
+- Customizable highlighting
 
 ==============================================================================
-RECEIVING TESTCASES                                *competitest-receive*
+INSTALLATION                                          *competitest-installation*
 
-NOTE: Requires competitive-companion browser extension
+REQUIREMENT: Vim > 9.1
 
-:CompetiTest receive testcases      Receive testcases once
-:CompetiTest receive problem        Receive problem once (creates source file)
-:CompetiTest receive contest        Receive entire contest once
-:CompetiTest receive status         Show current receive status
-:CompetiTest receive stop           Stop receiving
+Install with plugin manager:
 
-After command, click green plus button in browser.
+Plugin Manager      Install Command ~
+NeoBundle          NeoBundle 'mao-yining/competitest.vim'
+Vundle             Plugin 'mao-yining/competitest.vim'
+Plug               Plug 'mao-yining/competitest.vim'
+Dein               call dein#add('mao-yining/competitest.vim')
+minpac             call minpac#add('mao-yining/competitest.vim')
 
-CUSTOM FOLDER STRUCTURE ~
+Native package: >
+    git clone https://github.com/mao-yining/competitest.vim
+    ~/.vim/pack/dist/start/competitest.vim
+    :helptags ALL
+<
+Manual: Copy files to ~/.vim directory
 
-Examples:
->
-  received_problems_path = "$(HOME)/Competitive Programming/$(JUDGE)/$(CONTEST)/$(PROBLEM).$(FEXT)"
-  received_contests_directory = "$(HOME)/Competitive Programming/$(JUDGE)/$(CONTEST)"
-  received_contests_problems_path = "$(PROBLEM)/main.$(FEXT)"
+==============================================================================
+USAGE                                                        *competitest-usage*
+
+USAGE NOTES                                            *competitest-usage-notes*
+
+- Programs must read from stdin and write to stdout
+- Testcases require input; expected output is optional
+
+STORING TESTCASES                                *competitest-storing-testcases*
+
+Default naming (source: task-A.cpp): >
+    task-A0.in    [Input]
+    task-A0.ans   [Expected output]
+<
+Customize via: >
+    testcases_input_file_format
+    testcases_output_file_format
 <
 
-TEMPLATES ~
+COMMANDS                                            *competitest-commands*
 
-Enable with template_file option. Example C++ template:
->
-  // Problem: $(PROBLEM)
-  // Contest: $(CONTEST)
-  // Judge: $(JUDGE)
-  // URL: $(URL)
-  // Memory Limit: $(MEMLIM)
-  // Time Limit: $(TIMELIM)
-  // Start: $(DATE)
+Execute with source buffer focused:
 
-  #include <iostream>
-  using namespace std;
-  int main() {
-      cout << "This is a template file" << endl;
-      cerr << "Problem name is $(PROBLEM)" << endl;
-      return 0;
-  }
+Command                          Action ~
+:CompetiTest add_testcase        Add new testcase
+:CompetiTest edit_testcase [x]   Edit testcase (optional number)
+:CompetiTest delete_testcase [x] Remove testcase (optional number)
+:CompetiTest run                 Run all testcases (compile + execute)
+:CompetiTest run_no_compile      Run without compiling
+:CompetiTest show_ui             Show UI without re-running
+
+TESTCASE EDITOR CONTROLS                      *competitest-editor-controls*
+
+Key Binding            Action ~
+<C-h>, <C-l>, <C-i>    Switch between input/output windows
+<C-s>                  Save and close
+:wq                    Save and close
+
+TESTCASE RUNNER CONTROLS                      *competitest-runner-controls*
+
+Key    Action ~
+r      Re-run current testcase
+R      Re-run all testcases
+x      Kill current testcase process
+X      Kill all processes
+i/I    View input (current/all)
+a/A    View expected answer (current/all)
+o/O    View stdout (current/all)
+e/E    View stderr (current/all)
+d/D    Toggle diff view (current/all)
+q/Q    Close UI
+
+==============================================================================
+RECEIVING TESTCASES                                *competitest-receiving*
+
+REQUIREMENT: competitive-companion browser extension
+    https://github.com/jmerle/competitive-companion
+
+Command                       Action ~
+:CompetiTest receive testcases  Receive single testcase set
+:CompetiTest receive problem    Receive problem (creates source file)
+:CompetiTest receive contest    Receive entire contest
+:CompetiTest receive status     Show reception status
+:CompetiTest receive stop       Stop receiving
+
+After command, click green "+" in browser extension.
+
+CUSTOM FOLDER STRUCTURE                        *competitest-custom-folder*
+
+Example configurations: >
+    received_problems_path = "$(HOME)/CP/$(JUDGE)/$(CONTEST)/$(PROBLEM).$(FEXT)"
+    received_contests_directory = "$(HOME)/CP/$(JUDGE)/$(CONTEST)"
+    received_contests_problems_path = "$(PROBLEM)/main.$(FEXT)"
+<
+
+TEMPLATES                                        *competitest-templates*
+
+Enable with `template_file` option. C++ example: >
+    // Problem: $(PROBLEM)
+    // Contest: $(CONTEST)
+    // Judge: $(JUDGE)
+    // URL: $(URL)
+    // Memory: $(MEMLIM)
+    // Time: $(TIMELIM)
+    // Start: $(DATE)
+
+    #include <iostream>
+    using namespace std;
+    int main() {
+        cout << "Template for $(PROBLEM)" << endl;
+        return 0;
+    }
 <
 
 ==============================================================================
 CONFIGURATION                                    *competitest-configuration*
 
-See |competitest-default-config| for full default configuration.
+LOCAL CONFIGURATION                          *competitest-local-config*
 
-LOCAL CONFIGURATION                              *competitest-local-config*
-
-Create .competitest.vim in folder to override settings. Example:
->
-  {
-      template_file: "D:/Competitive-Programming/Codeforces/template.$(FEXT)",
-      output_compare_method: (output: string, ans: string) => tolower(output) == tolower(ans),
-  }
+Create `.competitest.vim` in project folder: >
+    {
+        template_file: "~/templates/cp.$(FEXT)",
+        output_compare_method: (out, ans) => tolower(out) == tolower(ans),
+    }
 <
 
 MODIFIERS                                        *competitest-modifiers*
 
-FILE-FORMAT MODIFIERS ~
-$(HOME)     User home directory
-$(FNAME)    File name
-$(FNOEXT)   File name without extension
-$(FEXT)     File extension
-$(FABSPATH) Absolute path of current file
-$(ABSDIR)   Absolute path of containing folder
-$(TCNUM)    Testcase number
+FILE FORMAT MODIFIERS ~
+$(HOME)       User home directory
+$(FNAME)      Full filename
+$(FNOEXT)     Filename without extension
+$(FEXT)       File extension
+$(FABSPATH)   Absolute file path
+$(ABSDIR)     Absolute directory path
+$(TCNUM)      Testcase number
 
 RECEIVE MODIFIERS ~
-$(CWD)      Current working directory
-$(PROBLEM)  Problem name
-$(JUDGE)    Judge name
-$(CONTEST)  Contest name
-$(URL)      Problem URL
-$(MEMLIM)   Memory limit
-$(TIMELIM)  Time limit
-$(DATE)     Current date/time
+$(CWD)        Current directory
+$(PROBLEM)    Problem name
+$(JUDGE)      Platform name (Codeforces, etc.)
+$(CONTEST)    Contest name
+$(URL)        Problem URL
+$(MEMLIM)     Memory limit
+$(TIMELIM)    Time limit
+$(DATE)       Current date/time
 
 ==============================================================================
 DEFAULT CONFIGURATION                        *competitest-default-config*
 
-Full default configuration:
->
-  const default_config = {
-    local_config_file_name: ".competitest.vim",
-    floating_border: "rounded",
-    floating_border_highlight: "FloatBorder",
-    editor_ui: {
-      normal_mode_mappings: {
-        switch_window: ["<C-h>", "<C-l>", "<C-i>"],
-        save_and_close: "<C-s>",
-        cancel: ["q", "Q"],
+Full configuration (g:competitest_configs): >
+  {
+      local_config_file_name: ".competitest.vim",
+      floating_border: "rounded",
+      floating_border_highlight: "FloatBorder",
+      editor_ui: {
+          normal_mode_mappings: {
+              switch_window: ["<C-h>", "<C-l>", "<C-i>"],
+              save_and_close: "<C-s>",
+              cancel: ["q", "Q"],
+          },
       },
-    },
-    runner_ui: {
-      mappings: {
-        run_again: "r",
-        run_all_again: "R",
-        kill: "x",
-        kill_all: "X",
-        view_input: [ "i", "I" ],
-        view_output: [ "a", "A" ],
-        view_stdout: [ "o", "O" ],
-        view_stderr: [ "e", "E" ],
-        toggle_diff: [ "d", "D" ],
-        close: [ "q", "Q" ],
+      runner_ui: {
+          mappings: {
+              run_again: "r",
+              run_all_again: "R",
+              kill: "x",
+              kill_all: "X",
+              view_input: ["i", "I"],
+              view_output: ["a", "A"],
+              view_stdout: ["o", "O"],
+              view_stderr: ["e", "E"],
+              toggle_diff: ["d", "D"],
+              close: ["q", "Q"],
+          },
+          open_when_compilation_fails: true,
       },
-      open_when_compilation_fails: true,
-    },
-    save_current_file: true,
-    save_all_files: false,
-    compile_directory: ".",
-    compile_command: {
-      c: { exec: "gcc", args: ["-Wall", "$(FNAME)", "-o", "$(FNOEXT)"] },
-      cpp: { exec: "g++", args: ["-Wall", "$(FNAME)", "-o", "$(FNOEXT)"] },
-      rust: { exec: "rustc", args: ["$(FNAME)"] },
-      java: { exec: "javac", args: ["$(FNAME)"] },
-    },
-    running_directory: ".",
-    run_command: {
-      c: { exec: "./$(FNOEXT)" },
-      cpp: { exec: "./$(FNOEXT)" },
-      rust: { exec: "./$(FNOEXT)" },
-      python: { exec: "python", args: ["$(FNAME)"] },
-      java: { exec: "java", args: ["$(FNOEXT)"] },
-    },
-    multiple_testing: -1,
-    maximum_time: 5000,
-    output_compare_method: "squish",
-    view_output_diff: false,
-    testcases_auto_detect_storage: true,
-    testcases_input_file_format: "$(FNOEXT)$(TCNUM).in",
-    testcases_output_file_format: "$(FNOEXT)$(TCNUM).ans",
-    testcases_directory: ".",
-    companion_port: 27121,
-    receive_print_message: true,
-    template_file: false,
-    evaluate_template_modifiers: true,
-    date_format: "%c",
-    received_files_extension: "cpp",
-    received_problems_path: "$(CWD)/$(PROBLEM).$(FEXT)",
-    received_problems_prompt_path: true,
-    received_contests_directory: "$(CWD)",
-    received_contests_problems_path: "$(PROBLEM).$(FEXT)",
-    received_contests_prompt_directory: true,
-    received_contests_prompt_extension: true,
-    open_received_problems: true,
-    open_received_contests: true,
-    replace_received_testcases: false,
+      save_current_file: true,
+      save_all_files: false,
+      compile_directory: ".",
+      compile_command: {
+          c: { exec: "gcc", args: ["-Wall", "$(FNAME)", "-o", "$(FNOEXT)"] },
+          cpp: { exec: "g++", args: ["-Wall", "$(FNAME)", "-o", "$(FNOEXT)"] },
+          rust: { exec: "rustc", args: ["$(FNAME)"] },
+          java: { exec: "javac", args: ["$(FNAME)"] },
+      },
+      running_directory: ".",
+      run_command: {
+          c: { exec: "./$(FNOEXT)" },
+          cpp: { exec: "./$(FNOEXT)" },
+          rust: { exec: "./$(FNOEXT)" },
+          python: { exec: "python", args: ["$(FNAME)"] },
+          java: { exec: "java", args: ["$(FNOEXT)"] },
+      },
+      multiple_testing: -1,
+      maximum_time: 5000,
+      output_compare_method: "squish",
+      view_output_diff: false,
+      testcases_auto_detect_storage: true,
+      testcases_input_file_format: "$(FNOEXT)$(TCNUM).in",
+      testcases_output_file_format: "$(FNOEXT)$(TCNUM).ans",
+      testcases_directory: ".",
+      companion_port: 27121,
+      receive_print_message: true,
+      template_file: false,
+      evaluate_template_modifiers: true,
+      date_format: "%c",
+      received_files_extension: "cpp",
+      received_problems_path: "$(CWD)/$(PROBLEM).$(FEXT)",
+      received_problems_prompt_path: true,
+      received_contests_directory: "$(CWD)",
+      received_contests_problems_path: "$(PROBLEM).$(FEXT)",
+      received_contests_prompt_directory: true,
+      received_contests_prompt_extension: true,
+      open_received_problems: true,
+      open_received_contests: true,
+      replace_received_testcases: false,
   }
 <
+==============================================================================
+CONFIGURATION EXPLANATION                       *competitest-config-explanation*
+
+local_config_file_name               *competitest-config-local_config_file_name*
+  Type: string
+  Default: ".competitest.vim"
+  Per-folder configuration filename. See |competitest-local-config|
+
+floating_border                              *competitest-config-floating_border*
+  Type: string
+  Default: "rounded"
+  Border style for floating windows (same as nvim_open_win()'s border option)
+
+floating_border_highlight                    *competitest-config-floating_border_highlight*
+  Type: string
+  Default: "FloatBorder"
+  Highlight group for floating window borders
+
+editor_ui                                    *competitest-config-editor_ui*
+  Type: dictionary
+  Testcase editor UI settings
+
+editor_ui.normal_mode_mappings               *competitest-config-editor_ui-normal_mode_mappings*
+  Type: dictionary
+  Key mappings in normal mode:
+      switch_window:  Switch between input/output windows
+      save_and_close: Save testcase and close UI
+      cancel:         Close UI without saving
+
+runner_ui                                    *competitest-config-runner_ui*
+  Type: dictionary
+  Testcase runner UI settings
+
+runner_ui.mappings                           *competitest-config-runner_ui-mappings*
+  Type: dictionary
+  Key mappings in runner UI:
+      run_again:      Re-run current testcase
+      run_all_again:  Re-run all testcases
+      kill:           Kill current process
+      kill_all:       Kill all processes
+      view_input:     View input (current/all)
+      view_output:    View expected output (current/all)
+      view_stdout:    View stdout (current/all)
+      view_stderr:    View stderr (current/all)
+      toggle_diff:    Toggle diff view (current/all)
+      close:          Close UI
+
+runner_ui.open_when_compilation_fails        *competitest-config-runner_ui-open_when_compilation_fails*
+  Type: boolean
+  Default: true
+  Open error window when compilation fails
+
+save_current_file                            *competitest-config-save_current_file*
+  Type: boolean
+  Default: true
+  Save current file before running tests
+
+save_all_files                               *competitest-config-save_all_files*
+  Type: boolean
+  Default: false
+  Save all open files before running tests
+
+compile_directory                            *competitest-config-compile_directory*
+  Type: string
+  Default: "."
+  Compiler execution directory (relative to current file)
+
+compile_command                              *competitest-config-compile_command*
+  Type: dictionary
+  Default: See above
+  Compilation commands per language. Supported: c, cpp, rust, java
+  Add new languages: >
+      some_lang: { exec: 'compiler', args: ['$(FNAME)'] }
+<
+
+running_directory                             *competitest-config-running_directory*
+  Type: string
+  Default: "."
+  Program execution directory (relative to current file)
+
+run_command                                  *competitest-config-run_command*
+  Type: dictionary
+  Default: See above
+  Execution commands per language. Supported: c, cpp, rust, python, java
+  Add new languages: >
+      some_lang: { exec: 'interpreter', args: ['$(FNAME)'] }
+<
+
+multiple_testing                             *competitest-config-multiple_testing*
+  Type: number
+  Default: -1
+  Concurrent test executions:
+      -1 = use all CPUs
+       0 = run all together
+      >0 = specified concurrency
+
+maximum_time                                 *competitest-config-maximum_time*
+  Type: number
+  Default: 5000
+  Maximum process runtime in milliseconds
+
+output_compare_method                        *competitest-config-output_compare_method*
+  Type: string or function
+  Default: "squish"
+  Output comparison methods:
+      "exact"   : Character-by-character
+      "squish"  : Ignore trailing whitespace/newlines
+      Custom function: (output: string, expected: string) => bool
+
+view_output_diff                             *competitest-config-view_output_diff*
+  Type: boolean
+  Default: false
+  Show diff between actual and expected output
+
+testcases_auto_detect_storage                *competitest-config-testcases_auto_detect_storage*
+  Type: boolean
+  Default: true
+  Auto-detect testcase storage format
+
+testcases_input_file_format                  *competitest-config-testcases_input_file_format*
+  Type: string
+  Default: "$(FNOEXT)$(TCNUM).in"
+  Testcase input filename format
+
+testcases_output_file_format                 *competitest-config-testcases_output_file_format*
+  Type: string
+  Default: "$(FNOEXT)$(TCNUM).ans"
+  Testcase expected output filename format
+
+testcases_directory                          *competitest-config-testcases_directory*
+  Type: string
+  Default: "."
+  Testcases storage directory (relative to current file)
+
+companion_port                               *competitest-config-companion_port*
+  Type: number
+  Default: 27121
+  Competitive Companion port number
+
+receive_print_message                        *competitest-config-receive_print_message*
+  Type: boolean
+  Default: true
+  Notify when ready to receive/received content
+
+template_file                                *competitest-config-template_file*
+  Type: string, boolean or dictionary
+  Default: false
+  Source file templates:
+      false:        No template
+      string:       Template path with modifiers
+      dictionary:   Per-language templates (e.g., {cpp: "~/template.cpp"})
+
+evaluate_template_modifiers                  *competitest-config-evaluate_template_modifiers*
+  Type: boolean
+  Default: true
+  Expand modifiers in template files
+
+date_format                                  *competitest-config-date_format*
+  Type: string
+  Default: "%c"
+  strftime() format for $(DATE) modifier
+
+received_files_extension                     *competitest-config-received_files_extension*
+  Type: string
+  Default: "cpp"
+  Default extension for received files
+
+received_problems_path                       *competitest-config-received_problems_path*
+  Type: string or function
+  Default: "$(CWD)/$(PROBLEM).$(FEXT)"
+  Storage path for received problems
+  Custom funciton: >
+  (task, file_extension): string => {
+      var hyphen = stridx(task.group, " - ")
+      var judge: string
+      var contest: string
+      if hyphen == -1
+          judge = task.group
+          contest = "problems"
+      else
+          judge = strpart(task.group, 0, hyphen)
+          contest = strpart(task.group, hyphen + 3)
+      endif
+
+      var safe_contest = substitute(substitute(contest, '[<>:"/\\|?*]', '_', 'g'), '#', '', 'g')
+      var safe_name = substitute(substitute(task.name, '[<>:"/\\|?*]', '_', 'g'), '#', '', 'g')
+
+      return printf(
+          "D:/Competitive-Programming/%s/%s/%s/_.%s",
+          judge,
+          safe_contest,
+          safe_name,
+          file_extension
+      )
+  },
+>
+received_problems_prompt_path                *competitest-config-received_problems_prompt_path*
+  Type: boolean
+  Default: true
+  Prompt for problem storage path
+
+received_contests_directory                  *competitest-config-received_contests_directory*
+  Type: string or function
+  Default: "$(CWD)"
+  Storage directory for contests
+
+received_contests_problems_path              *competitest-config-received_contests_problems_path*
+  Type: string or function
+  Default: "$(PROBLEM).$(FEXT)"
+  Problem path relative to contest directory
+
+received_contests_prompt_directory           *competitest-config-received_contests_prompt_directory*
+  Type: boolean
+  Default: true
+  Prompt for contest storage directory
+
+received_contests_prompt_extension           *competitest-config-received_contests_prompt_extension*
+  Type: boolean
+  Default: true
+  Prompt for file extension
+
+open_received_problems                       *competitest-config-open_received_problems*
+  Type: boolean
+  Default: true
+  Auto-open received problems
+
+open_received_contests                       *competitest-config-open_received_contests*
+  Type: boolean
+  Default: true
+  Auto-open received contests
+
+replace_received_testcases                   *competitest-config-replace_received_testcases*
+  Type: boolean
+  Default: false
+  Replace existing testcases when receiving
 
 ==============================================================================
 INTEGRATION                                        *competitest-integration*
 
-STATUSLINE ~
+STATUSLINE                                        *competitest-statusline*
+
 UI windows have special filetypes:
 competitest_testcases, competitest_out, competitest_in, competitest_err, competitest_ans
 
-For vim-airline:
->
-  if !exists("g:airline_filetype_overrides")
-    g:airline_filetype_overrides = {}
-  endif
-  g:airline_filetype_overrides.competitest_in = [ 'Input', '' ]
-  g:airline_filetype_overrides.competitest_out = [ 'Output', '' ]
-  g:airline_filetype_overrides.competitest_ans = [ 'Answer', '' ]
-  g:airline_filetype_overrides.competitest_err = [ 'Errors', '' ]
-  g:airline_filetype_overrides.competitest_testcases = [ 'Testcases', '' ]
+For vim-airline: >
+    if !exists("g:airline_filetype_overrides")
+        let g:airline_filetype_overrides = {}
+    endif
+    let g:airline_filetype_overrides.competitest_in = ['Input', '']
+    let g:airline_filetype_overrides.competitest_out = ['Output', '']
+    let g:airline_filetype_overrides.competitest_ans = ['Answer', '']
+    let g:airline_filetype_overrides.competitest_err = ['Errors', '']
+    let g:airline_filetype_overrides.competitest_testcases = ['Testcases', '']
 <
 
 HIGHLIGHTS                                        *competitest-highlights*
 
-Default highlight groups:
->
-  hi CompetiTestRunning cterm=bold     gui=bold
-  hi CompetiTestDone    cterm=none     gui=none
-  hi CompetiTestCorrect ctermfg=green  guifg=#00ff00
-  hi CompetiTestWarning ctermfg=yellow guifg=orange
-  hi CompetiTestWrong   ctermfg=red    guifg=#ff0000
+Default highlight groups: >
+    hi CompetiTestRunning cterm=bold     gui=bold
+    hi CompetiTestDone    cterm=none     gui=none
+    hi CompetiTestCorrect ctermfg=green  guifg=#00ff00
+    hi CompetiTestWarning ctermfg=yellow guifg=orange
+    hi CompetiTestWrong   ctermfg=red    guifg=#ff0000
 <
 
 ==============================================================================
