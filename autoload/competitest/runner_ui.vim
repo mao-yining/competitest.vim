@@ -237,10 +237,10 @@ export class RunnerUI
         add(buffer_lines, this.AdjustString(10, l.header, " ") .. this.AdjustString(10, l.status, " ") .. l.time)
       endfor
 
-      setbufvar(this.windows.tc.bufnr, "&modifiable", 1)
+      setbufvar(this.windows.tc.bufnr, "&modifiable", true)
       setbufline(this.windows.tc.bufnr, 1, buffer_lines)
       deletebufline(this.windows.tc.bufnr, len(buffer_lines) + 1, "$")
-      setbufvar(this.windows.tc.bufnr, "&modifiable", 0)
+      setbufvar(this.windows.tc.bufnr, "&modifiable", false)
 
       for hl in hlregions
         matchaddpos(hl.group, [[hl.line + 1, hl.start + 1, hl.end - hl.start]], 10, -1, { window: this.windows.tc.winid })
@@ -258,15 +258,11 @@ export class RunnerUI
         readfile(data.stdin_file)->setbufline(this.windows.stdin.bufnr, 1)
       endif
 
-      setbufvar(this.windows.stdout.bufnr, "&modifiable", true)
       deletebufline(this.windows.stdout.bufnr,  1, '$')
       getbufline(data.stdout_bufnr, 1, '$')->setbufline(this.windows.stdout.bufnr, 1)
-      setbufvar(this.windows.stdout.bufnr, "&modifiable", false)
 
-      setbufvar(this.windows.stderr.bufnr, "&modifiable", true)
       deletebufline(this.windows.stderr.bufnr,  1, '$')
       getbufline(data.stderr_bufnr, 1, '$')->setbufline(this.windows.stderr.bufnr, 1)
-      setbufvar(this.windows.stderr.bufnr, "&modifiable", false)
 
       deletebufline(this.windows.ans.bufnr,  1, '$')
       if data.ans_file != null_string
