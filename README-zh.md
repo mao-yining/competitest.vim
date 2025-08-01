@@ -190,7 +190,7 @@ g:competitest_configs = {
       kill: "x",
       kill_all: "X",
       view_input: [ "i", "I" ],
-      view_output: [ "a", "A" ],
+      view_answer: [ "a", "A" ],
       view_stdout: [ "o", "O" ],
       view_stderr: [ "e", "E" ],
       toggle_diff: [ "d", "D" ],
@@ -252,7 +252,7 @@ g:competitest_configs = {
     - `kill`：终止测试用例的快捷键
     - `kill_all`：终止所有测试用例的快捷键
     - `view_input`：在更大窗口中查看输入（stdin）的快捷键
-    - `view_output`：在更大窗口中查看预期输出的快捷键
+    - `view_answer`：在更大窗口中查看预期输出的快捷键
     - `view_stdout`：在更大窗口中查看程序输出（stdout）的快捷键
     - `view_stderr`：在更大窗口中查看程序错误（stderr）的快捷键
     - `toggle_diff`：切换实际输出与预期输出差异视图的快捷键

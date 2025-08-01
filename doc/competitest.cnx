@@ -216,7 +216,7 @@ $(DATE)       当前日期/时间
               kill: "x",
               kill_all: "X",
               view_input: ["i", "I"],
-              view_output: ["a", "A"],
+              view_answer: ["a", "A"],
               view_stdout: ["o", "O"],
               view_stderr: ["e", "E"],
               toggle_diff: ["d", "D"],
@@ -307,7 +307,7 @@ runner_ui.mappings                           *competitest-config-runner_ui-mappi
       kill:           终止当前进程
       kill_all:       终止所有进程
       view_input:     查看输入 (当前/所有)
-      view_output:    查看期望输出 (当前/所有)
+      view_answer:    查看期望输出 (当前/所有)
       view_stdout:    查看 stdout (当前/所有)
       view_stderr:    查看 stderr (当前/所有)
       toggle_diff:    切换差异视图 (当前/所有)

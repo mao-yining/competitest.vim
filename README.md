@@ -190,7 +190,7 @@ g:competitest_configs = {
       kill: "x",
       kill_all: "X",
       view_input: [ "i", "I" ],
-      view_output: [ "a", "A" ],
+      view_answer: [ "a", "A" ],
       view_stdout: [ "o", "O" ],
       view_stderr: [ "e", "E" ],
       toggle_diff: [ "d", "D" ],
@@ -252,7 +252,7 @@ g:competitest_configs = {
     - `kill`: keymaps to kill a testcase
     - `kill_all`: keymaps to kill all testcases
     - `view_input`: keymaps to view input (stdin) in a bigger window
-    - `view_output`: keymaps to view expected output in a bigger window
+    - `view_answer`: keymaps to view answer in a bigger window
     - `view_stdout`: keymaps to view programs's output (stdout) in a bigger window
     - `view_stderr`: keymaps to view programs's errors (stderr) in a bigger window
     - `toggle_diff`: keymaps to toggle diff view between actual and expected output

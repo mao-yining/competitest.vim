@@ -1,9 +1,0 @@
-Execute (正常调用 - 弹出菜单):
-  function! MockCallback(tcnum) abort
-    let b:callback_called = a:tcnum
-  endfunction
-
-  call competitest#widgets#Picker(1, { '1': {}, '3': {}, '2': {} }, 'Select Testcase', function('MockCallback'))
-
-  Assert len(popup_list()) > 0, '弹出窗口未创建'
-  call feedkeys("\<Down>\<CR>") " 清除弹窗

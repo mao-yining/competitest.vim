@@ -217,7 +217,7 @@ Full configuration (g:competitest_configs): >
               kill: "x",
               kill_all: "X",
               view_input: ["i", "I"],
-              view_output: ["a", "A"],
+              view_answer: ["a", "A"],
               view_stdout: ["o", "O"],
               view_stderr: ["e", "E"],
               toggle_diff: ["d", "D"],
@@ -308,7 +308,7 @@ runner_ui.mappings                           *competitest-config-runner_ui-mappi
       kill:           Kill current process
       kill_all:       Kill all processes
       view_input:     View input (current/all)
-      view_output:    View expected output (current/all)
+      view_answer:    View expected output (current/all)
       view_stdout:    View stdout (current/all)
       view_stderr:    View stderr (current/all)
       toggle_diff:    Toggle diff view (current/all)

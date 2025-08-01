@@ -21,7 +21,7 @@ const default_config = { # {{{
       kill: "x",
       kill_all: "X",
       view_input: [ "i", "I" ],
-      view_output: [ "a", "A" ],
+      view_answer: [ "a", "A" ],
       view_stdout: [ "o", "O" ],
       view_stderr: [ "e", "E" ],
       toggle_diff: [ "d", "D" ],
