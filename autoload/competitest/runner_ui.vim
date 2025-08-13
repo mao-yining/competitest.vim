@@ -41,6 +41,7 @@ export class RunnerUI
     setlocal diffopt+=iwhiteeol
     setlocal diffopt+=iblank
     setlocal filetype=competitest_testcases
+    set winwidth=37 # Testcases windows width
 
     silent rightbelow vsplit Output
     windows.stdout = { winid: win_getid(), bufnr: bufnr() }
