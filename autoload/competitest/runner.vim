@@ -1,9 +1,10 @@
 vim9script
 
-import autoload './utils.vim' as utils
+import autoload './utils.vim'
 import autoload './config.vim' as cfg
-import autoload './compare.vim' as compare
-import autoload './runner_ui.vim' as runner_ui
+import autoload './compare.vim'
+import autoload './runner_ui.vim'
+import autoload './testcases.vim'
 
 # System command with arguments
 class SystemCommand # {{{
@@ -20,7 +21,7 @@ export class TCRunner
   var rc: SystemCommand
   var compile_directory: string
   var running_directory: string
-  var tcdata: list<dict<any>>
+  var tcdata: list<testcases.Data>
   var compile: bool
   var next_tc: number
   var ui_restore_winid: number
@@ -160,15 +161,7 @@ export class TCRunner
       this.tcdata = []
       this.compile = compile && (this.cc != null_object)
       if this.compile
-        add(this.tcdata, {
-          ans_bufnr: 0,
-          stdin_bufnr: 0,
-          ans_bufname: 0,
-          stdin_bufname: 0,
-          stdout_bufname: this.bufnr .. "_stdout_compile",
-          stderr_bufname: this.bufnr .. "_stderr_compile",
-          tcnum: "Compile"
-        })
+        add(this.tcdata, testcases.Data.new(0, 0, '', '', this.bufnr .. "_stdout_compile", this.bufnr .. "_stderr_compile", "Compile", 0))
       endif
 
       var keys = keys(tctbl)
@@ -177,16 +170,7 @@ export class TCRunner
       })
       for tcnum in keys
         var tc = tctbl[tcnum]
-        add(this.tcdata, {
-          ans_bufnr: tc.ans_bufnr,
-          ans_bufname: tc.ans_bufname,
-          stdin_bufnr: tc.input_bufnr,
-          stdin_bufname: tc.input_bufname,
-          stdout_bufname: this.bufnr .. "_stdout_" .. tcnum,
-          stderr_bufname: this.bufnr .. "_stderr_" .. tcnum,
-          tcnum: tcnum,
-          timelimit: this.config.maximum_time,
-        })
+        add(this.tcdata, testcases.Data.new(tc.ans_bufnr, tc.input_bufnr, tc.ans_bufname, tc.input_bufname, this.bufnr .. "_stdout_" .. tcnum, this.bufnr .. "_stderr_" .. tcnum, tcnum, this.config.maximum_time))
       endfor
     endif
 
@@ -210,7 +194,7 @@ export class TCRunner
       tc.stderr_bufnr = InitBuf(tc.stderr_bufname, "err")
       tc.running = false
       tc.killed = false
-      tc.time = 0
+      tc.time = 0.0
     endfor
 
     var tc_size = len(this.tcdata)
@@ -290,7 +274,7 @@ export class TCRunner
     endif
 
     # Set timeout timer
-    if has_key(tc, "timelimit")
+    if tc.timelimit != 0
       tc.timer = timer_start(tc.timelimit, function('JobTimeout', [this, tcindex]))
     endif
 
@@ -355,10 +339,8 @@ def JobExit(runner: TCRunner, tcindex: number, Callback: func, job: job, status:
   tc.time = reltime(tc.starting_time)->reltimefloat() * 1000
   tc.exit_code = status
 
-  if has_key(tc, "timer")
-    timer_stop(tc.timer)
-    tc.timer = 0
-  endif
+  timer_stop(tc.timer)
+  tc.timer = 0
 
 
   # Determine status

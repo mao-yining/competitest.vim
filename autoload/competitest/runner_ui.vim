@@ -2,6 +2,7 @@ vim9script
 
 import autoload './utils.vim'
 import autoload './runner.vim' as tcrunner
+import autoload './testcases.vim'
 
 export class RunnerUI
   # variables {{{
@@ -27,7 +28,7 @@ export class RunnerUI
     this.restore_winid = runner.ui_restore_winid
   enddef # }}}
 
-  def Init(tc: dict<any>): dict<any> # {{{
+  def Init(tc: testcases.Data): dict<any> # {{{
     var windows = {}
     var bufnr = bufnr()
 
@@ -207,7 +208,7 @@ export class RunnerUI
         if data.tcnum == "Compile"
           l.header = data.tcnum
           if this.runner.config.runner_ui.open_when_compilation_fails
-                \ && !data.killed && has_key(data, "exit_code") && data.exit_code != 0
+                \ && !data.killed && data.exit_code != 0
                 \ && data.time != this.latest_compilation_timestamp
             if line('.') == 1
               this.update_testcase = 0
@@ -221,7 +222,7 @@ export class RunnerUI
             endif
           endif
         endif
-        if has_key(data, 'time') && data.time != -1
+        if data.time != -1
           l.time = printf("%.3f seconds", data.time / 1000.0)
         endif
         add(lines, l)
@@ -247,7 +248,7 @@ export class RunnerUI
       var testcase = this.update_testcase == -1 ? 0 : this.update_testcase
       var data = this.runner.tcdata[testcase]
       setbufvar(this.windows.tc.bufnr, "showing_data", data)
-      if empty(data) | return | endif
+      # if empty(data) | return | endif
 
       win_execute(this.windows.stdin.winid, $"buffer {data.stdin_bufnr == 0 ? this.windows.stdin.bufnr : data.stdin_bufnr}")
 

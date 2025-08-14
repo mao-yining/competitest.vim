@@ -3,6 +3,30 @@ vim9script
 import autoload './config.vim' as config
 import autoload './utils.vim' as utils
 
+export class Data
+  var ans_bufnr: number
+  var stdin_bufnr: number
+  public var stdout_bufnr: number
+  public var stderr_bufnr: number
+  var ans_bufname: string
+  var stdin_bufname: string
+  var stdout_bufname: string
+  var stderr_bufname: string
+  var tcnum: string
+  public var job: job
+  public var status: string
+  public var killed: bool
+  public var running: bool
+  public var hlgroup: string
+  public var timelimit: number
+  public var timer: number
+  public var time: float
+  public var starting_time: list<any>
+  public var exit_code: number
+  def new(this.ans_bufnr, this.stdin_bufnr, this.ans_bufname,  this.stdin_bufname, this.stdout_bufname, this.stderr_bufname, this.tcnum, this.timelimit)
+  enddef
+endclass
+
 # Get testcases path for buffer
 export def BufGetTestcasesPath(bufnr: number): string
   return fnamemodify(bufname(bufnr), ':h') .. '/' .. config.GetBufferConfig(bufnr).testcases_directory .. '/'
