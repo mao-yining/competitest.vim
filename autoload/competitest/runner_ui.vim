@@ -31,7 +31,7 @@ export class RunnerUI
     var windows = {}
     var bufnr = bufnr()
 
-    silent tabnew Testcases
+    execute("silent tabnew Testcases" .. bufnr)
     var new_tab = tabpagenr()
     windows.tc = { winid: win_getid(), bufnr: bufnr() }
     setlocal buftype=nofile
