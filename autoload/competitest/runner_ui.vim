@@ -129,6 +129,8 @@ export class RunnerUI
       this.ui_visible = true
       this.update_windows = true
       this.UpdateUI()
+    else
+      win_gotoid(this.windows.tc.winid)
     endif
 
     if this.diff_view
