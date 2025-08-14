@@ -129,7 +129,7 @@ export class RunnerUI
       this.ui_visible = true
       this.update_windows = true
       this.UpdateUI()
-    else
+    elseif this.ui_visible
       win_gotoid(this.windows.tc.winid)
     endif
 
@@ -210,7 +210,7 @@ export class RunnerUI
                 \ && !data.killed && has_key(data, "exit_code") && data.exit_code != 0
                 \ && data.time != this.latest_compilation_timestamp
             if line('.') == 1
-              this.update_testcase = 1
+              this.update_testcase = 0
               compile_error = true
               this.latest_compilation_timestamp = data.time
             else
@@ -257,10 +257,10 @@ export class RunnerUI
 
       win_execute(this.windows.ans.winid, $"buffer {data.ans_bufnr == 0 ? this.windows.ans.bufnr : data.ans_bufnr}")
 
-    endif
-    if compile_error
-      tabnew
-      execute "buffer " .. this.windows.stderr.bufnr
+      if compile_error
+        tabnew
+        execute "buffer " .. data.stderr_bufnr
+      endif
     endif
   enddef # }}}
 
