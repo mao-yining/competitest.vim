@@ -33,6 +33,7 @@ export class RunnerUI
 
     execute("silent tabnew Testcases" .. bufnr)
     var new_tab = tabpagenr()
+    execute($"autocmd WinClosed <buffer> call getbufvar({bufnr}, 'competitest_runner').ui.CallBack()")
     windows.tc = { winid: win_getid(), bufnr: bufnr() }
     setlocal buftype=nofile
     setlocal noswapfile
@@ -85,7 +86,7 @@ export class RunnerUI
       var bufnr = this.runner.bufnr
 
       for map in get(runner_ui_mappings, 'close', [])
-        execute $"nnoremap <buffer><nowait> {map} <Cmd>call getbufvar({bufnr}, 'competitest_runner').ui.Delete()<CR>"
+        execute $"nnoremap <buffer><nowait> {map} <Cmd>tabclose<CR>"
       endfor
 
       for map in get(runner_ui_mappings, 'kill', [])
@@ -155,7 +156,7 @@ export class RunnerUI
     this.WinSetDiff(this.windows.stdout.winid, false)
   enddef # }}}
 
-  def Delete() # {{{
+  def CallBack() # {{{
     if this.ui_visible
       this.DisableDiffView()
     endif
@@ -170,7 +171,6 @@ export class RunnerUI
     this.viewer_visible = false
     this.update_testcase = -1 # Means nil
     this.latest_line = 0
-    tabclose
   enddef # }}}
 
   def AdjustString(len: number, str: string, fchar: string): string # {{{
