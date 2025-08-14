@@ -194,7 +194,7 @@ g:competitest_configs = {
       view_stdout: [ "o", "O" ],
       view_stderr: [ "e", "E" ],
       toggle_diff: [ "d", "D" ],
-      close: [ "q", "Q" ],
+      close: [ "q", "Q", "ZZ", "ZQ" ],
     },
     open_when_compilation_fails: true,
   },
