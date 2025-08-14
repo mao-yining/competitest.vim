@@ -18,13 +18,11 @@ export var methods = { # {{{
   },
 } # }}}
 
-export def CompareOutput(out_file: string, ans_file: string, method: any): any # {{{
-  if ans_file == null_string
-    return null
-  endif
+export def CompareOutput(out_bufnr: number, ans_bufnr: number, method: any): any # {{{
   sleep 1m # should wait, because datas aren't fully loaded
-  var outputs: list<string> = getbufline(out_file, 1, '$')
-  var answers: list<string> = readfile(ans_file)
+  bufload(ans_bufnr)
+  var outputs: list<string> = getbufline(out_bufnr, 1, '$')
+  var answers: list<string> = getbufline(ans_bufnr, 1, '$')
 
   # handle CRLF
   var output: string = join(outputs, "\n") -> substitute('\r\n\', '\n', 'g')

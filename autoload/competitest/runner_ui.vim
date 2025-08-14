@@ -66,13 +66,6 @@ export class RunnerUI
     if !this.ui_initialized || !this.ui_visible
       this.windows =  this.Init(this.runner.tcdata[0])
 
-      var windows_names = {
-        stdin: "Input",
-        stdout: "Output",
-        stderr: "Errors",
-        ans: "Answer",
-        tc: "Testcases",
-      }
       for [name, win] in items(this.windows)
         var bufnr = winbufnr(win.winid)
         setbufvar(bufnr, "&buftype", "nofile")
@@ -117,16 +110,16 @@ export class RunnerUI
 
       setbufvar(bufnr(), "showing_data", this.runner.tcdata[0])
       for map in get(runner_ui_mappings, 'view_stdout', [])
-        execute $"nnoremap <buffer><nowait> {map} <Cmd>tabnew +buffer{this.windows.stdout.bufnr}<CR>"
+        execute $"nnoremap <buffer><nowait> {map} <Cmd>execute $'tabnew +buffer{{getbufvar({bufnr()}, 'showing_data').stdout_bufnr}}'<CR>"
       endfor
       for map in get(runner_ui_mappings, 'view_answer', [])
-        execute $"nnoremap <buffer><nowait> {map} <Cmd>tabnew<CR><Cmd>execute $'e {{getbufvar({bufnr()}, 'showing_data').ans_file}}'<CR>"
+        execute $"nnoremap <buffer><nowait> {map} <Cmd>execute $'tabnew +buffer{{getbufvar({bufnr()}, 'showing_data').ans_bufnr}}'<CR>"
       endfor
       for map in get(runner_ui_mappings, 'view_input', [])
-        execute $"nnoremap <buffer><nowait> {map} <Cmd>tabnew<CR><Cmd>execute $'e {{getbufvar({bufnr()}, 'showing_data').stdin_file}}'<CR>"
+        execute $"nnoremap <buffer><nowait> {map} <Cmd>execute $'tabnew +buffer{{getbufvar({bufnr()}, 'showing_data').stdin_bufnr}}'<CR>"
       endfor
       for map in get(runner_ui_mappings, 'view_stderr', [])
-        execute $"nnoremap <buffer><nowait> {map} <Cmd>tabnew +buffer{this.windows.stderr.bufnr}<CR>"
+        execute $"nnoremap <buffer><nowait> {map} <Cmd>execute $'tabnew +buffer{{getbufvar({bufnr()}, 'showing_data').stderr_bufnr}}'<CR>"
       endfor
 
       execute($"autocmd CursorMoved <buffer> call getbufvar({bufnr}, 'competitest_runner').ui.UpdateUI(line('.'))", "silent")
@@ -254,21 +247,13 @@ export class RunnerUI
       setbufvar(this.windows.tc.bufnr, "showing_data", data)
       if empty(data) | return | endif
 
-      deletebufline(this.windows.stdin.bufnr,  1, '$')
-      if data.stdin_file != null_string
-        readfile(data.stdin_file)->setbufline(this.windows.stdin.bufnr, 1)
-      endif
+      win_execute(this.windows.stdin.winid, $"buffer {data.stdin_bufnr == 0 ? this.windows.stdin.bufnr : data.stdin_bufnr}")
 
-      deletebufline(this.windows.stdout.bufnr,  1, '$')
-      getbufline(data.stdout_bufnr, 1, '$')->setbufline(this.windows.stdout.bufnr, 1)
+      win_execute(this.windows.stdout.winid, $"buffer {data.stdout_bufnr}")
 
-      deletebufline(this.windows.stderr.bufnr,  1, '$')
-      getbufline(data.stderr_bufnr, 1, '$')->setbufline(this.windows.stderr.bufnr, 1)
+      win_execute(this.windows.stderr.winid, $"buffer {data.stderr_bufnr}")
 
-      deletebufline(this.windows.ans.bufnr,  1, '$')
-      if data.ans_file != null_string
-        readfile(data.ans_file)->setbufline(this.windows.ans.bufnr, 1)
-      endif
+      win_execute(this.windows.ans.winid, $"buffer {data.ans_bufnr == 0 ? this.windows.ans.bufnr : data.ans_bufnr}")
 
     endif
     if compile_error

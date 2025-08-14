@@ -161,10 +161,12 @@ export class TCRunner
       this.compile = compile && (this.cc != null_object)
       if this.compile
         add(this.tcdata, {
-          stdin_file: null_string,
+          ans_bufnr: 0,
+          stdin_bufnr: 0,
+          ans_bufname: 0,
+          stdin_bufname: 0,
           stdout_bufname: this.bufnr .. "_stdout_compile",
           stderr_bufname: this.bufnr .. "_stderr_compile",
-          ans_file: null_string,
           tcnum: "Compile"
         })
       endif
@@ -176,8 +178,10 @@ export class TCRunner
       for tcnum in keys
         var tc = tctbl[tcnum]
         add(this.tcdata, {
-          stdin_file: tc.input_file,
-          ans_file: tc.ans_file,
+          ans_bufnr: tc.ans_bufnr,
+          ans_bufname: tc.ans_bufname,
+          stdin_bufnr: tc.input_bufnr,
+          stdin_bufname: tc.input_bufname,
           stdout_bufname: this.bufnr .. "_stdout_" .. tcnum,
           stderr_bufname: this.bufnr .. "_stderr_" .. tcnum,
           tcnum: tcnum,
@@ -247,16 +251,27 @@ export class TCRunner
     var tc = this.tcdata[tcindex]
     deletebufline(tc.stdout_bufnr,  1, '$')
     deletebufline(tc.stderr_bufnr,  1, '$')
+
     var job_opts = {
       cwd: dir,
-      in_io: tc.stdin_file == null_string ? "null" : "file",
-      in_name: tc.stdin_file,
       out_io: 'buffer',
       out_buf: tc.stdout_bufnr,
       err_io: 'buffer',
       err_buf: tc.stderr_bufnr,
       exit_cb: function('JobExit', [this, tcindex, Callback]),
     }
+    if tc.stdin_bufnr == 0
+      job_opts.in_io = "null"
+    else
+      # TODO: when use buffer, if a testcase is large, it will has E631, maybe
+      # it's a vim's bug
+      # E631: write_buf_line(): 写入失败
+      job_opts.in_io = "file"
+      job_opts.in_name = tc.stdin_bufname
+      # job_opts.in_io = "buffer"
+      # job_opts.in_buf = tc.stdin_bufnr
+      # tc.stdin_bufnr->bufload()
+    endif
 
     utils.CreateDirectory(dir)
     var command = [cmd.exec]
@@ -340,6 +355,12 @@ def JobExit(runner: TCRunner, tcindex: number, Callback: func, job: job, status:
   tc.time = reltime(tc.starting_time)->reltimefloat() * 1000
   tc.exit_code = status
 
+  if has_key(tc, "timer")
+    timer_stop(tc.timer)
+    tc.timer = 0
+  endif
+
+
   # Determine status
   if tc.killed
     if tc.timelimit != 0 && tc.time >= tc.timelimit
@@ -354,23 +375,21 @@ def JobExit(runner: TCRunner, tcindex: number, Callback: func, job: job, status:
       tc.status = "RET " .. status
       tc.hlgroup = "CompetiTestWarning"
     else
-      var correct = compare.CompareOutput(tc.stdout_bufname, tc.ans_file, runner.config.output_compare_method)
-      if correct == true
-        tc.status = "CORRECT"
-        tc.hlgroup = "CompetiTestCorrect"
-      elseif correct == false
-        tc.status = "WRONG"
-        tc.hlgroup = "CompetiTestWrong"
-      else
+      if tc.ans_bufnr == 0
         tc.status = "DONE"
         tc.hlgroup = "CompetiTestDone"
+      else
+        var correct = compare.CompareOutput(tc.stdout_bufnr, tc.ans_bufnr, runner.config.output_compare_method)
+        if correct == true
+          tc.status = "CORRECT"
+          tc.hlgroup = "CompetiTestCorrect"
+        elseif correct == false
+          tc.status = "WRONG"
+          tc.hlgroup = "CompetiTestWrong"
+        else
+        endif
       endif
     endif
-  endif
-
-  if has_key(tc, "timer")
-    timer_stop(tc.timer)
-    tc.timer = 0
   endif
 
   runner.UpdateUI(true)

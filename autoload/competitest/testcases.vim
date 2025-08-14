@@ -39,7 +39,11 @@ def IOFilesLoad(directory: string, input_file_match: string, output_file_match: 
       if !has_key(tctbl, tcnum)
         tctbl[tcnum] = {}
       endif
-      tctbl[tcnum].input_file = fpath
+      var bufnr = bufadd(fpath)
+      setbufvar(bufnr, '&filetype', "competitest_in")
+      setbufvar(bufnr, '&bufhidden', 'hide')
+      tctbl[tcnum].input_bufnr = bufnr
+      tctbl[tcnum].input_bufname = fpath
     else
       # check if the given file is part of a testcase and is an output file
       tcnum = MatchNumber(fname, output_file_match)
@@ -47,7 +51,11 @@ def IOFilesLoad(directory: string, input_file_match: string, output_file_match: 
         if !has_key(tctbl, tcnum)
           tctbl[tcnum] = {}
         endif
-        tctbl[tcnum].ans_file = fpath
+        var bufnr = bufadd(fpath)
+        setbufvar(bufnr, '&filetype', "competitest_ans")
+        setbufvar(bufnr, '&bufhidden', 'hide')
+        tctbl[tcnum].ans_bufnr = bufnr
+        tctbl[tcnum].ans_bufname = fpath
       endif
     endif
   endfor
