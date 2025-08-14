@@ -28,7 +28,7 @@ export class TCRunner
   var ui: runner_ui.RunnerUI
   # }}}
 
-  static def New(bufnr: number): TCRunner # {{{
+  def new(bufnr: number) # {{{
     var filetype = getbufvar(bufnr, '&filetype')
     var bufname = bufname(bufnr)
     var filedir = bufname != '' ? fnamemodify(bufname, ':p:h') : getcwd()
@@ -64,32 +64,27 @@ export class TCRunner
     if has_key(buf_cfg.compile_command, filetype) && buf_cfg.compile_command[filetype] != null_object
       compile_command = EvalCommand(buf_cfg.compile_command[filetype])
       if compile_command == null_object
-        echo "TCRunner.New: compile command for filetype '" .. filetype .. "' isn't formatted properly"
-        return null_object
+        throw $"TCRunner.new: compile command for filetype '{filetype}' isn't formatted properly"
       endif
     endif
 
     if !has_key(buf_cfg.run_command, filetype) || buf_cfg.run_command[filetype] == null_object
-      echo "TCRunner.New: run command for filetype '" .. filetype .. "' isn't configured"
-      return null_object
+      throw $"TCRunner.new: run command for filetype '{filetype}' isn't configured"
     endif
     var run_command = EvalCommand(buf_cfg.run_command[filetype])
     if run_command == null_object
-      echo "TCRunner.New: run command for filetype '" .. filetype .. "' isn't formatted properly"
-      return null_object
+      throw $"TCRunner.new: run command for filetype '{filetype}' isn't formatted properly"
     endif
 
-    var res = TCRunner.new()
-    res.config = buf_cfg
-    res.bufnr = bufnr
-    res.cc = compile_command
-    res.rc = run_command
-    res.compile_directory = (filedir .. buf_cfg.compile_directory .. '/')
-    res.running_directory = (filedir .. buf_cfg.running_directory .. '/')
-    res.tcdata = []
-    res.compile = (compile_command != null_object)
-    res.next_tc = 0
-    return res
+    this.config = buf_cfg
+    this.bufnr = bufnr
+    this.cc = compile_command
+    this.rc = run_command
+    this.compile_directory = (filedir .. buf_cfg.compile_directory .. '/')
+    this.running_directory = (filedir .. buf_cfg.running_directory .. '/')
+    this.tcdata = []
+    this.compile = (compile_command != null_object)
+    this.next_tc = 0
   enddef # }}}
 
   def ReRunTestcase(tcindex: number) # {{{
@@ -381,10 +376,6 @@ enddef # }}}
 
 def JobTimeout(runner: TCRunner, tcindex: number, timer: any) # {{{
   runner.KillProcess(tcindex)
-enddef # }}}
-
-export def New(bufnr: number): TCRunner # {{{
-  return TCRunner.New(bufnr)
 enddef # }}}
 
 var parallelism_cache: number = 0

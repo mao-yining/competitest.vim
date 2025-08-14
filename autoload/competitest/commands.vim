@@ -181,10 +181,12 @@ def RunTestcases(testcases_list: list<string>, compile: bool, only_show = false)
   endif
 
   if !exists("b:competitest_runner")
-    b:competitest_runner = runner.New(bufnr)
-    if b:competitest_runner == null_object
+    try
+      b:competitest_runner = runner.TCRunner.new(bufnr)
+    catch /^TCRunner.new:/
+      echoerr string(v:exception)
       return
-    endif
+    endtry
   endif
 
   var r = b:competitest_runner
