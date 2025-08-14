@@ -5,20 +5,35 @@ import autoload "./testcases.vim"
 import autoload "./utils.vim"
 
 # competitive-companion task format (https://github.com/jmerle/competitive-companion/#the-format)
-type CCTask = dict<any>
-#  CCTask
-#   var name: string
-#   var group: string
-#   var url: string
-#   var interactive: bool
-#   var memoryLimit: number
-#   var timeLimit: number
-#   var tests: list<dict<string>>
-#   var testType: string
-#   var input: dict<any>
-#   var output: dict<any>
-#   var languages: dict<any>
-#   var batch: dict<any>
+# type CCTask = dict<any>
+class CCTask
+  var name: string
+  var group: string
+  var url: string
+  var interactive: bool
+  var memoryLimit: number
+  var timeLimit: number
+  var tests: list<dict<string>>
+  var testType: string
+  var input: dict<any>
+  var output: dict<any>
+  var languages: dict<any>
+  var batch: dict<any>
+  def new(data: dict<any>)
+    this.name = data.name
+    this.group = data.group
+    this.url = data.url
+    this.interactive = data.interactive
+    this.memoryLimit = data.memoryLimit
+    this.timeLimit = data.timeLimit
+    this.tests = data.tests
+    this.testType = data.testType
+    this.input = data.input
+    this.output = data.output
+    this.languages = data.languages
+    this.batch = data.batch
+  enddef
+endclass
 
 # RECEIVE UTILITIES
 
@@ -26,14 +41,14 @@ const SCRIPT_DIR = expand('<sfile>:p:h')
 class Receiver
   var server: job
   var port: number
-  var CallBack: func(dict<any>)
-  def new(port: number, CallBack: func(dict<any>))
+  var CallBack: func(CCTask)
+  def new(port: number, CallBack: func(CCTask))
     def OnReceive(message: string)
       var data = json_decode(message)
       if data.type == 'status'
         echom data.message
       elseif data.type == 'problem'
-        this.CallBack(data.data)
+        this.CallBack(CCTask.new(data.data))
       elseif data.type == 'error'
         echohl ErrorMsg
         echom data.message
