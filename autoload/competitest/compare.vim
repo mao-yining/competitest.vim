@@ -18,9 +18,9 @@ export var methods = { # {{{
   },
 } # }}}
 
-export def CompareOutput(out_bufnr: number, ans_bufnr: number, method: any): any # {{{
+export def CompareOutput(out_bufnr: number, ans_bufnr: number, method: any): bool # {{{
   sleep 1m # should wait, because datas aren't fully loaded
-  bufload(ans_bufnr)
+  silent bufload(ans_bufnr)
   var outputs: list<string> = getbufline(out_bufnr, 1, '$')
   var answers: list<string> = getbufline(ans_bufnr, 1, '$')
 

@@ -368,7 +368,6 @@ def JobExit(runner: TCRunner, tcindex: number, Callback: func, job: job, status:
         elseif correct == false
           tc.status = "WRONG"
           tc.hlgroup = "CompetiTestWrong"
-        else
         endif
       endif
     endif

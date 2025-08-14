@@ -5,7 +5,6 @@ import autoload "./testcases.vim"
 import autoload "./utils.vim"
 
 # competitive-companion task format (https://github.com/jmerle/competitive-companion/#the-format)
-# type CCTask = dict<any>
 class CCTask
   var name: string
   var group: string
