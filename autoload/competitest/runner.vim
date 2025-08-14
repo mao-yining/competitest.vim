@@ -98,9 +98,38 @@ export class TCRunner
 
   def ReRunTestcases() # {{{
     this.KillAllProcesses()
-    for idx in range(len(this.tcdata))
-      this.RunTestcase(idx)
-    endfor
+    var tc_size = len(this.tcdata)
+    var mut = this.config.multiple_testing
+    if mut == -1
+      mut = GetAvailableParallelism()
+      if mut <= 0
+        mut = 1
+      endif
+    elseif mut == 0
+      mut = tc_size
+    endif
+    mut = min([mut, tc_size])
+    this.next_tc = 0
+
+    def RunFirstTestcases()
+      var start = this.next_tc
+      this.next_tc = start + mut
+      for idx in range(start, min([start + mut - 1, tc_size - 1]))
+        this.ExecuteTestcase(idx, this.rc, this.running_directory, function('RunNextCallback', [this]))
+      endfor
+    enddef
+
+    if !this.compile
+      RunFirstTestcases()
+    else
+      this.next_tc = 1
+      def CompileCallback()
+        if this.tcdata[0].exit_code == 0
+          RunFirstTestcases()
+        endif
+      enddef
+      this.ExecuteTestcase(0, this.cc, this.compile_directory, CompileCallback)
+    endif
   enddef # }}}
 
   def RunTestcase(tcindex: number) # {{{
