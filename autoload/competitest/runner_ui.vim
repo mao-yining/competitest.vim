@@ -1,16 +1,12 @@
 vim9script
 
 import autoload './utils.vim'
-import autoload './runner.vim' as tcrunner
-import autoload './testcases.vim'
+import autoload './runner.vim' as r
 
 export class RunnerUI
   # variables {{{
-  var runner: any
-  var ui_initialized: bool = false
+  var runner: r.TCRunner
   var ui_visible: bool = false
-  var viewer_initialized: bool = false
-  var viewer_visible: bool = false
   var viewer_content: string = null_string
   var diff_view: bool = false
   public var restore_winid: number
@@ -22,56 +18,49 @@ export class RunnerUI
   var latest_compilation_timestamp: float = 0.0
   # }}}
 
-  def new(runner: any) # {{{
+  def new(runner: r.TCRunner) # {{{
     this.runner        = runner
     this.diff_view     = runner.config.view_output_diff
     this.restore_winid = runner.ui_restore_winid
   enddef # }}}
 
-  def Init(tc: testcases.Data): dict<any> # {{{
-    var windows = {}
-    var bufnr = bufnr()
+  def Show() # {{{
+    if !this.ui_visible
+      # Create a New Tab {{{
+      var bufnr = this.runner.bufnr
+      execute("silent tabnew Testcases" .. bufnr)
+      var new_tab = tabpagenr()
+      execute($"autocmd WinClosed <buffer> call getbufvar({bufnr}, 'competitest_runner').ui.CallBack()")
+      this.windows.tc = { winid: win_getid(), bufnr: bufnr() }
+      setlocal buftype=nofile
+      setlocal noswapfile
+      setlocal bufhidden=hide
+      setlocal nobuflisted
+      setlocal diffopt+=iwhiteeol
+      setlocal diffopt+=iblank
+      setlocal filetype=competitest_testcases
+      set winwidth=37 # Testcases windows width
 
-    execute("silent tabnew Testcases" .. bufnr)
-    var new_tab = tabpagenr()
-    execute($"autocmd WinClosed <buffer> call getbufvar({bufnr}, 'competitest_runner').ui.CallBack()")
-    windows.tc = { winid: win_getid(), bufnr: bufnr() }
-    setlocal buftype=nofile
-    setlocal noswapfile
-    setlocal bufhidden=hide
-    setlocal nobuflisted
-    setlocal diffopt+=iwhiteeol
-    setlocal diffopt+=iblank
-    setlocal filetype=competitest_testcases
-    set winwidth=37 # Testcases windows width
+      silent rightbelow vsplit Output
+      this.windows.stdout = { winid: win_getid(), bufnr: bufnr() }
+      setlocal filetype=competitest_out
 
-    silent rightbelow vsplit Output
-    windows.stdout = { winid: win_getid(), bufnr: bufnr() }
-    setlocal filetype=competitest_out
+      silent rightbelow split Input
+      this.windows.stdin = { winid: win_getid(), bufnr: bufnr() }
+      setlocal filetype=competitest_in
 
-    silent rightbelow split Input
-    windows.stdin = { winid: win_getid(), bufnr: bufnr() }
-    setlocal filetype=competitest_in
+      wincmd l | silent rightbelow vsplit Errors
+      this.windows.stderr = { winid: win_getid(), bufnr: bufnr() }
+      setlocal filetype=competitest_err
 
-    wincmd l | silent rightbelow vsplit Errors
-    windows.stderr = { winid: win_getid(), bufnr: bufnr() }
-    setlocal filetype=competitest_err
-
-    wincmd k | silent rightbelow vsplit Answer
-    windows.ans = { winid: win_getid(), bufnr: bufnr() }
-    setlocal filetype=competitest_ans
-
-    return windows
-  enddef # }}}
-
-  def ShowUI() # {{{
-    if !this.ui_initialized || !this.ui_visible
-      this.windows =  this.Init(this.runner.tcdata[0])
+      wincmd k | silent rightbelow vsplit Answer
+      this.windows.ans = { winid: win_getid(), bufnr: bufnr() }
+      setlocal filetype=competitest_ans
+      # }}}
 
       for [name, win] in items(this.windows)
-        var bufnr = winbufnr(win.winid)
-        setbufvar(bufnr, "&buftype", "nofile")
-        setbufvar(bufnr, "&bufhidden", "hide")
+        setbufvar(win.bufnr, "&buftype", "nofile")
+        setbufvar(win.bufnr, "&bufhidden", "hide")
       endfor
 
       var runner_ui_mappings = {}
@@ -84,52 +73,44 @@ export class RunnerUI
       endfor
 
       win_gotoid(this.windows.tc.winid)
-      var bufnr = this.runner.bufnr
-
+      # {{{ set kaymaps
       for map in get(runner_ui_mappings, 'close', [])
-        execute $"nnoremap <buffer><nowait> {map} <Cmd>tabclose<CR>"
+        execute($"nnoremap <buffer><nowait> {map} <Cmd>tabclose<CR>")
       endfor
-
       for map in get(runner_ui_mappings, 'kill', [])
-        execute $"nnoremap <buffer><nowait> {map} <Cmd>call getbufvar({bufnr}, 'competitest_runner').KillProcess(line('.') - 1)<CR>"
+        execute($"nnoremap <buffer><nowait> {map} <Cmd>call getbufvar({bufnr}, 'competitest_runner').KillProcess(line('.') - 1)<CR>")
       endfor
-
       for map in get(runner_ui_mappings, 'kill_all', [])
-        execute $"nnoremap <buffer><nowait> {map} <Cmd>call getbufvar({bufnr}, 'competitest_runner').KillAllProcesses()<CR>"
+        execute($"nnoremap <buffer><nowait> {map} <Cmd>call getbufvar({bufnr}, 'competitest_runner').KillAllProcesses()<CR>")
       endfor
-
       for map in get(runner_ui_mappings, 'run_again', [])
-        execute $"nnoremap <buffer><nowait> {map} <Cmd>call getbufvar({bufnr}, 'competitest_runner').ReRunTestcase(line('.') - 1)<CR>"
+        execute($"nnoremap <buffer><nowait> {map} <Cmd>call getbufvar({bufnr}, 'competitest_runner').ReRunTestcase(line('.') - 1)<CR>")
       endfor
-
       for map in get(runner_ui_mappings, 'run_all_again', [])
-        execute $"nnoremap <buffer><nowait> {map} <Cmd>call getbufvar({bufnr}, 'competitest_runner').ReRunTestcases()<CR>"
+        execute($"nnoremap <buffer><nowait> {map} <Cmd>call getbufvar({bufnr}, 'competitest_runner').ReRunTestcases()<CR>")
       endfor
-
       for map in get(runner_ui_mappings, 'toggle_diff', [])
-        execute $"nnoremap <buffer><nowait> {map} <Cmd>call getbufvar({bufnr}, 'competitest_runner').ui.ToggleDiffView()<CR>"
+        execute($"nnoremap <buffer><nowait> {map} <Cmd>call getbufvar({bufnr}, 'competitest_runner').ui.ToggleDiffView()<CR>")
       endfor
-
-      setbufvar(bufnr(), "showing_data", this.runner.tcdata[0])
       for map in get(runner_ui_mappings, 'view_stdout', [])
-        execute $"nnoremap <buffer><nowait> {map} <Cmd>execute $'tabnew +buffer{{getbufvar({bufnr()}, 'showing_data').stdout_bufnr}}'<CR>"
+        execute($"nnoremap <buffer><nowait> {map} <Cmd>execute($'tabnew +buffer{{getbufvar({bufnr()}, 'showing_data').stdout_bufnr}}'<CR>")
       endfor
       for map in get(runner_ui_mappings, 'view_answer', [])
-        execute $"nnoremap <buffer><nowait> {map} <Cmd>execute $'tabnew +buffer{{getbufvar({bufnr()}, 'showing_data').ans_bufnr}}'<CR>"
+        execute($"nnoremap <buffer><nowait> {map} <Cmd>execute($'tabnew +buffer{{getbufvar({bufnr()}, 'showing_data').ans_bufnr}}'<CR>")
       endfor
       for map in get(runner_ui_mappings, 'view_input', [])
-        execute $"nnoremap <buffer><nowait> {map} <Cmd>execute $'tabnew +buffer{{getbufvar({bufnr()}, 'showing_data').stdin_bufnr}}'<CR>"
+        execute($"nnoremap <buffer><nowait> {map} <Cmd>execute($'tabnew +buffer{{getbufvar({bufnr()}, 'showing_data').stdin_bufnr}}'<CR>")
       endfor
       for map in get(runner_ui_mappings, 'view_stderr', [])
-        execute $"nnoremap <buffer><nowait> {map} <Cmd>execute $'tabnew +buffer{{getbufvar({bufnr()}, 'showing_data').stderr_bufnr}}'<CR>"
+        execute($"nnoremap <buffer><nowait> {map} <Cmd>execute($'tabnew +buffer{{getbufvar({bufnr()}, 'showing_data').stderr_bufnr}}'<CR>")
       endfor
 
-      execute($"autocmd CursorMoved <buffer> call getbufvar({bufnr}, 'competitest_runner').ui.UpdateUI(line('.'))", "silent")
+      execute($"autocmd CursorMoved <buffer> call getbufvar({bufnr}, 'competitest_runner').ui.Update(line('.'))", "silent")
+      # }}}
 
-      this.ui_initialized = true
       this.ui_visible = true
       this.update_windows = true
-      this.UpdateUI()
+      this.Update()
     elseif this.ui_visible
       win_gotoid(this.windows.tc.winid)
     endif
@@ -168,10 +149,7 @@ export class RunnerUI
         this.windows[name] = null_dict
       endif
     endfor
-    this.ui_initialized = false
     this.ui_visible = false
-    this.viewer_initialized = false
-    this.viewer_visible = false
     this.update_testcase = -1 # Means nil
     this.latest_line = 0
   enddef # }}}
@@ -185,7 +163,7 @@ export class RunnerUI
     endif
   enddef # }}}
 
-  def UpdateUI(line = -1) # {{{
+  def Update(line = -1) # {{{
     if !this.ui_visible || empty(this.runner.tcdata)
       return
     endif
@@ -248,14 +226,9 @@ export class RunnerUI
       var testcase = this.update_testcase == -1 ? 0 : this.update_testcase
       var data = this.runner.tcdata[testcase]
       setbufvar(this.windows.tc.bufnr, "showing_data", data)
-      # if empty(data) | return | endif
-
       win_execute(this.windows.stdin.winid, $"buffer {data.stdin_bufnr == 0 ? this.windows.stdin.bufnr : data.stdin_bufnr}")
-
       win_execute(this.windows.stdout.winid, $"buffer {data.stdout_bufnr}")
-
       win_execute(this.windows.stderr.winid, $"buffer {data.stderr_bufnr}")
-
       win_execute(this.windows.ans.winid, $"buffer {data.ans_bufnr == 0 ? this.windows.ans.bufnr : data.ans_bufnr}")
 
       if compile_error
@@ -264,9 +237,4 @@ export class RunnerUI
       endif
     endif
   enddef # }}}
-
 endclass
-
-export def New(runner: any): RunnerUI # {{{
-  return RunnerUI.new(runner)
-enddef # }}}

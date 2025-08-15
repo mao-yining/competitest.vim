@@ -4,12 +4,35 @@ import autoload './utils.vim'
 import autoload './config.vim' as cfg
 import autoload './compare.vim'
 import autoload './runner_ui.vim'
-import autoload './testcases.vim'
 
 # System command with arguments
 class SystemCommand # {{{
   var exec: string
   var args: list<string>
+endclass # }}}
+
+export class TestcaseData # {{{
+  var ans_bufnr: number
+  var stdin_bufnr: number
+  public var stdout_bufnr: number
+  public var stderr_bufnr: number
+  var ans_bufname: string
+  var stdin_bufname: string
+  var stdout_bufname: string
+  var stderr_bufname: string
+  var tcnum: string
+  public var job: job
+  public var status: string
+  public var killed: bool
+  public var running: bool
+  public var hlgroup: string
+  public var timelimit: number
+  public var timer: number
+  public var time: float
+  public var starting_time: list<any>
+  public var exit_code: number
+  def new(this.ans_bufnr, this.stdin_bufnr, this.ans_bufname,  this.stdin_bufname, this.stdout_bufname, this.stderr_bufname, this.tcnum, this.timelimit)
+  enddef
 endclass # }}}
 
 # Testcase Runner class
@@ -21,7 +44,7 @@ export class TCRunner
   var rc: SystemCommand
   var compile_directory: string
   var running_directory: string
-  var tcdata: list<testcases.Data>
+  var tcdata: list<TestcaseData>
   var compile: bool
   var next_tc: number
   var ui_restore_winid: number
@@ -156,7 +179,7 @@ export class TCRunner
       this.tcdata = []
       this.compile = compile && (this.cc != null_object)
       if this.compile
-        add(this.tcdata, testcases.Data.new(0, 0, '', '', this.bufnr .. "_stdout_compile", this.bufnr .. "_stderr_compile", "Compile", 0))
+        add(this.tcdata, TestcaseData.new(0, 0, '', '', this.bufnr .. "_stdout_compile", this.bufnr .. "_stderr_compile", "Compile", 0))
       endif
 
       var keys = keys(tctbl)
@@ -165,7 +188,7 @@ export class TCRunner
       })
       for tcnum in keys
         var tc = tctbl[tcnum]
-        add(this.tcdata, testcases.Data.new(tc.ans_bufnr, tc.input_bufnr, tc.ans_bufname, tc.input_bufname, this.bufnr .. "_stdout_" .. tcnum, this.bufnr .. "_stderr_" .. tcnum, tcnum, this.config.maximum_time))
+        add(this.tcdata, TestcaseData.new(tc.ans_bufnr, tc.input_bufnr, tc.ans_bufname, tc.input_bufname, this.bufnr .. "_stdout_" .. tcnum, this.bufnr .. "_stderr_" .. tcnum, tcnum, this.config.maximum_time))
       endfor
     endif
 
@@ -301,10 +324,10 @@ export class TCRunner
 
   def ShowUI() # {{{
     if this.ui == null_object
-      this.ui = runner_ui.New(this)
+      this.ui = runner_ui.RunnerUI.new(this)
     endif
-    this.ui.ShowUI()
-    this.ui.UpdateUI()
+    this.ui.Show()
+    this.ui.Update()
   enddef # }}}
 
   def SetRestoreWinID(restore_winid: number) # {{{
@@ -319,7 +342,7 @@ export class TCRunner
       if update_windows
         this.ui.update_windows = true
       endif
-      this.ui.UpdateUI()
+      this.ui.Update()
     endif
   enddef # }}}
 endclass
