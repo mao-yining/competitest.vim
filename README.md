@@ -4,8 +4,7 @@
 
 ## Competitive Programming with Vim Made Easy
 
-Inspired by <https://github.com/xeluxee/competitest.nvim>, but rewritten
-in pure Vim9script with no dependencies.
+Inspired by <https://github.com/xeluxee/competitest.nvim>.
 
 `competitest.vim` is a testcase manager and checker. It saves you time in competitive programming contests by automating common tasks related to testcase management. It can compile, run and test your solutions across all the available testcases, displaying results in a nice interactive user interface.
 
@@ -24,7 +23,7 @@ in pure Vim9script with no dependencies.
 
 ## Installation
 
-**NOTE:** this plugins requires Vim > 9.1
+REQUIREMENT: Vim > 9.1 and a python in environment for receive function.
 
 This plugin follows the standard runtime path structure, and as such it can be installed with a variety of plugin managers:
 

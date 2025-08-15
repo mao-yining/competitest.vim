@@ -1,7 +1,6 @@
 *competitest.txt* 使用 Vim 进行竞赛编程变得简单
 
-本项目受 https://github.com/xeluxee/competitest.nvim 启发，采用纯 Vim9script语
-言实现，且不依赖任何外部组件。
+本项目受 https://github.com/xeluxee/competitest.nvim 启发。
 
 *competitest.vim* 是一个面向竞赛编程的测试用例管理器与检查器。
 它自动化测试用例管理任务，帮助您通过交互式 UI 编译、运行和测试多个样例。
@@ -50,7 +49,7 @@
 ==============================================================================
 安装                                              *competitest-installation*
 
-要求: Vim > 9.1
+要求: Vim > 9.1，同时 receive 功能需要在环境变量中有 python。
 
 使用插件管理器安装:
 
