@@ -4,7 +4,7 @@
 
 ## 让 Vim 下的竞技编程更轻松
 
-这是对 <https://github.com/xeluxee/competitest.nvim> 用 vim9script 的重构版本。
+本项目受 <https://github.com/xeluxee/competitest.nvim> 启发，采用纯 Vim9script语言实现，且不依赖任何外部组件。
 
 `competitest.vim` 是一个测试用例管理和检查工具。它通过自动化测试用例管理相关的常见任务，帮助你在竞技编程比赛中节省时间。它可以编译、运行并测试你的解决方案，在所有可用测试用例上展示结果，并通过精美的交互式用户界面呈现。
 

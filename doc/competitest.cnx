@@ -1,6 +1,7 @@
 *competitest.txt* 使用 Vim 进行竞赛编程变得简单
 
-基于 vim9script 重构自 https://github.com/xeluxee/competitest.nvim。
+本项目受 https://github.com/xeluxee/competitest.nvim 启发，采用纯 Vim9script语
+言实现，且不依赖任何外部组件。
 
 *competitest.vim* 是一个面向竞赛编程的测试用例管理器与检查器。
 它自动化测试用例管理任务，帮助您通过交互式 UI 编译、运行和测试多个样例。
@@ -92,32 +93,32 @@ minpac            call minpac#add('mao-yining/competitest.vim')
 
 命令                                操作 ~
 :CompetiTest add_testcase           添加新测试用例
-:CompetiTest edit_testcase [x]     编辑测试用例 (可选编号)
-:CompetiTest delete_testcase [x]   删除测试用例 (可选编号)
-:CompetiTest run                   运行所有测试用例 (编译 + 执行)
-:CompetiTest run_no_compile        运行但不编译
-:CompetiTest show_ui               显示 UI 但不重新运行
+:CompetiTest edit_testcase [x]      编辑测试用例 (可选编号)
+:CompetiTest delete_testcase [x]    删除测试用例 (可选编号)
+:CompetiTest run                    运行所有测试用例 (编译 + 执行)
+:CompetiTest run_no_compile         运行但不编译
+:CompetiTest show_ui                显示 UI 但不重新运行
 
 测试用例编辑器控件                      *competitest-editor-controls*
 
 按键绑定                操作 ~
-<C-h>, <C-l>, <C-i>    在输入/输出窗口间切换
-<C-s>                  保存并关闭
-:wq                    保存并关闭
+<C-h>, <C-l>, <C-i>     在输入/输出窗口间切换
+<C-s>                   保存并关闭
+:wq                     保存并关闭
 
 测试用例运行器控件                      *competitest-runner-controls*
 
 按键   操作 ~
-r     重新运行当前测试用例
-R     重新运行所有测试用例
-x     终止当前测试用例进程
-X     终止所有进程
-i/I   查看输入 (当前/所有)
-a/A   查看期望答案 (当前/所有)
-o/O   查看 stdout (当前/所有)
-e/E   查看 stderr (当前/所有)
-d/D   切换差异视图 (当前/所有)
-q/Q   关闭 UI
+r      重新运行当前测试用例
+R      重新运行所有测试用例
+x      终止当前测试用例进程
+X      终止所有进程
+i/I    查看输入 (当前/所有)
+a/A    查看期望答案 (当前/所有)
+o/O    查看 stdout (当前/所有)
+e/E    查看 stderr (当前/所有)
+d/D    切换差异视图 (当前/所有)
+q/Q    关闭 UI
 
 ==============================================================================
 接收测试用例                                *competitest-receiving*

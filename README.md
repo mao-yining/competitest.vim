@@ -4,7 +4,8 @@
 
 ## Competitive Programming with Vim Made Easy
 
-A refactation of <https://github.com/xeluxee/competitest.nvim> in vim9script.
+Inspired by <https://github.com/xeluxee/competitest.nvim>, but rewritten
+in pure Vim9script with no dependencies.
 
 `competitest.vim` is a testcase manager and checker. It saves you time in competitive programming contests by automating common tasks related to testcase management. It can compile, run and test your solutions across all the available testcases, displaying results in a nice interactive user interface.
 
