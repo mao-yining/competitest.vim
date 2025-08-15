@@ -1,5 +1,7 @@
 # CompetiTest.Vim
 
+![运行样例界面](./image/runner_ui.jpg)
+
 ## 让 Vim 下的竞技编程更轻松
 
 这是对 <https://github.com/xeluxee/competitest.nvim> 用 vim9script 的重构版本。
