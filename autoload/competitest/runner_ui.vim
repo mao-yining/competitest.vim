@@ -1,40 +1,33 @@
 vim9script
 
-import autoload './utils.vim'
 import autoload './runner.vim' as r
 
 export class RunnerUI
   # variables {{{
   var runner: r.TCRunner
-  var ui_visible: bool = false
+  var visible: bool = false
   var viewer_content: string = null_string
   var diff_view: bool = false
-  public var restore_winid: number
   var update_details: bool = false
-  public var update_windows: bool = false
   var update_testcase: number = -1 # Means nil
   var windows: dict<any> = {}
   var latest_line: number
   var latest_compilation_timestamp: float = 0.0
+  var showing_data: r.TestcaseData = null_object
   # }}}
 
-  def new(runner: r.TCRunner) # {{{
-    this.runner        = runner
-    this.diff_view     = runner.config.view_output_diff
-    this.restore_winid = runner.ui_restore_winid
+  def new(this.runner) # {{{
+    this.diff_view     = this.runner.config.view_output_diff
   enddef # }}}
 
   def Show() # {{{
-    if !this.ui_visible
+    if !this.visible
       # Create a New Tab {{{
       var bufnr = this.runner.bufnr
-      execute("silent tabnew Testcases" .. bufnr)
+      execute("tabnew Testcases" .. bufnr)
       var new_tab = tabpagenr()
       execute($"autocmd WinClosed <buffer> call getbufvar({bufnr}, 'competitest_runner').ui.CallBack()")
       this.windows.tc = { winid: win_getid(), bufnr: bufnr() }
-      setlocal buftype=nofile
-      setlocal noswapfile
-      setlocal bufhidden=hide
       setlocal nobuflisted
       setlocal diffopt+=iwhiteeol
       setlocal diffopt+=iblank
@@ -60,6 +53,8 @@ export class RunnerUI
 
       for [name, win] in items(this.windows)
         setbufvar(win.bufnr, "&buftype", "nofile")
+        setbufvar(win.bufnr, "&swapfile", false)
+        setbufvar(win.bufnr, "&buflisted", false)
         setbufvar(win.bufnr, "&bufhidden", "hide")
       endfor
 
@@ -84,40 +79,53 @@ export class RunnerUI
         execute($"nnoremap <buffer><nowait> {map} <Cmd>call getbufvar({bufnr}, 'competitest_runner').KillAllProcesses()<CR>")
       endfor
       for map in get(runner_ui_mappings, 'run_again', [])
-        execute($"nnoremap <buffer><nowait> {map} <Cmd>call getbufvar({bufnr}, 'competitest_runner').ReRunTestcase(line('.') - 1)<CR>")
+        execute($"nnoremap <buffer><nowait> {map} <Cmd>call getbufvar({bufnr}, 'competitest_runner').RunTestcase(line('.') - 1)<CR>")
       endfor
       for map in get(runner_ui_mappings, 'run_all_again', [])
-        execute($"nnoremap <buffer><nowait> {map} <Cmd>call getbufvar({bufnr}, 'competitest_runner').ReRunTestcases()<CR>")
+        execute($"nnoremap <buffer><nowait> {map} <Cmd>call getbufvar({bufnr}, 'competitest_runner').RunTestcases()<CR>")
       endfor
       for map in get(runner_ui_mappings, 'toggle_diff', [])
         execute($"nnoremap <buffer><nowait> {map} <Cmd>call getbufvar({bufnr}, 'competitest_runner').ui.ToggleDiffView()<CR>")
       endfor
-      for map in get(runner_ui_mappings, 'view_stdout', [])
-        execute($"nnoremap <buffer><nowait> {map} <Cmd>execute($'tabnew +buffer{{getbufvar({bufnr()}, 'showing_data').stdout_bufnr}}'<CR>")
-      endfor
       for map in get(runner_ui_mappings, 'view_answer', [])
-        execute($"nnoremap <buffer><nowait> {map} <Cmd>execute($'tabnew +buffer{{getbufvar({bufnr()}, 'showing_data').ans_bufnr}}'<CR>")
+        execute($"nnoremap <buffer><nowait> {map} <Cmd>call getbufvar({bufnr}, 'competitest_runner').ui.WinView('ans')<CR>")
       endfor
       for map in get(runner_ui_mappings, 'view_input', [])
-        execute($"nnoremap <buffer><nowait> {map} <Cmd>execute($'tabnew +buffer{{getbufvar({bufnr()}, 'showing_data').stdin_bufnr}}'<CR>")
+        execute($"nnoremap <buffer><nowait> {map} <Cmd>call getbufvar({bufnr}, 'competitest_runner').ui.WinView('stdin')<CR>")
+      endfor
+      for map in get(runner_ui_mappings, 'view_stdout', [])
+        execute($"nnoremap <buffer><nowait> {map} <Cmd>call getbufvar({bufnr}, 'competitest_runner').ui.WinView('stdout')<CR>")
       endfor
       for map in get(runner_ui_mappings, 'view_stderr', [])
-        execute($"nnoremap <buffer><nowait> {map} <Cmd>execute($'tabnew +buffer{{getbufvar({bufnr()}, 'showing_data').stderr_bufnr}}'<CR>")
+        execute($"nnoremap <buffer><nowait> {map} <Cmd>call getbufvar({bufnr}, 'competitest_runner').ui.WinView('stderr')<CR>")
       endfor
 
-      execute($"autocmd CursorMoved <buffer> call getbufvar({bufnr}, 'competitest_runner').ui.Update(line('.'))", "silent")
+      execute($"autocmd CursorMoved <buffer> call getbufvar({bufnr}, 'competitest_runner').ui.Update(line('.'))")
       # }}}
 
-      this.ui_visible = true
-      this.update_windows = true
+      this.visible = true
       this.Update()
-    elseif this.ui_visible
+    elseif this.visible
       win_gotoid(this.windows.tc.winid)
     endif
 
     if this.diff_view
       this.diff_view = false
       this.ToggleDiffView()
+    endif
+  enddef # }}}
+
+  def WinView(name: string) # {{{
+    if name == "ans" && this.showing_data.tcnum != "Compile"
+      execute($"tabnew +buffer {this.showing_data.ans_bufname}")
+    elseif name == "stdin" && this.showing_data.tcnum != "Compile"
+      execute($"tabnew +buffer {this.showing_data.stdin_bufname}")
+    elseif name == "stdout"
+      execute($"tabnew +buffer {this.showing_data.stdout_bufname}")
+    elseif name == "stderr"
+      execute($"tabnew +buffer {this.showing_data.stderr_bufname}")
+    else
+      echo $"Has no {name} buffer!"
     endif
   enddef # }}}
 
@@ -141,7 +149,7 @@ export class RunnerUI
   enddef # }}}
 
   def CallBack() # {{{
-    if this.ui_visible
+    if this.visible
       this.DisableDiffView()
     endif
     for [name, win] in items(this.windows)
@@ -149,7 +157,7 @@ export class RunnerUI
         this.windows[name] = null_dict
       endif
     endfor
-    this.ui_visible = false
+    this.visible = false
     this.update_testcase = -1 # Means nil
     this.latest_line = 0
   enddef # }}}
@@ -164,7 +172,7 @@ export class RunnerUI
   enddef # }}}
 
   def Update(line = -1) # {{{
-    if !this.ui_visible || empty(this.runner.tcdata)
+    if !this.visible || empty(this.runner.tcdata)
       return
     endif
     if line != -1 && line != this.latest_line
@@ -174,58 +182,55 @@ export class RunnerUI
     endif
 
     var compile_error = false
-    if this.update_windows
-      this.update_windows = false
-      this.update_details = true
+    this.update_details = true
 
-      var lines = []
-      var hlregions = []
+    var lines = []
+    var hlregions = []
 
-      for [tcindex, data] in items(this.runner.tcdata)
-        var l = { header: "TC " .. data.tcnum, status: data.status, time: "" }
-        if data.tcnum == "Compile"
-          l.header = data.tcnum
-          if this.runner.config.runner_ui.open_when_compilation_fails
-                \ && !data.killed && data.exit_code != 0
-                \ && data.time != this.latest_compilation_timestamp
-            if line('.') == 1
-              this.update_testcase = 0
-              compile_error = true
-              this.latest_compilation_timestamp = data.time
-            else
-              this.update_testcase = -1
-              this.update_windows = true
-              setpos('.', [this.windows.tc.winid, 1, 0])
-              return
-            endif
+    for [tcindex, data] in items(this.runner.tcdata)
+      var l = { header: "TC " .. data.tcnum, status: data.status, time: "" }
+      if data.tcnum == "Compile"
+        l.header = data.tcnum
+        if this.runner.config.runner_ui.open_when_compilation_fails
+              \ && !data.killed && data.exit_code != 0
+              \ && data.time != this.latest_compilation_timestamp
+          if line('.') == 1
+            this.update_testcase = 0
+            compile_error = true
+            this.latest_compilation_timestamp = data.time
+          else
+            this.update_testcase = -1
+            setpos('.', [this.windows.tc.winid, 1, 0])
+            return
           endif
         endif
-        if data.time != -1
-          l.time = printf("%.3f seconds", data.time / 1000.0)
-        endif
-        add(lines, l)
-        add(hlregions, { line: tcindex, start: 10, end: 10 + strlen(l.status), group: data.hlgroup })
-      endfor
+      endif
+      if data.time != -1
+        l.time = printf("%.3f seconds", data.time / 1000.0)
+      endif
+      add(lines, l)
+      add(hlregions, { line: tcindex, start: 10, end: 10 + strlen(l.status), group: data.hlgroup })
+    endfor
 
-      var buffer_lines = []
-      for l in lines
-        add(buffer_lines, this.AdjustString(10, l.header, " ") .. this.AdjustString(10, l.status, " ") .. l.time)
-      endfor
+    var buffer_lines = []
+    for l in lines
+      add(buffer_lines, this.AdjustString(10, l.header, " ") .. this.AdjustString(10, l.status, " ") .. l.time)
+    endfor
 
-      setbufvar(this.windows.tc.bufnr, "&modifiable", true)
-      setbufline(this.windows.tc.bufnr, 1, buffer_lines)
-      deletebufline(this.windows.tc.bufnr, len(buffer_lines) + 1, "$")
-      setbufvar(this.windows.tc.bufnr, "&modifiable", false)
+     # add first, delete next to keep cursor's position
+    setbufvar(this.windows.tc.bufnr, "&modifiable", true)
+    setbufline(this.windows.tc.bufnr, 1, buffer_lines)
+    deletebufline(this.windows.tc.bufnr, len(buffer_lines) + 1, "$")
+    setbufvar(this.windows.tc.bufnr, "&modifiable", false)
 
-      for hl in hlregions
-        matchaddpos(hl.group, [[hl.line + 1, hl.start + 1, hl.end - hl.start]], 10, -1, { window: this.windows.tc.winid })
-      endfor
-    endif
+    for hl in hlregions
+      matchaddpos(hl.group, [[hl.line + 1, hl.start + 1, hl.end - hl.start]], 10, -1, { window: this.windows.tc.winid })
+    endfor
 
     if this.update_details
       var testcase = this.update_testcase == -1 ? 0 : this.update_testcase
       var data = this.runner.tcdata[testcase]
-      setbufvar(this.windows.tc.bufnr, "showing_data", data)
+      this.showing_data = data
       win_execute(this.windows.stdin.winid, $"buffer {data.stdin_bufnr == 0 ? this.windows.stdin.bufnr : data.stdin_bufnr}")
       win_execute(this.windows.stdout.winid, $"buffer {data.stdout_bufnr}")
       win_execute(this.windows.stderr.winid, $"buffer {data.stderr_bufnr}")

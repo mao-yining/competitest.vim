@@ -10,7 +10,7 @@ export def Setup(opts: dict<any> = {})
   autocmd ColorScheme * competitest#SetupHighlight()
 
   # Set q as exit for competitest_filetype
-  autocmd Filetype competitest_in,competitest_out,competitest_ans,competitest_err,competitest_testcases nnoremap <buffer> q <Cmd>q<CR>
+  autocmd Filetype competitest_in,competitest_out,competitest_ans,competitest_err nnoremap <buffer> q <Cmd>q<CR>
 enddef
 
 # Create CompetiTest highlight groups

@@ -14,8 +14,8 @@ endclass # }}}
 export class TestcaseData # {{{
   var ans_bufnr: number
   var stdin_bufnr: number
-  public var stdout_bufnr: number
-  public var stderr_bufnr: number
+  var stdout_bufnr: number
+  var stderr_bufnr: number
   var ans_bufname: string
   var stdin_bufname: string
   var stdout_bufname: string
@@ -29,9 +29,19 @@ export class TestcaseData # {{{
   public var timelimit: number
   public var timer: number
   public var time: float
-  public var starting_time: list<any>
+  public var starting_time: list<number>
   public var exit_code: number
-  def new(this.ans_bufnr, this.stdin_bufnr, this.ans_bufname,  this.stdin_bufname, this.stdout_bufname, this.stderr_bufname, this.tcnum, this.timelimit)
+  def new(
+      this.ans_bufnr,
+      this.stdin_bufnr,
+      this.stdout_bufnr,
+      this.stderr_bufnr,
+      this.ans_bufname,
+      this.stdin_bufname,
+      this.stdout_bufname,
+      this.stderr_bufname,
+      this.tcnum,
+      this.timelimit)
   enddef
 endclass # }}}
 
@@ -47,7 +57,6 @@ export class TCRunner
   var tcdata: list<TestcaseData>
   var compile: bool
   var next_tc: number
-  var ui_restore_winid: number
   var ui: runner_ui.RunnerUI
   # }}}
 
@@ -110,13 +119,72 @@ export class TCRunner
     this.next_tc = 0
   enddef # }}}
 
-  def ReRunTestcase(tcindex: number) # {{{
-    this.KillProcess(tcindex)
-    this.RunTestcase(tcindex)
+  def RunTestcase(tcindex: number) # {{{
+    if tcindex == 0 && this.compile
+      this.ExecuteTestcase(tcindex, this.cc, this.compile_directory)
+    else
+      this.ExecuteTestcase(tcindex, this.rc, this.running_directory)
+    endif
   enddef # }}}
 
-  def ReRunTestcases() # {{{
-    this.KillAllProcesses()
+  def RunAndInitTestcases(tctbl: dict<any>, compile: bool = true) #{{{
+    # Init Testcases {{{
+    if tctbl != null_dict
+      if this.config.save_all_files
+        wall
+      elseif this.config.save_current_file
+        write
+      endif
+
+      def InitBuf(bufname: string, mode: string): number # {{{
+        var bufnr = bufadd(bufname)
+        setbufvar(bufnr, '&buftype', 'nofile')
+        setbufvar(bufnr, '&bufhidden', 'hide')
+        setbufvar(bufnr, '&filetype', "competitest_" .. mode)
+
+        return bufnr
+      enddef # }}}
+
+      this.tcdata = []
+      this.compile = compile && (this.cc != null_object)
+      if this.compile
+        add(this.tcdata, TestcaseData.new(
+          0,                                                # ans_bufnr
+          0,                                                # stdin_bufnr
+          InitBuf(this.bufnr .. "_stdout_compile", "out"),  # stdour_bufnr
+          InitBuf(this.bufnr .. "_stderr_compile", "err"),  # stderr_bufnr
+          '',                                               # ans_bufname
+          '',                                               # stdin_bufname
+          this.bufnr .. "_stdout_compile",                  # stdout_bufname
+          this.bufnr .. "_stderr_compile",                  # stderr_bufname
+          "Compile",                                        # tcnum
+          0))                                               # timelimit
+      endif
+
+      var keys = keys(tctbl)
+      keys -> sort((u, v) => {
+        return str2nr(u) < str2nr(v) ? -1 : 1
+      })
+      for tcnum in keys
+        var tc = tctbl[tcnum]
+        add(this.tcdata,
+          TestcaseData.new(
+            tc.ans_bufnr,                                   # ans_bufnr
+            tc.input_bufnr,                                 # stdin_bufnr
+            InitBuf($"{this.bufnr}_stdout_{tcnum}", "out"), # stdour_bufnr
+            InitBuf($"{this.bufnr}_stderr_{tcnum}", "err"), # stderr_bufnr
+            tc.ans_bufname,                                 # ans_bufname
+            tc.input_bufname,                               # stdin_bufname
+            $"{this.bufnr}_stdout_{tcnum}",                 # stdout_bufname
+            $"{this.bufnr}_stderr_{tcnum}",                 # stderr_bufname
+            tcnum,                                          # tcnum
+            this.config.maximum_time))                      # timelimit
+      endfor
+    endif # }}}
+    this.RunTestcases()
+  enddef # }}}
+
+  def RunTestcases() # {{{
     var tc_size = len(this.tcdata)
     var mut = this.config.multiple_testing
     if mut == -1
@@ -148,14 +216,6 @@ export class TCRunner
         endif
       enddef
       this.ExecuteTestcase(0, this.cc, this.compile_directory, CompileCallback)
-    endif
-  enddef # }}}
-
-  def RunTestcase(tcindex: number) # {{{
-    if tcindex == 0 && this.compile
-      this.ExecuteTestcase(tcindex, this.cc, this.compile_directory)
-    else
-      this.ExecuteTestcase(tcindex, this.rc, this.running_directory)
     endif
   enddef # }}}
 
@@ -168,89 +228,13 @@ export class TCRunner
     this.ExecuteTestcase(current_tc, this.rc, this.running_directory, function('RunNextCallback', [this]))
   enddef # }}}
 
-  def RunTestcases(tctbl: dict<any>, compile: bool = true) #{{{
-    if tctbl != null_dict
-      if this.config.save_all_files
-        wall
-      elseif this.config.save_current_file
-        write
-      endif
-
-      this.tcdata = []
-      this.compile = compile && (this.cc != null_object)
-      if this.compile
-        add(this.tcdata, TestcaseData.new(0, 0, '', '', this.bufnr .. "_stdout_compile", this.bufnr .. "_stderr_compile", "Compile", 0))
-      endif
-
-      var keys = keys(tctbl)
-      keys -> sort((u, v) => {
-        return str2nr(u) < str2nr(v) ? -1 : 1
-      })
-      for tcnum in keys
-        var tc = tctbl[tcnum]
-        add(this.tcdata, TestcaseData.new(tc.ans_bufnr, tc.input_bufnr, tc.ans_bufname, tc.input_bufname, this.bufnr .. "_stdout_" .. tcnum, this.bufnr .. "_stderr_" .. tcnum, tcnum, this.config.maximum_time))
-      endfor
-    endif
-
-    def InitBuf(bufname: string, mode: string): number # {{{
-      var bufnr = bufnr(bufname)
-      if !bufexists(bufnr) # 清空现有缓冲区
-        bufnr = bufadd(bufname)
-        setbufvar(bufnr, '&buftype', 'nofile')
-        setbufvar(bufnr, '&bufhidden', 'hide')
-        setbufvar(bufnr, '&filetype', "competitest_" .. mode)
-      endif
-
-      return bufnr
-    enddef # }}}
-
-    # Reset state
-    for tc in this.tcdata
-      tc.status = ""
-      tc.hlgroup = "CompetiTestRunning"
-      tc.stdout_bufnr = InitBuf(tc.stdout_bufname, "out")
-      tc.stderr_bufnr = InitBuf(tc.stderr_bufname, "err")
-      tc.running = false
-      tc.killed = false
-      tc.time = 0.0
-    endfor
-
-    var tc_size = len(this.tcdata)
-    var mut = this.config.multiple_testing
-    if mut == -1
-      mut = GetAvailableParallelism()
-      if mut <= 0
-        mut = 1
-      endif
-    elseif mut == 0
-      mut = tc_size
-    endif
-    mut = min([mut, tc_size])
-    this.next_tc = 0
-
-    def RunFirstTestcases()
-      var start = this.next_tc
-      this.next_tc = start + mut
-      for idx in range(start, min([start + mut - 1, tc_size - 1]))
-        this.ExecuteTestcase(idx, this.rc, this.running_directory, function('RunNextCallback', [this]))
-      endfor
-    enddef
-
-    if !this.compile
-      RunFirstTestcases()
-    else
-      this.next_tc = 1
-      def CompileCallback()
-        if this.tcdata[0].exit_code == 0
-          RunFirstTestcases()
-        endif
-      enddef
-      this.ExecuteTestcase(0, this.cc, this.compile_directory, CompileCallback)
-    endif
-  enddef # }}}
-
   def ExecuteTestcase(tcindex: number, cmd: SystemCommand, dir: string, Callback: func = null_function) # {{{
     var tc = this.tcdata[tcindex]
+
+    if tc.running
+      return
+    endif
+
     deletebufline(tc.stdout_bufnr,  1, '$')
     deletebufline(tc.stderr_bufnr,  1, '$')
 
@@ -265,14 +249,9 @@ export class TCRunner
     if tc.stdin_bufnr == 0
       job_opts.in_io = "null"
     else
-      # TODO: when use buffer, if a testcase is large, it will has E631, maybe
-      # it's a vim's bug
-      # E631: write_buf_line(): 写入失败
+      # It is faster than "buffer"
       job_opts.in_io = "file"
       job_opts.in_name = tc.stdin_bufname
-      # job_opts.in_io = "buffer"
-      # job_opts.in_buf = tc.stdin_bufnr
-      # tc.stdin_bufnr->bufload()
     endif
 
     utils.CreateDirectory(dir)
@@ -287,7 +266,7 @@ export class TCRunner
       echoerr "TCRunner.ExecuteTestcase: failed to start: " .. string(command)
       tc.status = "FAILED"
       tc.hlgroup = "CompetiTestWarning"
-      this.UpdateUI(true)
+      this.UpdateUI()
       return
     endif
 
@@ -304,7 +283,7 @@ export class TCRunner
     tc.running = true
     tc.killed = false
 
-    this.UpdateUI(true)
+    this.UpdateUI()
   enddef # }}}
 
   def KillProcess(tcindex: number) # {{{
@@ -330,18 +309,8 @@ export class TCRunner
     this.ui.Update()
   enddef # }}}
 
-  def SetRestoreWinID(restore_winid: number) # {{{
-    this.ui_restore_winid = restore_winid
-    if this.ui != null_object
-      this.ui.restore_winid = restore_winid
-    endif
-  enddef # }}}
-
-  def UpdateUI(update_windows: bool = false) # {{{
-    if this.ui != null_object
-      if update_windows
-        this.ui.update_windows = true
-      endif
+  def UpdateUI() # {{{
+    if this.ui != null_object && this.ui.visible
       this.ui.Update()
     endif
   enddef # }}}
@@ -391,7 +360,8 @@ def JobExit(runner: TCRunner, tcindex: number, Callback: func, job: job, status:
     endif
   endif
 
-  runner.UpdateUI(true)
+  runner.UpdateUI()
+
   if Callback != null_function
     Callback()
   endif

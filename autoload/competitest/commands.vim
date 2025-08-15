@@ -192,8 +192,7 @@ def RunTestcases(testcases_list: list<string>, compile: bool, only_show = false)
   var r = b:competitest_runner
   if !only_show
     r.KillAllProcesses()
-    r.RunTestcases(tctbl, compile)
+    r.RunAndInitTestcases(tctbl, compile)
   endif
-  r.SetRestoreWinID(win_getid())
   r.ShowUI()
 enddef # }}}
