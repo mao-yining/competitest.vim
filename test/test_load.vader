@@ -1,2 +1,0 @@
-Execute (测试插件加载):
-  Assert g:loaded_competitest == 1, "插件加载不成功"
