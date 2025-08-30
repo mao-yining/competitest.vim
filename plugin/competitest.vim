@@ -1,18 +1,12 @@
 vim9script noclear
 # Vim global plugin for competitive programing
-# Last Change:  2025-06-29
+# Last Change:  2025-08-30
 # Maintainer:   mao-yining <mao.yining@outlook.com>
 
 if exists("g:loaded_competitest")
   finish
 endif
 g:loaded_competitest = 1
-
-if exists('g:competitest_configs')
-  competitest#Setup(g:competitest_configs)
-else
-  competitest#Setup()
-endif
 
 # Complete function for Commands
 def Complete(_: string, CmdLine: string, CursorPos: number): list<string> # {{{
@@ -58,4 +52,4 @@ def Complete(_: string, CmdLine: string, CursorPos: number): list<string> # {{{
   return []
 enddef # }}}
 
-command -bar -nargs=* -complete=customlist,Complete CompetiTest competitest#commands#Command(<q-args>)
+command -bar -nargs=* -complete=customlist,Complete CompetiTest competitest#HandleCommand(<q-args>)

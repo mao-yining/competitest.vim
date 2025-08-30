@@ -6,7 +6,7 @@ import autoload "./testcases.vim"
 import autoload "./widgets.vim"
 import autoload "./receive.vim"
 
-export def Command(arguments: string): void # {{{
+export def Handle(arguments: string): void # {{{
   var args = split(arguments, ' ')
   if empty(args)
     echoerr "command: at least one argument required."
