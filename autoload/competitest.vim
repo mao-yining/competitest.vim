@@ -1,4 +1,7 @@
 vim9script
+# File: autoload\competitest.vim
+# Author: mao-yining <mao.yining@outlook.com>
+# Last Modified:  2025-08-30
 
 import autoload './competitest/config.vim'
 import autoload './competitest/commands.vim'

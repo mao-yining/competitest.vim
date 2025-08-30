@@ -1,8 +1,8 @@
 vim9script
-# File: utils.vim
-# Author: mao-yining
+# File: autoload\competitest\utils.vim
+# Author: mao-yining <mao.yining@outlook.com>
 # Description: utility functions
-# Last Modified: 七月 02, 2025
+# Last Modified: 2025-08-30
 
 export def FormatStringModifiers(str: string, modifiers: dict<any>, argument = null_string): string
   var evaluated_str: list<string>

@@ -1,11 +1,15 @@
 vim9script
+# File: autoload\competitest\receive.vim
+# Author: mao-yining <mao.yining@outlook.com>
+# Description: Receive contest, problem and testcases from competitive-companion
+# Last Modified: 2025-08-30
 
 import autoload "./config.vim"
 import autoload "./testcases.vim"
 import autoload "./utils.vim"
 
-# competitive-companion task format (https://github.com/jmerle/competitive-companion/#the-format)
-class CCTask
+# Task Format (https://github.com/jmerle/competitive-companion/#the-format)
+class CCTask # {{{
   var name: string
   var group: string
   var url: string
@@ -32,12 +36,12 @@ class CCTask
     this.languages = data.languages
     this.batch = data.batch
   enddef
-endclass
+endclass # }}}
 
 # RECEIVE UTILITIES
 
 const SCRIPT_DIR = expand('<sfile>:p:h')
-class Receiver
+class Receiver # {{{
   var server: job
   var port: number
   var CallBack: func(CCTask)
@@ -66,11 +70,9 @@ class Receiver
       ch_close(this.server)
     endif
   enddef
-endclass
+endclass # }}}
 
-
-# Create a new `TasksCollector`
-class TasksCollector
+class TasksCollector # {{{
   var batches: dict<any> # TODO: test whether list<any> <24-07-25> #
   var CallBack: func(list<CCTask>)
   def new(CallBack: func(list<CCTask>))
@@ -90,9 +92,9 @@ class TasksCollector
       this.CallBack(tasks)
     endif
   enddef
-endclass
+endclass # }}}
 
-class BatchesSerialProcessor
+class BatchesSerialProcessor # {{{
   var batches: list<list<CCTask>> = []
   var CallBack: func(list<CCTask>, func())
   var callback_busy: bool = false
@@ -124,14 +126,14 @@ class BatchesSerialProcessor
   def Stop()
     this.stopped = true
   enddef
-endclass
+endclass # }}}
 
 # RECEIVE METHODS
 
 # ReceiveMode = "testcases" | "problem" | "contest" | "persistently"
 type ReceiveMode = string
 
-class ReceiveStatus
+class ReceiveStatus # {{{
   var mode: ReceiveMode
   var companion_port: number
   var receiver: Receiver
@@ -139,20 +141,19 @@ class ReceiveStatus
   var batches_serial_processor: BatchesSerialProcessor
   def new(this.mode, this.companion_port, this.receiver, this.tasks_collector, this.batches_serial_processor)
   enddef
-endclass
-
+endclass # }}}
 
 var rs: ReceiveStatus = null_object
 
-export def StopReceiving(): void
+export def StopReceiving(): void # {{{
   if rs != null_object
     rs.receiver.Close()
     rs.batches_serial_processor.Stop()
     rs = null_object
   endif
-enddef
+enddef # }}}
 
-export def ShowStatus(): void
+export def ShowStatus(): void # {{{
   var msg: string
   if rs == null_object
     msg = "receiving not enabled."
@@ -160,9 +161,9 @@ export def ShowStatus(): void
     msg = "receiving " .. rs.mode .. ", listening on port " .. rs.companion_port .. "."
   endif
   echo msg
-enddef
+enddef # }}}
 
-export def StartReceiving(mode: ReceiveMode, companion_port: number, notify_on_start: bool, notify_on_receive: bool, cfg: dict<any>, bufnr = 0): string
+export def StartReceiving(mode: ReceiveMode, companion_port: number, notify_on_start: bool, notify_on_receive: bool, cfg: dict<any>, bufnr = 0): string # {{{
   if rs != null_object
     return "receiving already enabled, stop it if you want to change receive mode"
   endif
@@ -250,11 +251,11 @@ export def StartReceiving(mode: ReceiveMode, companion_port: number, notify_on_s
     echo "ready to receive " .. mode .. ". Press the green plus button in your browser."
   endif
   return null_string
-enddef
+enddef # }}}
 
 # STORAGE UTILITIES
 
-def EvalReceiveModifiers(str: string, task: CCTask, file_extension: string, remove_illegal_characters: bool, date_format: string = null_string): string
+def EvalReceiveModifiers(str: string, task: CCTask, file_extension: string, remove_illegal_characters: bool, date_format: string = null_string): string # {{{
   var judge: string
   var contest: string
   var hyphen = stridx(task.group, " - ")
@@ -293,9 +294,9 @@ def EvalReceiveModifiers(str: string, task: CCTask, file_extension: string, remo
   endif
 
   return utils.FormatStringModifiers(str, receive_modifiers)
-enddef
+enddef # }}}
 
-def EvalPath(path: any, task: CCTask, file_extension: string): string
+def EvalPath(path: any, task: CCTask, file_extension: string): string # {{{
   if type(path) == v:t_string
     return EvalReceiveModifiers(path, task, file_extension, true)
   elseif type(path) == v:t_func
@@ -303,9 +304,9 @@ def EvalPath(path: any, task: CCTask, file_extension: string): string
     return Path(task, file_extension)
   endif
   return null_string
-enddef
+enddef # }}}
 
-def StoreTestcases(bufnr: number, tclist: list<dict<string>>, use_single_file: bool, replace: bool, Finished: func() = null_function): void
+def StoreTestcases(bufnr: number, tclist: list<dict<string>>, use_single_file: bool, replace: bool, Finished: func() = null_function): void # {{{
   var tctbl = testcases.BufGetTestcases(bufnr)
   if !empty(tctbl)
     var choice = 2
@@ -337,9 +338,9 @@ def StoreTestcases(bufnr: number, tclist: list<dict<string>>, use_single_file: b
   if Finished != null_function
     Finished()
   endif
-enddef
+enddef # }}}
 
-def StoreReceivedTaskConfig(filepath: string, confirm_overwriting: bool, task: CCTask, cfg: dict<any>): void
+def StoreReceivedTaskConfig(filepath: string, confirm_overwriting: bool, task: CCTask, cfg: dict<any>): void # {{{
   if confirm_overwriting && filereadable(filepath)
     var choice = confirm('Do you want to overwrite "' .. filepath .. '"?', "Yes\nNo")
     if choice == 0 || choice == 2 # user pressed <esc> or chose "No"
@@ -395,9 +396,9 @@ def StoreReceivedTaskConfig(filepath: string, confirm_overwriting: bool, task: C
 
   var tcdir = file_directory .. "/" .. cfg.testcases_directory .. "/"
   testcases.IOFilesWriteEvalFormatString(tcdir, tctbl, filepath, cfg.testcases_input_file_format, cfg.testcases_output_file_format)
-enddef
+enddef # }}}
 
-def StoreSingleProblem(task: CCTask, cfg: dict<any>, Finished: func() = null_function): void
+def StoreSingleProblem(task: CCTask, cfg: dict<any>, Finished: func() = null_function): void # {{{
   var evaluated_problem_path = EvalPath(cfg.received_problems_path, task, cfg.received_files_extension)
   if evaluated_problem_path == null_string
     echo "'received_problems_path' evaluation failed for task '" .. task.name .. "'"
@@ -424,9 +425,9 @@ def StoreSingleProblem(task: CCTask, cfg: dict<any>, Finished: func() = null_fun
   else
     Finished()
   endif
-enddef
+enddef # }}}
 
-def StoreContest(tasks: list<CCTask>, cfg: dict<any>, Finished: func() = null_function): void
+def StoreContest(tasks: list<CCTask>, cfg: dict<any>, Finished: func() = null_function): void # {{{
   var contest_directory = EvalPath(cfg.received_contests_directory, tasks[0], cfg.received_files_extension)
   if contest_directory == null_string
     echo "'received_contests_directory' evaluation failed"
@@ -470,5 +471,4 @@ def StoreContest(tasks: list<CCTask>, cfg: dict<any>, Finished: func() = null_fu
   else
     Finished()
   endif
-enddef
-
+enddef # }}}

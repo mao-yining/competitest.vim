@@ -1,6 +1,6 @@
 vim9script noclear
 # Vim global plugin for competitive programing
-# Last Change:  2025-08-30
+# Last Modified:  2025-08-30
 # Maintainer:   mao-yining <mao.yining@outlook.com>
 
 if exists("g:loaded_competitest")

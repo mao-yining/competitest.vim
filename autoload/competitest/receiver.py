@@ -1,5 +1,12 @@
-#!/usr/bin/env python3
-import sys
+# File: receiver.py
+# Author: mao-yining <mao.yining@outlook.com>
+# Last Modified: 2025-08-30
+
+# This Python program implements a lightweight HTTP server that receives
+# competitive programming problem data via POST requests and relays it to a Vim
+# editor through standardized JSON output, acting as a communication bridge
+# between online judges and the editing environment.import sys
+
 import json
 from http.server import HTTPServer, BaseHTTPRequestHandler
 

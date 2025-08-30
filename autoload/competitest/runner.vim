@@ -1,8 +1,11 @@
 vim9script
+# File: autoload\competitest\runner.vim
+# Author: mao-yining <mao.yining@outlook.com>
+# Description: A class that manage all testcases' process.
+# Last Modified: 2025-08-30
 
 import autoload './utils.vim'
 import autoload './config.vim' as cfg
-import autoload './compare.vim'
 import autoload './runner_ui.vim'
 
 # System command with arguments
@@ -188,7 +191,7 @@ export class TCRunner
     var tc_size = len(this.tcdata)
     var mut = this.config.multiple_testing
     if mut == -1
-      mut = GetAvailableParallelism()
+      mut = parallelism_ability
       if mut <= 0
         mut = 1
       endif
@@ -316,6 +319,48 @@ export class TCRunner
   enddef # }}}
 endclass
 
+# Compare Output {{{
+# Builtin methods to compare output and expected output
+export var methods = { # {{{
+  exact: (output: string, expout: string) => output == expout,
+  squish: (output: string, expout: string) => {
+    def SquishString(str: string): string
+      var res = str
+      res = substitute(res, '\n', ' ', 'g')   # 将所有换行符 \n 替换为空格
+      res = substitute(res, '\s\+', ' ', 'g') # 将连续空白字符替换为单个空格
+      res = substitute(res, '^\s*', '', '')   # 删除开头的所有空白字符
+      res = substitute(res, '\s*$', '', '')   # 删除结尾的所有空白字符
+      return res
+    enddef
+    var _output = SquishString(output)
+    var _expout = SquishString(expout)
+    return _output == _expout
+  },
+} # }}}
+
+export def CompareOutput(out_bufnr: number, ans_bufnr: number, method: any): bool # {{{
+  sleep 1m # should wait, because datas aren't fully loaded
+  silent bufload(ans_bufnr)
+  var outputs: list<string> = getbufline(out_bufnr, 1, '$')
+  var answers: list<string> = getbufline(ans_bufnr, 1, '$')
+
+  # handle CRLF
+  var output: string = join(outputs, "\n") -> substitute('\r\n\', '\n', 'g')
+  var answer: string = join(answers, "\n") -> substitute('\r\n\', '\n', 'g')
+
+  if type(method) == v:t_string && has_key(methods, method)
+    return methods[method](output, answer)
+  elseif type(method) == v:t_func
+    var Method = method
+    return Method(output, answer)
+  else
+    echoerr "compare_output: unrecognized method " .. string(method)
+    return false
+  endif
+
+enddef # }}}
+# }}}
+
 def RunNextCallback(runner: TCRunner) # {{{
   runner.RunNextTestcase()
 enddef # }}}
@@ -348,7 +393,7 @@ def JobExit(runner: TCRunner, tcindex: number, Callback: func, job: job, status:
         tc.status = "DONE"
         tc.hlgroup = "CompetiTestDone"
       else
-        var correct = compare.CompareOutput(tc.stdout_bufnr, tc.ans_bufnr, runner.config.output_compare_method)
+        var correct = CompareOutput(tc.stdout_bufnr, tc.ans_bufnr, runner.config.output_compare_method)
         if correct == true
           tc.status = "CORRECT"
           tc.hlgroup = "CompetiTestCorrect"
@@ -371,26 +416,17 @@ def JobTimeout(runner: TCRunner, tcindex: number, timer: any) # {{{
   runner.KillProcess(tcindex)
 enddef # }}}
 
-var parallelism_cache: number = 0
-
-def GetAvailableParallelism(): number # {{{
-  if parallelism_cache > 0
-    return parallelism_cache
+var parallelism_ability: number = 1
+# SetParallelism {{{
+if executable('nproc') # On Unix-like OS
+  var result = systemlist('nproc --all')
+  if !empty(result) && result[0] =~ '^\d\+$'
+    parallelism_ability = str2nr(result[0])
   endif
-
-  var cores = 1
-  if executable('nproc')
-    var result = systemlist('nproc --all')
-    if !empty(result) && result[0] =~ '^\d\+$'
-      cores = str2nr(result[0])
-    endif
-  elseif executable('wmic')
-    var result = systemlist('wmic cpu get NumberOfCores')
-    if len(result) > 1 && result[1]->substitute('[^0-9]', '', 'g') =~ '^\d\+$'
-      cores = str2nr(result[1]->substitute('[^0-9]', '', 'g'))
-    endif
+elseif executable('wmic') # On Windows OS
+  var result = systemlist('wmic cpu get NumberOfCores')
+  if len(result) > 1 && result[1]->substitute('[^0-9]', '', 'g') =~ '^\d\+$'
+    parallelism_ability = str2nr(result[1]->substitute('[^0-9]', '', 'g'))
   endif
-
-  parallelism_cache = cores
-  return cores
-enddef # }}}
+endif
+# }}}

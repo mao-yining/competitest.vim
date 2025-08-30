@@ -1,12 +1,12 @@
 vim9script
-# File: widgets.vim
-# Author: mao-yining
-# Description: CompetiTest UI Module Testcase editor and picker
-# Last Modified: 2025-07-02
+# File: autoload\competitest\widgets.vim
+# Author: mao-yining <mao.yining@outlook.com>
+# Description: CompetiTest UI Module Testcase editor and picker.
+# Last Modified: 2025-08-30
 
 import autoload './config.vim' as cfg
 import autoload './testcases.vim'
-import autoload './utils.vim' as utils
+import autoload './utils.vim'
 
 export def Editor(bufnr: number = 0, tcnum: number = 0): void # {{{
   var [input_path, output_path] = testcases.IOFileLocate(bufnr, tcnum)

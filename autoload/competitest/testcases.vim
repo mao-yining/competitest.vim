@@ -1,7 +1,11 @@
 vim9script
+# File: autoload\competitest\testcases.vim
+# Author: mao-yining <mao.yining@outlook.com>
+# Description: Handle testcases tasks.
+# Last Modified: 2025-08-30
 
-import autoload './config.vim' as config
-import autoload './utils.vim' as utils
+import autoload './config.vim'
+import autoload './utils.vim'
 
 # Get testcases path for buffer
 export def BufGetTestcasesPath(bufnr: number): string
