@@ -163,7 +163,7 @@ enddef # }}}
 
 def RunTestcases(testcases_list: list<string>, compile: bool, only_show = false) # {{{
   var bufnr = bufnr()
-  config.LoadBufferConfig(bufnr())
+  config.LoadBufferConfig(bufnr)
   var tctbl = testcases.BufGetTestcases(bufnr)
 
   if testcases_list != null_list
@@ -193,10 +193,9 @@ def RunTestcases(testcases_list: list<string>, compile: bool, only_show = false)
     endtry
   endif
 
-  var r = b:competitest_runner
   if !only_show
-    r.KillAllProcesses()
-    r.RunAndInitTestcases(tctbl, compile)
+    b:competitest_runner.KillAllProcesses()
+    b:competitest_runner.RunAndInitTestcases(tctbl, compile)
   endif
-  r.ShowUI()
+  b:competitest_runner.ShowUI()
 enddef # }}}
