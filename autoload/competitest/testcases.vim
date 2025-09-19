@@ -26,7 +26,7 @@ def IOFilesLoad(directory: string, input_file_match: string, output_file_match: 
     if empty(list)
       return -1
     endif
-    var value = list[1]  # Vim9 列表索引从 0 开始
+    var value = list[1]
     return str2nr(value)
   enddef
 
@@ -87,7 +87,6 @@ export def IOFileLocate(bufnr: number, tcnum: number): list<string>
   var input_format = ComputeFormat(conf.testcases_input_file_format)
   var output_format = ComputeFormat(conf.testcases_output_file_format)
 
-  # 生成文件路径
   var input_file = printf(input_format, tcnum)
   var output_file = printf(output_format, tcnum)
 

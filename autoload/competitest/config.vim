@@ -2,11 +2,10 @@ vim9script
 # File: autoload\competitest\config.vim
 # Author: mao-yining <mao.yining@outlook.com>
 # Description: Deal with settings of the plugin.
-# Last Modified: 2025-08-30
+# Last Modified: 2025-09-19
 
 import autoload './utils.vim'
 
-# Default configuration structure
 const default_config = { # {{{
   local_config_file_name: ".competitest.vim",
   floating_border: "rounded",
@@ -75,9 +74,6 @@ const default_config = { # {{{
   replace_received_testcases: false,
 } # }}}
 
-# Module-level variables
-export var current_setup: dict<any> = null_dict
-
 # Recursively extend two dictionaries
 def RecursiveExtend(base: dict<any>, overrides: dict<any>): dict<any> # {{{
   var ret = deepcopy(base)
@@ -99,8 +95,8 @@ def NotifyWarning(msg: string) # {{{
 enddef # }}}
 
 # Update configuration table with new options
-export def UpdateConfigTable(cfg_tbl: dict<any> = null_dict, opts: dict<any> = null_dict): dict<any> # {{{
-  if opts == null_dict
+def UpdateConfigTable(cfg_tbl = {}, opts = {}): dict<any> # {{{
+  if opts == {}
     return deepcopy(cfg_tbl ?? default_config)
   endif
 
@@ -173,3 +169,18 @@ export def GetBufferConfig(bufnr: number): dict<any> # {{{
   return getbufvar(bufnr, "competitest_configs")
 enddef # }}}
 
+# Module-level variables
+var current_setup = UpdateConfigTable({}, get(g:, 'competitest_configs', {}))
+
+def SetHighlight()
+  hi CompetiTestRunning cterm=bold     gui=bold
+  hi CompetiTestDone    cterm=none     gui=none
+  hi CompetiTestCorrect ctermfg=green  guifg=#00ff00
+  hi CompetiTestWarning ctermfg=yellow guifg=orange
+  hi CompetiTestWrong   ctermfg=red    guifg=#ff0000
+enddef
+
+SetHighlight()
+
+autocmd ColorScheme * SetHighlight()
+autocmd Filetype competitest_in,competitest_out,competitest_ans,competitest_err nnoremap <buffer> q <Cmd>q<CR>

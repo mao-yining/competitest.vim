@@ -1,8 +1,8 @@
 vim9script
 # File: autoload\competitest\commands.vim
-# Author: mao-yining <mao.yining@outlook.com>
+# Author: Mao-Yining <mao.yining@outlook.com>
 # Description: Handle Commands
-# Last Modified: 2025-08-30
+# Last Modified: 2025-09-19
 
 import autoload "./config.vim"
 import autoload "./runner.vim"
@@ -10,16 +10,26 @@ import autoload "./testcases.vim"
 import autoload "./widgets.vim"
 import autoload "./receive.vim"
 
-export def Handle(arguments: string): void # {{{
-  var args = split(arguments, ' ')
-  if empty(args)
-    echoerr "command: at least one argument required."
-    return
+export def Complete(_: string, cmdline: string, cursorpos: number): string # {{{
+  const ending_space = cmdline[cursorpos - 1] == " "
+  const words = split(cmdline)
+  const wlen = len(words)
+
+  if wlen == 1 || wlen == 2 && !ending_space
+    return "add_testcase\nedit_testcase\ndelete_testcase\nrun\nrun_no_compile\nshow_ui\nreceive"
+  elseif wlen == 2 && words[-1] == "receive" || wlen == 3 && words[-2] == "receive" && !ending_space
+    return "testcases\nproblem\ncontest\npersistently\nstatus\nstop"
+  else
+    return null_string
   endif
+enddef # }}}
+
+export def Handle(arguments: string): void # {{{
+  const args = split(arguments, ' ')
 
   # Check if current subcommand has the correct number of arguments
   def CheckSubargs(min_args: number, max_args: number): bool
-    var count = len(args) - 1
+    const count = len(args) - 1
     if min_args <= count && count <= max_args
       return true
     endif
@@ -31,7 +41,7 @@ export def Handle(arguments: string): void # {{{
     return false
   enddef
 
-  var subcommands: dict<func()> = {
+  const subcommands = {
     add_testcase: () => {
       if CheckSubargs(0, 0)
         EditTestcase(true)
@@ -89,7 +99,7 @@ export def Handle(arguments: string): void # {{{
 enddef # }}}
 
 def EditTestcase(add_testcase: bool, tcnum = -1): void # {{{
-  var bufnr = bufnr()
+  const bufnr = bufnr()
   config.LoadBufferConfig(bufnr) # reload buffer configuration since it may have been updated in the meantime
   var tctbl = testcases.BufGetTestcases(bufnr)
   def StartEditor(n: number)
@@ -115,7 +125,7 @@ def EditTestcase(add_testcase: bool, tcnum = -1): void # {{{
 enddef # }}}
 
 def DeleteTestcase(tcnum = -1): void # {{{
-  var bufnr = bufnr()
+  const bufnr = bufnr()
   var tctbl = testcases.BufGetTestcases(bufnr)
   def Delete(num: number)
     if !has_key(tctbl, num)
@@ -162,7 +172,7 @@ def Receive(mode: string) # {{{
 enddef # }}}
 
 def RunTestcases(testcases_list: list<string>, compile: bool, only_show = false) # {{{
-  var bufnr = bufnr()
+  const bufnr = bufnr()
   config.LoadBufferConfig(bufnr)
   var tctbl = testcases.BufGetTestcases(bufnr)
 
