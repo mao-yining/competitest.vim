@@ -12,44 +12,41 @@ export def Editor(bufnr: number = 0, tcnum: number = 0): void # {{{
   var [input_path, output_path] = testcases.IOFileLocate(bufnr, tcnum)
 
   tabnew
-  var new_tab = tabpagenr()
+
+  # Set input buffer
+  var input_win = win_getid()
+  execute('edit ' .. input_path)
+  setlocal bufhidden=delete
+  setlocal autowrite
+  setlocal filetype=competitest_in
+
   vsplit
 
-  var input_win = win_getid(1)  # First window in tab
-  var output_win = win_getid(2) # Second window in tab
-
-  # Create input buffer
-  win_execute(input_win, 'edit ' .. input_path)
-  var input_bufnr = winbufnr(input_win)
-  setbufvar(input_bufnr, '&bufhidden', 'delete') # Delete when window closes
-  setbufvar(input_bufnr, '&autowrite', true) # Save when window closes
-  setbufvar(input_bufnr, '&filetype', "competitest_in")
-
-  # Create output buffer
-  win_execute(output_win, 'edit ' .. output_path)
-  var output_bufnr = winbufnr(output_win)
-  setbufvar(output_bufnr, '&bufhidden', 'delete') # Delete when window closes
-  setbufvar(output_bufnr, '&autowrite', true) # Save when window closes
-  setbufvar(output_bufnr, '&filetype', "competitest_ans")
+  # Set output buffer
+  var output_win = win_getid()
+  execute('edit ' .. output_path)
+  setlocal bufhidden=delete
+  setlocal autowrite
+  setlocal filetype=competitest_ans
 
   win_gotoid(input_win)
 
   # Set key mappings
-  def SetKeymaps(winid: number, other_winid: number, mappings: dict<any>): void # {{{
-    for [_, action] in items(mappings.switch_window)
-      win_execute(winid, $"nnoremap <buffer> {action} <Cmd>call win_gotoid({other_winid})<CR>")
+  def SetKeymaps(winid: number, other_winid: number, mappings: dict<any>) # {{{
+    for action in mappings.switch_window
+      win_execute(winid, $"nnoremap <buffer><nowait> {action} <Cmd>call win_gotoid({other_winid})<CR>")
     endfor
-    for [_, action] in items(mappings.save_and_close)
-      win_execute(winid, $"nnoremap <buffer> {action} <Cmd>write<CR><Cmd>tabclose<CR>")
+    for action in mappings.save_and_close
+      win_execute(winid, $"nnoremap <buffer><nowait> {action} <Cmd>write<CR><Cmd>tabclose<CR>")
     endfor
-    for [_, action] in items(mappings.cancel)
-      win_execute(winid, $"nnoremap <buffer> {action} <Cmd>tabclose<CR>")
+    for action in mappings.cancel
+      win_execute(winid, $"nnoremap <buffer><nowait> {action} <Cmd>tabclose<CR>")
     endfor
   enddef # }}}
 
-  var config = cfg.GetBufferConfig(bufnr)
-  SetKeymaps(input_win, output_win, config.editor_ui.normal_mode_mappings)
-  SetKeymaps(output_win, input_win, config.editor_ui.normal_mode_mappings)
+  var mappings = cfg.GetBufferConfig(bufnr).editor_ui.normal_mode_mappings
+  SetKeymaps(input_win, output_win, mappings)
+  SetKeymaps(output_win, input_win, mappings)
 enddef # }}}
 
 export def Picker(bufnr: number, tctbl: dict<any>, title: string, CallBack: func): void # {{{
@@ -69,7 +66,7 @@ export def Picker(bufnr: number, tctbl: dict<any>, title: string, CallBack: func
   var config = cfg.GetBufferConfig(bufnr)
   var [vim_width, vim_height] = utils.GetUISize()
   var popup = popup_menu(menu_items, {
-    title: title != '' ? ' ' .. title .. ' ' : ' Testcase Picker ',
+    title: $" {empty(title) ? "Testcase Picker" : title} ",
     border: [],
     borderchars: utils.GetBorderChars(config.floating_border),
     borderhighlight: [config.floating_border_highlight],
@@ -79,5 +76,4 @@ export def Picker(bufnr: number, tctbl: dict<any>, title: string, CallBack: func
       endif
     }
   })
-  setbufvar(winbufnr(popup), '&filetype', 'CompetiTestPicker')
 enddef # }}}
