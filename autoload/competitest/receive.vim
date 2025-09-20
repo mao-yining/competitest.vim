@@ -293,7 +293,12 @@ def EvalReceiveModifiers(str: string, task: CCTask, file_extension: string, remo
     endfor
   endif
 
-  return utils.FormatStringModifiers(str, receive_modifiers)
+  try
+    return utils.FormatStringModifiers(str, receive_modifiers)
+  catch /^FormatStringModifiers:/
+    echoerr string(v:exception)
+    return null_string
+  endtry
 enddef # }}}
 
 def EvalPath(path: any, task: CCTask, file_extension: string): string # {{{

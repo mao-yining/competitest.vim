@@ -4,53 +4,50 @@ vim9script
 # Description: utility functions
 # Last Modified: 2025-08-30
 
+# Formats string by replacing $(modifier) tokens with corresponding values
+# from the provided dictionary, supporting both static string values and
+# callback functions for dynamic replacement.
 export def FormatStringModifiers(str: string, modifiers: dict<any>, argument = null_string): string
   var evaluated_str: list<string>
   var mod_start = 0  # 0: idle, -1: saw '$', >0: position of '('
-  var n = len(str)
 
-  for i in range(0, n - 1)
-    var c = str[i]
+  for i in range(len(str))
+    const c = str[i]
     if mod_start == -1  # expect '('
       if c == '('
         mod_start = i  # position of '('
       else
-        echoerr "FormatStringModifiers: '$' isn't followed by '(' in:\n" .. str
-        return null_string
+        throw "FormatStringModifiers: '$' isn't followed by '(' in:\n" .. str
       endif
     elseif mod_start == 0  # empty
       if c == '$'
-        mod_start = -1  # 标记遇到 '$'
+        mod_start = -1
       else
         add(evaluated_str, c)
       endif
     elseif mod_start != 0 && c == ')'
-      var mod = str[mod_start + 1 : i - 1]  # 提取修饰符名称
-      var replacement = modifiers->get(mod, null_string)
-      if replacement == null_string
-        echoerr 'FormatStringModifiers: unrecognized modifier $(' .. mod .. ')'
-        return null_string
+      const mod = str[mod_start + 1 : i - 1]
+      const replacement = modifiers->get(mod) # return 0 in default
+      if replacement == 0
+        throw 'FormatStringModifiers: unrecognized modifier $(' .. mod .. ')'
       endif
 
       if type(replacement) == v:t_string
         add(evaluated_str, replacement)
       elseif type(replacement) == v:t_func
-        var Replacement = replacement
+        const Replacement = replacement
         add(evaluated_str, Replacement(argument))
       else
-        echoerr 'FormatStringModifiers: invalid modifier type for $(' .. mod .. ')'
-        return null_string
+        throw 'FormatStringModifiers: invalid modifier type for $(' .. mod .. ')'
       endif
       mod_start = 0
     endif
   endfor
 
   if mod_start == -1
-    echo "format_string_modifiers: '$' at end without '(' in:\n" .. str
-    return null_string
+    throw "FormatStringModifiers: '$' at end without '(' in:\n" .. str
   elseif mod_start > 0
-    echo "format_string_modifiers: unclosed modifier starting at position " .. mod_start
-    return null_string
+    throw "FormatStringModifiers: unclosed modifier starting at position " .. mod_start
   endif
 
   return evaluated_str->join('')
@@ -68,7 +65,12 @@ var file_format_modifiers = {
 }
 
 export def EvalString(filepath: string, str: string): string
-  return FormatStringModifiers(str, file_format_modifiers, filepath)
+  try
+    return FormatStringModifiers(str, file_format_modifiers, filepath)
+  catch /^FormatStringModifiers:/
+    echoerr string(v:exception)
+  endtry
+  return null_string
 enddef
 
 export def BufEvalString(bufnr: number, str: string, tcnum: any = null): string
@@ -77,15 +79,11 @@ export def BufEvalString(bufnr: number, str: string, tcnum: any = null): string
 enddef
 
 export def LoadFileAsString(filepath: string): string
-  if !filereadable(filepath)
+  if filereadable(filepath)
+    return readfile(filepath)->join("\n")->substitute("\r\n", "\n", 'g')
+  else
     return null_string
   endif
-  try
-    var content = join(readfile(filepath), "\n")
-    return substitute(content, "\r\n", "\n", 'g')
-  catch
-    return null_string
-  endtry
 enddef
 
 export def CreateDirectory(dirpath: string)
