@@ -221,7 +221,7 @@ export class RunnerUI
       add(buffer_lines, this.AdjustString(10, l.header, " ") .. this.AdjustString(10, l.status, " ") .. l.time)
     endfor
 
-     # add first, delete next to keep cursor's position
+    # add first, delete next to keep cursor's position
     setbufvar(this.windows.tc.bufnr, "&modifiable", true)
     setbufline(this.windows.tc.bufnr, 1, buffer_lines)
     deletebufline(this.windows.tc.bufnr, len(buffer_lines) + 1, "$")
