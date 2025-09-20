@@ -47,7 +47,7 @@ class Receiver # {{{
   var CallBack: func(CCTask)
   def new(port: number, CallBack: func(CCTask))
     def OnReceive(message: string)
-      var data = json_decode(message)
+      const data = json_decode(message)
       if data.type == 'status'
         echom data.message
       elseif data.type == 'problem'
@@ -85,7 +85,7 @@ class TasksCollector # {{{
     var b = this.batches[task.batch.id]
     add(b.tasks, task)
     if b.size == len(b.tasks) # batch fully received
-      var tasks = b.tasks
+      const tasks = b.tasks
       this.batches = remove(this.batches, task.batch.id)
       this.CallBack(tasks)
     endif
@@ -111,8 +111,7 @@ class BatchesSerialProcessor # {{{
       return
     endif
     this.callback_busy = true
-    var batch = this.batches[0]
-    remove(this.batches, 0)
+    const batch = this.batches->remove(0)
     this.CallBack(
       batch,
       () => {
@@ -219,7 +218,7 @@ export def StartReceiving(mode: ReceiveMode, companion_port: number, notify: boo
           )
         elseif choice == 2 # user chose "Problem"
           StoreSingleProblem(tasks[0], cfg, Finished)
-        else # user pressed <esc> or chose "Cancel"
+        else # user pressed <Esc> or chose "Cancel"
           Finished()
         endif
       endif
@@ -249,17 +248,10 @@ enddef # }}}
 
 # STORAGE UTILITIES
 
-def EvalReceiveModifiers(str: string, task: CCTask, file_extension: string, remove_illegal_characters: bool, date_format: string = null_string): string # {{{
-  var judge: string
-  var contest: string
-  var hyphen = stridx(task.group, " - ")
-  if hyphen == -1
-    judge = task.group
-    contest = "unknown_contest"
-  else
-    judge = strpart(task.group, 0, hyphen)
-    contest = strpart(task.group, hyphen + 3)
-  endif
+def EvalReceiveModifiers(str: string, task: CCTask, file_extension: string, remove_illegal_characters: bool, date_format = null_string): string # {{{
+  const hyphen = stridx(task.group, " - ")
+  const judge = hyphen == -1 ? task.group : task.group->strpart(0, hyphen)
+  const contest = hyphen == -1 ? "unknown_contest" : task.group->strpart(hyphen + 3)
 
   # CompetiTest receive modifiers
   var receive_modifiers: dict<string> = {
@@ -339,8 +331,8 @@ enddef # }}}
 
 def StoreReceivedTaskConfig(filepath: string, confirm_overwriting: bool, task: CCTask, cfg: dict<any>): void # {{{
   if confirm_overwriting && filereadable(filepath)
-    var choice = confirm('Do you want to overwrite "' .. filepath .. '"?', "Yes\nNo")
-    if choice == 0 || choice == 2 # user pressed <esc> or chose "No"
+    const choice = confirm($'Do you want to overwrite "{filepath}"?', "Yes\nNo")
+    if choice == 0 || choice == 2 # user pressed <Esc> or chose "No"
       return
     endif
   endif
