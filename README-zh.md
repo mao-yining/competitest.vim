@@ -450,9 +450,9 @@ g:airline_filetype_overrides.competitest_testcases = [ '测试用例', '' ]
 ```vim
 hi CompetiTestRunning cterm=bold     gui=bold
 hi CompetiTestDone    cterm=none     gui=none
-hi CompetiTestCorrect ctermfg=green  guifg=#00ff00
-hi CompetiTestWarning ctermfg=yellow guifg=orange
-hi CompetiTestWrong   ctermfg=red    guifg=#ff0000
+hi CompetiTestCorrect ctermfg=green  guifg=Green
+hi CompetiTestWarning ctermfg=yellow guifg=Yellow
+hi CompetiTestWrong   ctermfg=red    guifg=Red
 ```
 
 ## 贡献

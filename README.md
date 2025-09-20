@@ -451,9 +451,9 @@ You can customize CompetiTest highlight groups. Their default values are:
 ```vim
 hi CompetiTestRunning cterm=bold     gui=bold
 hi CompetiTestDone    cterm=none     gui=none
-hi CompetiTestCorrect ctermfg=green  guifg=#00ff00
-hi CompetiTestWarning ctermfg=yellow guifg=orange
-hi CompetiTestWrong   ctermfg=red    guifg=#ff0000
+hi CompetiTestCorrect ctermfg=green  guifg=Green
+hi CompetiTestWarning ctermfg=yellow guifg=Yellow
+hi CompetiTestWrong   ctermfg=red    guifg=Red
 ```
 
 ## Contributing
