@@ -137,7 +137,7 @@ export def LoadLocalConfig(directory: string): dict<any> # {{{
     else
       config_file = dir .. "/" .. current_setup.local_config_file_name
     endif
-    if utils.DoesFileExist(config_file)
+    if config_file->filereadable()
       var local_config = eval(join(readfile(config_file), " \n"))
       if type(local_config) != v:t_dict
         echo "LoadLocalConfig: '" .. config_file .. "' doesn't return a dict."

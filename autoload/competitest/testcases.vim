@@ -95,11 +95,11 @@ enddef
 
 export def IOFIlesDelete(bufnr: number, tcnum: number)
   var [input_path, output_path] = IOFileLocate(bufnr, tcnum)
-  if utils.DoesFileExist(input_path)
-    utils.DeleteFile(input_path)
+  if input_path->filereadable()
+    delete(input_path)
   endif
-  if utils.DoesFileExist(output_path)
-    utils.DeleteFile(output_path)
+  if output_path->filereadable()
+    delete(output_path)
   endif
 enddef
 
@@ -143,8 +143,8 @@ def IOFilesWrite(directory: string, tctbl: dict<any>, input_file_format: string,
   # Helper: Write or delete file based on content
   def WriteFile(fpath: string, content: any)
     if type(content) != v:t_string || content == ''
-      if utils.DoesFileExist(fpath)
-        utils.DeleteFile(fpath)
+      if fpath->filereadable()
+        delete(fpath)
       endif
     else
       utils.WriteStringOnFile(fpath, content)

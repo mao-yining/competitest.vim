@@ -76,10 +76,6 @@ export def BufEvalString(bufnr: number, str: string, tcnum: any = null): string
   return EvalString(bufname(bufnr), str)
 enddef
 
-export def DoesFileExist(filepath: string): bool
-  return getftype(filepath) != ''
-enddef
-
 export def LoadFileAsString(filepath: string): string
   if !filereadable(filepath)
     return null_string
@@ -106,10 +102,6 @@ enddef
 export def WriteStringOnFile(filepath: string, content: string)
   CreateDirectory(fnamemodify(filepath, ':h'))
   writefile(content->split("\n"), filepath)
-enddef
-
-export def DeleteFile(filepath: string)
-  delete(filepath)
 enddef
 
 export def GetBorderChars(style: string): list<string>
