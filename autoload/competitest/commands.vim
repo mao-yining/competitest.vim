@@ -136,7 +136,7 @@ def DeleteTestcase(tcnum = -1): void # {{{
     if choice == 0 || choice == 2 # user pressed <Esc> or chose "No"
       return
     endif
-    testcases.IOFIlesDelete(bufnr, num)
+    testcases.IOFilesDelete(bufnr, num)
   enddef
   if tcnum == -1
     widgets.Picker(bufnr, tctbl, "Delete a Testcase", Delete)

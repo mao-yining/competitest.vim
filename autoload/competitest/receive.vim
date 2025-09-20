@@ -179,7 +179,7 @@ export def StartReceiving(mode: ReceiveMode, companion_port: number, notify_on_s
       if notify_on_receive
         echo "testcases received successfully!"
       endif
-      StoreTestcases(bufnr, tasks[0].tests, cfg.testcases_use_single_file, cfg.replace_received_testcases, null_function)
+      StoreTestcases(bufnr, tasks[0].tests, cfg.replace_received_testcases, null_function)
     } # }}}
   elseif mode == "problem" # {{{
     BSP_CallBack = (tasks: list<CCTask>, _) => {
@@ -218,7 +218,6 @@ export def StartReceiving(mode: ReceiveMode, companion_port: number, notify_on_s
           StoreTestcases(
             bufnr(),
             tasks[0].tests,
-            cfg.testcases_use_single_file,
             cfg.replace_received_testcases,
             Finished
           )
@@ -297,8 +296,8 @@ def EvalReceiveModifiers(str: string, task: CCTask, file_extension: string, remo
     return utils.FormatStringModifiers(str, receive_modifiers)
   catch /^FormatStringModifiers:/
     echoerr string(v:exception)
-    return null_string
   endtry
+  return null_string
 enddef # }}}
 
 def EvalPath(path: any, task: CCTask, file_extension: string): string # {{{
@@ -311,7 +310,7 @@ def EvalPath(path: any, task: CCTask, file_extension: string): string # {{{
   return null_string
 enddef # }}}
 
-def StoreTestcases(bufnr: number, tclist: list<dict<string>>, use_single_file: bool, replace: bool, Finished: func() = null_function): void # {{{
+def StoreTestcases(bufnr: number, tclist: list<dict<string>>, replace: bool, Finished: func() = null_function): void # {{{
   var tctbl = testcases.BufGetTestcases(bufnr)
   if !empty(tctbl)
     var choice = 2
@@ -319,13 +318,11 @@ def StoreTestcases(bufnr: number, tclist: list<dict<string>>, use_single_file: b
       choice = confirm("Some testcases already exist. Do you want to keep them along the new ones?", "Keep\nReplace\nCancel")
     endif
     if choice == 2 # user chose "Replace"
-      if !use_single_file
-        for tcnum in keys(tctbl) # delete existing files
-          testcases.io_files.buf_write_pair(bufnr, tcnum, null_string, null_string)
-        endfor
-      endif
+      for tcnum in keys(tctbl) # delete existing files
+        testcases.IOFilesDelete(bufnr, str2nr(tcnum))
+      endfor
       tctbl = {}
-    elseif choice == 0 || choice == 3 # user pressed <esc> or chose "Cancel"
+    elseif choice == 0 || choice == 3 # user pressed <Esc> or chose "Cancel"
       return
     endif
   endif
@@ -339,7 +336,7 @@ def StoreTestcases(bufnr: number, tclist: list<dict<string>>, use_single_file: b
     tcindex += 1
   endfor
 
-  testcases.buf_write_testcases(bufnr, tctbl, use_single_file)
+  testcases.IOSingleFileWrite(bufnr, tctbl)
   if Finished != null_function
     Finished()
   endif

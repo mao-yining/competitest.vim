@@ -93,7 +93,18 @@ export def IOFileLocate(bufnr: number, tcnum: number): list<string>
   return [dir .. input_file, dir .. output_file]
 enddef
 
-export def IOFIlesDelete(bufnr: number, tcnum: number)
+export def IOSingleFileWrite(bufnr: number, tctbl: dict<any>)
+  var cfg = config.GetBufferConfig(bufnr)
+  IOFilesWriteEvalFormatString(
+    BufGetTestcasesPath(bufnr),
+    tctbl,
+    bufname(bufnr),
+    cfg.testcases_input_file_format,
+    cfg.testcases_output_file_format
+  )
+enddef
+
+export def IOFilesDelete(bufnr: number, tcnum: number)
   var [input_path, output_path] = IOFileLocate(bufnr, tcnum)
   if input_path->filereadable()
     delete(input_path)
@@ -152,10 +163,10 @@ def IOFilesWrite(directory: string, tctbl: dict<any>, input_file_format: string,
   enddef
 
   for [tcnum, tc] in items(tctbl)
-    var input_file = printf(input_file_format, str2nr(tcnum))
-    var output_file = printf(output_file_format, str2nr(tcnum))
-    var input_content = tc->get('input', v:null)
-    var output_content = tc->get('output', v:null)
+    const input_file = printf(input_file_format, str2nr(tcnum))
+    const output_file = printf(output_file_format, str2nr(tcnum))
+    const input_content = tc->get('input', v:null)
+    const output_content = tc->get('output', v:null)
 
     WriteFile(directory .. input_file, input_content)
     WriteFile(directory .. output_file, output_content)
