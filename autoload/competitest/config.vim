@@ -1,6 +1,6 @@
 vim9script
 # File: autoload\competitest\config.vim
-# Author: mao-yining <mao.yining@outlook.com>
+# Author: Mao-Yining <mao.yining@outlook.com>
 # Description: Deal with settings of the plugin.
 # Last Modified: 2025-09-19
 
@@ -100,8 +100,8 @@ def UpdateConfigTable(cfg_tbl = {}, opts = {}): dict<any> # {{{
     return deepcopy(cfg_tbl ?? default_config)
   endif
 
-  var base_cfg = cfg_tbl ?? default_config
-  var opts_copy = deepcopy(opts)
+  const base_cfg = cfg_tbl ?? default_config
+  const opts_copy = deepcopy(opts)
   var new_config = RecursiveExtend(base_cfg, opts_copy)
 
   # Handle compile_command args replacement
@@ -131,14 +131,10 @@ export def LoadLocalConfig(directory: string): dict<any> # {{{
   var dir = directory
   while prev_len != len(dir)
     prev_len = len(dir)
-    var config_file: string
-    if current_setup == null_dict
-      config_file = dir .. "/" .. default_config.local_config_file_name
-    else
-      config_file = dir .. "/" .. current_setup.local_config_file_name
-    endif
+    const config_file = dir .. "/" .. current_setup->get(
+      "local_config_file_name", default_config.local_config_file_name)
     if config_file->filereadable()
-      var local_config = eval(join(readfile(config_file), " \n"))
+      const local_config = config_file->readfile()->join("\n")->eval()
       if type(local_config) != v:t_dict
         echo "LoadLocalConfig: '" .. config_file .. "' doesn't return a dict."
         return null_dict
@@ -157,30 +153,27 @@ enddef # }}}
 
 # Load buffer configuration
 export def LoadBufferConfig(bufnr: number) # {{{
-  var directory = bufname(bufnr)->fnamemodify(":p:h")
-  setbufvar(bufnr, "competitest_configs", LoadLocalConfigAndExtend(directory))
+  setbufvar(bufnr, "competitest_configs",
+    LoadLocalConfigAndExtend(bufname(bufnr)->fnamemodify(":p:h")))
 enddef # }}}
 
 # Get buffer configuration
 export def GetBufferConfig(bufnr: number): dict<any> # {{{
-  if !exists("getbufvar(bufnr, 'competitest_configs'")
-    LoadBufferConfig(bufnr)
-  endif
   return getbufvar(bufnr, "competitest_configs")
 enddef # }}}
 
 # Module-level variables
-var current_setup = UpdateConfigTable({}, get(g:, 'competitest_configs', {}))
+const current_setup = UpdateConfigTable({}, get(g:, 'competitest_configs', {}))
 
 def SetHighlight()
   hi CompetiTestRunning cterm=bold     gui=bold
   hi CompetiTestDone    cterm=none     gui=none
-  hi CompetiTestCorrect ctermfg=green  guifg=#00ff00
-  hi CompetiTestWarning ctermfg=yellow guifg=orange
-  hi CompetiTestWrong   ctermfg=red    guifg=#ff0000
+  hi CompetiTestCorrect ctermfg=green  guifg=Green
+  hi CompetiTestWarning ctermfg=yellow guifg=Yellow
+  hi CompetiTestWrong   ctermfg=red    guifg=Red
 enddef
 
 SetHighlight()
 
 autocmd ColorScheme * SetHighlight()
-autocmd Filetype competitest_in,competitest_out,competitest_ans,competitest_err nnoremap <buffer> q <Cmd>q<CR>
+autocmd Filetype competitest_* nnoremap <buffer> q <Cmd>q<CR>

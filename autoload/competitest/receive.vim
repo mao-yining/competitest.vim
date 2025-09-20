@@ -1,8 +1,8 @@
 vim9script
 # File: autoload\competitest\receive.vim
-# Author: mao-yining <mao.yining@outlook.com>
+# Author: Mao-Yining <mao.yining@outlook.com>
 # Description: Receive contest, problem and testcases from competitive-companion
-# Last Modified: 2025-08-30
+# Last Modified: 2025-09-20
 
 import autoload "./config.vim"
 import autoload "./testcases.vim"
@@ -154,29 +154,27 @@ export def StopReceiving(): void # {{{
 enddef # }}}
 
 export def ShowStatus(): void # {{{
-  var msg: string
   if rs == null_object
-    msg = "receiving not enabled."
+    echo "receiving not enabled."
   else
-    msg = "receiving " .. rs.mode .. ", listening on port " .. rs.companion_port .. "."
+    echo $"receiving {rs.mode}, listening on port {rs.companion_port}."
   endif
-  echo msg
 enddef # }}}
 
-export def StartReceiving(mode: ReceiveMode, companion_port: number, notify_on_start: bool, notify_on_receive: bool, cfg: dict<any>, bufnr = 0): string # {{{
+export def StartReceiving(mode: ReceiveMode, companion_port: number, notify: bool, cfg: dict<any>, bufnr = 0) # {{{
   if rs != null_object
-    return "receiving already enabled, stop it if you want to change receive mode"
+    throw "receive: receiving already enabled, stop it if you want to change receive mode"
   endif
 
   # BatchesSerialProcessor callback
   var BSP_CallBack: func(list<CCTask>, any)
   if mode == "testcases" # {{{
     if bufnr == 0
-      return "bufnr required when receiving testcases"
+      throw "receive: bufnr required when receiving testcases"
     endif
     BSP_CallBack = (tasks: list<CCTask>, _) => {
       StopReceiving()
-      if notify_on_receive
+      if notify
         echo "testcases received successfully!"
       endif
       StoreTestcases(bufnr, tasks[0].tests, cfg.replace_received_testcases, null_function)
@@ -184,7 +182,7 @@ export def StartReceiving(mode: ReceiveMode, companion_port: number, notify_on_s
   elseif mode == "problem" # {{{
     BSP_CallBack = (tasks: list<CCTask>, _) => {
       StopReceiving()
-      if notify_on_receive
+      if notify
         echo "problem received successfully!"
       endif
       StoreSingleProblem(tasks[0], cfg, null_function)
@@ -192,14 +190,14 @@ export def StartReceiving(mode: ReceiveMode, companion_port: number, notify_on_s
   elseif mode == "contest" # {{{
     BSP_CallBack = (tasks: list<CCTask>, _) => {
       StopReceiving()
-      if notify_on_receive
+      if notify
         echo "contest (" .. len(tasks) .. " tasks) received successfully!"
       endif
       StoreContest(tasks, cfg, null_function)
     } # }}}
   elseif mode == "persistently" # {{{
     BSP_CallBack = (tasks: list<CCTask>, Finished: func()) => {
-      if notify_on_receive
+      if notify
         if len(tasks) > 1
           echo "contest (" .. len(tasks) .. " tasks) received successfully!"
         else
@@ -229,12 +227,12 @@ export def StartReceiving(mode: ReceiveMode, companion_port: number, notify_on_s
       endif
     }
   endif # }}}
-  var batches_serial_processor = BatchesSerialProcessor.new(BSP_CallBack)
-  var tasks_collector = TasksCollector.new((tasks: list<CCTask>) => {
+  const batches_serial_processor = BatchesSerialProcessor.new(BSP_CallBack)
+  const tasks_collector = TasksCollector.new((tasks: list<CCTask>) => {
     batches_serial_processor.EnQueue(tasks)
   })
 
-  var receiver_or_error = Receiver.new(companion_port, (task: CCTask) => {
+  const receiver_or_error = Receiver.new(companion_port, (task: CCTask) => {
     tasks_collector.Insert(task)
   })
 
@@ -246,10 +244,9 @@ export def StartReceiving(mode: ReceiveMode, companion_port: number, notify_on_s
     batches_serial_processor
   )
 
-  if notify_on_start
+  if notify
     echo "ready to receive " .. mode .. ". Press the green plus button in your browser."
   endif
-  return null_string
 enddef # }}}
 
 # STORAGE UTILITIES
@@ -304,7 +301,7 @@ def EvalPath(path: any, task: CCTask, file_extension: string): string # {{{
   if type(path) == v:t_string
     return EvalReceiveModifiers(path, task, file_extension, true)
   elseif type(path) == v:t_func
-    var Path = path
+    const Path = path
     return Path(task, file_extension)
   endif
   return null_string
@@ -350,9 +347,9 @@ def StoreReceivedTaskConfig(filepath: string, confirm_overwriting: bool, task: C
     endif
   endif
 
-  var file_extension = fnamemodify(filepath, ":e")
+  const file_extension = fnamemodify(filepath, ":e")
   # Template file absolute path
-  var template_file: string = null_string
+  var template_file = null_string
   if type(cfg.template_file) == v:t_string # string with CompetiTest file-format modifiers
     template_file = utils.EvalString(filepath, cfg.template_file)
     echom template_file
@@ -372,13 +369,13 @@ def StoreReceivedTaskConfig(filepath: string, confirm_overwriting: bool, task: C
     endif
   endif
 
-  var file_directory = fnamemodify(filepath, ":h")
+  const file_directory = fnamemodify(filepath, ":h")
   # if template file exists then template_file is a string
   if template_file != null_string
     if cfg.evaluate_template_modifiers
-      var str = utils.LoadFileAsString(template_file)
+      const str = utils.LoadFileAsString(template_file)
       assert_true(str != null_string, "CompetiTest.vim: StoreReceivedTaskConfig: cannot load '" .. template_file .. "'")
-      var evaluated_str = EvalReceiveModifiers(str, task, file_extension, false, cfg.date_format)
+      const evaluated_str = EvalReceiveModifiers(str, task, file_extension, false, cfg.date_format)
       utils.WriteStringOnFile(filepath, evaluated_str != null_string ? evaluated_str : "")
     else
       mkdir(file_directory, "p")
@@ -396,12 +393,12 @@ def StoreReceivedTaskConfig(filepath: string, confirm_overwriting: bool, task: C
     tcindex += 1
   endfor
 
-  var tcdir = file_directory .. "/" .. cfg.testcases_directory .. "/"
+  const tcdir = file_directory .. "/" .. cfg.testcases_directory .. "/"
   testcases.IOFilesWriteEvalFormatString(tcdir, tctbl, filepath, cfg.testcases_input_file_format, cfg.testcases_output_file_format)
 enddef # }}}
 
 def StoreSingleProblem(task: CCTask, cfg: dict<any>, Finished: func() = null_function): void # {{{
-  var evaluated_problem_path = EvalPath(cfg.received_problems_path, task, cfg.received_files_extension)
+  const evaluated_problem_path = EvalPath(cfg.received_problems_path, task, cfg.received_files_extension)
   if evaluated_problem_path == null_string
     echo "'received_problems_path' evaluation failed for task '" .. task.name .. "'"
     if Finished != null_function
@@ -411,12 +408,12 @@ def StoreSingleProblem(task: CCTask, cfg: dict<any>, Finished: func() = null_fun
   endif
 
   if cfg.received_problems_prompt_path
-    var filepath = input("Choose problem path: ", evaluated_problem_path, "file")
+    const filepath = input("Choose problem path: ", evaluated_problem_path, "file")
     if filepath == null_string
       echom "operation interrupted"
       return
     endif
-    var local_cfg = config.LoadLocalConfigAndExtend(fnamemodify(filepath, ":h"))
+    const local_cfg = config.LoadLocalConfigAndExtend(fnamemodify(filepath, ":h"))
     StoreReceivedTaskConfig(filepath, true, task, local_cfg)
     if local_cfg.open_received_problems
       execute "edit " .. fnameescape(filepath)
@@ -430,7 +427,7 @@ def StoreSingleProblem(task: CCTask, cfg: dict<any>, Finished: func() = null_fun
 enddef # }}}
 
 def StoreContest(tasks: list<CCTask>, cfg: dict<any>, Finished: func() = null_function): void # {{{
-  var contest_directory = EvalPath(cfg.received_contests_directory, tasks[0], cfg.received_files_extension)
+  const contest_directory = EvalPath(cfg.received_contests_directory, tasks[0], cfg.received_files_extension)
   if contest_directory == null_string
     echo "'received_contests_directory' evaluation failed"
     if Finished != null_function
@@ -440,22 +437,22 @@ def StoreContest(tasks: list<CCTask>, cfg: dict<any>, Finished: func() = null_fu
   endif
 
   if cfg.received_contests_prompt_directory
-    var directory = input("Choose contest directory: ", contest_directory, "file")
+    const directory = input("Choose contest directory: ", contest_directory, "file")
     if directory == null_string
       echom "operation interrupted"
       return
     endif
-    var local_cfg = config.LoadLocalConfigAndExtend(directory)
+    const local_cfg = config.LoadLocalConfigAndExtend(directory)
     if local_cfg.received_contests_prompt_extension
-      var file_extension = input( "Choose files extension: ", local_cfg.received_files_extension)
+      const file_extension = input( "Choose files extension: ", local_cfg.received_files_extension)
       if file_extension == null_string
         echom "operation interrupted"
         return
       endif
       for task in tasks
-        var problem_path = EvalPath(local_cfg.received_contests_problems_path, task, file_extension)
+        const problem_path = EvalPath(local_cfg.received_contests_problems_path, task, file_extension)
         if problem_path != null_string
-          var filepath = directory .. "/" .. problem_path
+          const filepath = directory .. "/" .. problem_path
           StoreReceivedTaskConfig(filepath, true, task, local_cfg)
           if local_cfg.open_received_contests
             execute "edit " .. fnameescape(filepath)

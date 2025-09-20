@@ -1,5 +1,5 @@
 # File: receiver.py
-# Author: mao-yining <mao.yining@outlook.com>
+# Author: Mao-Yining <mao.yining@outlook.com>
 # Last Modified: 2025-08-30
 
 # This Python program implements a lightweight HTTP server that receives

@@ -2,7 +2,7 @@ vim9script
 # File: autoload\competitest\commands.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: Handle Commands
-# Last Modified: 2025-09-19
+# Last Modified: 2025-09-20
 
 import autoload "./config.vim"
 import autoload "./runner.vim"
@@ -66,17 +66,11 @@ export def Handle(arguments: string): void # {{{
       endif
     },
     run: () => {
-      var testcases_list: list<string> = []
-      if len(args) >= 2
-        testcases_list = args[1 : ]
-      endif
+      const testcases_list = len(args) >= 2 ? args[1 : ] : null_list
       RunTestcases(testcases_list, true)
     },
     run_no_compile: () => {
-      var testcases_list: list<string> = []
-      if len(args) >= 2
-        testcases_list = args[1 : ]
-      endif
+      const testcases_list = len(args) >= 2 ? args[1 : ] : null_list
       RunTestcases(testcases_list, false)
     },
     show_ui: () => {
@@ -126,13 +120,13 @@ enddef # }}}
 
 def DeleteTestcase(tcnum = -1): void # {{{
   const bufnr = bufnr()
-  var tctbl = testcases.BufGetTestcases(bufnr)
+  const tctbl = testcases.BufGetTestcases(bufnr)
   def Delete(num: number)
     if !has_key(tctbl, num)
       echoerr $"delete_testcase: testcase {num} doesn't exist!"
       return
     endif
-    var choice = confirm($"Are you sure you want to delete Testcase {num} ?", "Yes\nNo")
+    const choice = confirm($"Are you sure you want to delete Testcase {num} ?", "Yes\nNo")
     if choice == 0 || choice == 2 # user pressed <Esc> or chose "No"
       return
     endif
@@ -146,29 +140,27 @@ def DeleteTestcase(tcnum = -1): void # {{{
 enddef # }}}
 
 def Receive(mode: string) # {{{
-  var error = null_string
-
-  if mode == "stop"
-    receive.StopReceiving()
-  elseif mode == "status"
-    receive.ShowStatus()
-  elseif mode == "testcases"
-    var bufnr = bufnr()
-    config.LoadBufferConfig(bufnr)
-    var bufcfg = config.GetBufferConfig(bufnr)
-    var notify = bufcfg.receive_print_message
-    error = receive.StartReceiving("testcases", bufcfg.companion_port, notify, notify, bufcfg, bufnr)
-  elseif mode == "problem" || mode == "contest" || mode == "persistently"
-    var cfg = config.LoadLocalConfigAndExtend(getcwd())
-    var notify = cfg.receive_print_message
-    error = receive.StartReceiving(mode, cfg.companion_port, notify, notify, cfg)
-  else
-    error = "unrecognized mode '" .. string(mode) .. "'"
-  endif
-
-  if error != null_string
-    echoerr "receive: " .. error .. "."
-  endif
+  try
+    if mode == "stop"
+      receive.StopReceiving()
+    elseif mode == "status"
+      receive.ShowStatus()
+    elseif mode == "testcases"
+      const bufnr = bufnr()
+      config.LoadBufferConfig(bufnr)
+      const bufcfg = config.GetBufferConfig(bufnr)
+      const notify = bufcfg.receive_print_message
+      receive.StartReceiving("testcases", bufcfg.companion_port, notify, bufcfg, bufnr)
+    elseif mode == "problem" || mode == "contest" || mode == "persistently"
+      const cfg = config.LoadLocalConfigAndExtend(getcwd())
+      const notify = cfg.receive_print_message
+      receive.StartReceiving(mode, cfg.companion_port, notify, cfg)
+    else
+      throw $"receive: unrecognized mode {string(mode)}"
+    endif
+  catch /^receive:/
+    echoerr v:exception
+  endtry
 enddef # }}}
 
 def RunTestcases(testcases_list: list<string>, compile: bool, only_show = false) # {{{

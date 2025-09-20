@@ -1,8 +1,8 @@
 vim9script
 # File: autoload\competitest\widgets.vim
-# Author: mao-yining <mao.yining@outlook.com>
+# Author: Mao-Yining <mao.yining@outlook.com>
 # Description: CompetiTest UI Module Testcase editor and picker.
-# Last Modified: 2025-08-30
+# Last Modified: 2025-09-20
 
 import autoload './config.vim' as cfg
 import autoload './testcases.vim'

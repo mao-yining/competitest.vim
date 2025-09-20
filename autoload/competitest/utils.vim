@@ -1,8 +1,8 @@
 vim9script
 # File: autoload\competitest\utils.vim
-# Author: mao-yining <mao.yining@outlook.com>
+# Author: Mao-Yining <mao.yining@outlook.com>
 # Description: utility functions
-# Last Modified: 2025-08-30
+# Last Modified: 2025-09-20
 
 # Formats string by replacing $(modifier) tokens with corresponding values
 # from the provided dictionary, supporting both static string values and
@@ -88,8 +88,8 @@ enddef
 
 export def CreateDirectory(dirpath: string)
   if !isdirectory(dirpath)
-    var safedirpath = substitute(dirpath, '[/\\]\+$', '', '')
-    var upper_dir = fnamemodify(safedirpath, ':h')
+    const safedirpath = substitute(dirpath, '[/\\]\+$', '', '')
+    const upper_dir = fnamemodify(safedirpath, ':h')
     if upper_dir != safedirpath
       CreateDirectory(upper_dir)
     endif

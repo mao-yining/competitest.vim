@@ -1,8 +1,8 @@
 vim9script
 # File: autoload\competitest\runner_ui.vim
-# Author: mao-yining <mao.yining@outlook.com>
+# Author: Mao-Yining <mao.yining@outlook.com>
 # Description: A class show information of runner.
-# Last Modified: 2025-08-30
+# Last Modified: 2025-09-20
 
 import autoload './runner.vim' as r
 
@@ -27,9 +27,9 @@ export class RunnerUI
   def Show() # {{{
     if !this.visible
       # Create a New Tab {{{
-      var bufnr = this.runner.bufnr
+      const bufnr = this.runner.bufnr
       execute("tabnew Testcases" .. bufnr)
-      var new_tab = tabpagenr()
+      const new_tab = tabpagenr()
       execute($"autocmd WinClosed <buffer> call getbufvar({bufnr}, 'competitest_runner').ui.CallBack()")
       this.windows.tc = { winid: win_getid(), bufnr: bufnr() }
       setlocal nobuflisted
@@ -167,7 +167,7 @@ export class RunnerUI
   enddef # }}}
 
   def AdjustString(len: number, str: string, fchar: string): string # {{{
-    var strlen = strchars(str)
+    const strlen = strchars(str)
     if strlen <= len
       return str .. repeat(fchar, len - strlen)
     else
@@ -232,8 +232,8 @@ export class RunnerUI
     endfor
 
     if this.update_details
-      var testcase = this.update_testcase == -1 ? 0 : this.update_testcase
-      var data = this.runner.tcdata[testcase]
+      const testcase = this.update_testcase == -1 ? 0 : this.update_testcase
+      const data = this.runner.tcdata[testcase]
       this.showing_data = data
       win_execute(this.windows.stdin.winid, $"buffer {data.stdin_bufnr == 0 ? this.windows.stdin.bufnr : data.stdin_bufnr}")
       win_execute(this.windows.stdout.winid, $"buffer {data.stdout_bufnr}")

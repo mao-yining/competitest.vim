@@ -1,8 +1,8 @@
 vim9script
 # File: autoload\competitest\runner.vim
-# Author: mao-yining <mao.yining@outlook.com>
+# Author: Mao-Yining <mao.yining@outlook.com>
 # Description: A class that manage all testcases' process.
-# Last Modified: 2025-08-30
+# Last Modified: 2025-09-20
 
 import autoload './utils.vim'
 import autoload './config.vim' as cfg
@@ -64,12 +64,9 @@ export class TCRunner
   # }}}
 
   def new(bufnr: number) # {{{
-    var filetype = getbufvar(bufnr, '&filetype')
-    var bufname = bufname(bufnr)
-    var filedir = bufname != '' ? fnamemodify(bufname, ':p:h') : getcwd()
-    if filedir[-1] != '/'
-      filedir ..= '/'
-    endif
+    const filetype = getbufvar(bufnr, '&filetype')
+    const bufname = bufname(bufnr)
+    const filedir = (empty(bufname) ? getcwd() : fnamemodify(bufname, ':p:h')) .. '/'
 
     # Evaluate CompetiTest file-format modifiers
     def EvalCommand(cmd: dict<any>): SystemCommand
@@ -85,7 +82,7 @@ export class TCRunner
         return SystemCommand.new(exec, args)
       endif
       for arg in cmd.args
-        var eval_arg = utils.BufEvalString(bufnr, arg, null_string)
+        const eval_arg = utils.BufEvalString(bufnr, arg, null_string)
         if eval_arg == null_string
           break
         endif
@@ -94,31 +91,33 @@ export class TCRunner
       return SystemCommand.new(exec, args)
     enddef
 
-    var buf_cfg = cfg.GetBufferConfig(bufnr)
-    var compile_command = null_object
-    if has_key(buf_cfg.compile_command, filetype) && buf_cfg.compile_command[filetype] != null_object
-      compile_command = EvalCommand(buf_cfg.compile_command[filetype])
-      if compile_command == null_object
-        throw $"TCRunner.new: compile command for filetype '{filetype}' isn't formatted properly"
+    const buf_cfg = cfg.GetBufferConfig(bufnr)
+
+    this.cc = (): SystemCommand => {
+      if has_key(buf_cfg.compile_command, filetype) && buf_cfg.compile_command[filetype] != null_object
+        const cmd = EvalCommand(buf_cfg.compile_command[filetype])
+        if cmd == null_object
+          throw $"TCRunner.new: compile command for filetype '{filetype}' isn't formatted properly"
+        endif
+        return cmd
       endif
-    endif
+      return null_object
+    }()
 
     if !has_key(buf_cfg.run_command, filetype) || buf_cfg.run_command[filetype] == null_object
       throw $"TCRunner.new: run command for filetype '{filetype}' isn't configured"
     endif
-    var run_command = EvalCommand(buf_cfg.run_command[filetype])
-    if run_command == null_object
+    this.rc = EvalCommand(buf_cfg.run_command[filetype])
+    if this.rc == null_object
       throw $"TCRunner.new: run command for filetype '{filetype}' isn't formatted properly"
     endif
 
     this.config = buf_cfg
     this.bufnr = bufnr
-    this.cc = compile_command
-    this.rc = run_command
-    this.compile_directory = (filedir .. buf_cfg.compile_directory .. '/')
-    this.running_directory = (filedir .. buf_cfg.running_directory .. '/')
+    this.compile_directory = filedir .. buf_cfg.compile_directory .. '/'
+    this.running_directory = filedir .. buf_cfg.running_directory .. '/'
     this.tcdata = []
-    this.compile = (compile_command != null_object)
+    this.compile = this.cc != null_object
     this.next_tc = 0
   enddef # }}}
 
@@ -140,7 +139,7 @@ export class TCRunner
       endif
 
       def InitBuf(bufname: string, mode: string): number # {{{
-        var bufnr = bufadd(bufname)
+        const bufnr = bufadd(bufname)
         setbufvar(bufnr, '&buftype', 'nofile')
         setbufvar(bufnr, '&bufhidden', 'hide')
         setbufvar(bufnr, '&filetype', "competitest_" .. mode)
@@ -164,12 +163,12 @@ export class TCRunner
           0))                                               # timelimit
       endif
 
-      var keys = keys(tctbl)
-      keys -> sort((u, v) => {
+      const keys = keys(tctbl)->sort((u, v) => {
         return str2nr(u) < str2nr(v) ? -1 : 1
       })
+
       for tcnum in keys
-        var tc = tctbl[tcnum]
+        const tc = tctbl[tcnum]
         add(this.tcdata,
           TestcaseData.new(
             tc.ans_bufnr,                                   # ans_bufnr
@@ -188,7 +187,7 @@ export class TCRunner
   enddef # }}}
 
   def RunTestcases() # {{{
-    var tc_size = len(this.tcdata)
+    const tc_size = len(this.tcdata)
     var mut = this.config.multiple_testing
     if mut == -1
       mut = parallelism_ability
@@ -202,7 +201,7 @@ export class TCRunner
     this.next_tc = 0
 
     def RunFirstTestcases()
-      var start = this.next_tc
+      const start = this.next_tc
       this.next_tc = start + mut
       for idx in range(start, min([start + mut - 1, tc_size - 1]))
         this.ExecuteTestcase(idx, this.rc, this.running_directory, function('RunNextCallback', [this]))
@@ -226,13 +225,13 @@ export class TCRunner
     if this.next_tc > len(this.tcdata) - 1
       return
     endif
-    var current_tc = this.next_tc
+    const current_tc = this.next_tc
     this.next_tc += 1
     this.ExecuteTestcase(current_tc, this.rc, this.running_directory, function('RunNextCallback', [this]))
   enddef # }}}
 
   def ExecuteTestcase(tcindex: number, cmd: SystemCommand, dir: string, Callback: func = null_function) # {{{
-    var tc = this.tcdata[tcindex]
+    const tc = this.tcdata[tcindex]
 
     if tc.running
       return
@@ -263,7 +262,7 @@ export class TCRunner
       command->extend(cmd.args)
     endif
 
-    var job = job_start(command, job_opts)
+    const job = job_start(command, job_opts)
 
     if job_status(job) != 'run'
       echoerr "TCRunner.ExecuteTestcase: failed to start: " .. string(command)
@@ -290,7 +289,7 @@ export class TCRunner
   enddef # }}}
 
   def KillProcess(tcindex: number) # {{{
-    var tc = this.tcdata[tcindex]
+    const tc = this.tcdata[tcindex]
     if !tc.running || tc.job == null_job
       return
     endif
@@ -321,43 +320,35 @@ endclass
 
 # Compare Output {{{
 # Builtin methods to compare output and expected output
-export var methods = { # {{{
+export const methods = { # {{{
   exact: (output: string, expout: string) => output == expout,
   squish: (output: string, expout: string) => {
     def SquishString(str: string): string
-      var res = str
-      res = substitute(res, '\n', ' ', 'g')   # 将所有换行符 \n 替换为空格
-      res = substitute(res, '\s\+', ' ', 'g') # 将连续空白字符替换为单个空格
-      res = substitute(res, '^\s*', '', '')   # 删除开头的所有空白字符
-      res = substitute(res, '\s*$', '', '')   # 删除结尾的所有空白字符
-      return res
+      return str
+        ->substitute('\n', ' ', 'g')
+        ->substitute('\s\+', ' ', 'g')
+        ->substitute('^\s*', '', '')
+        ->substitute('\s*$', '', '')
     enddef
-    var _output = SquishString(output)
-    var _expout = SquishString(expout)
-    return _output == _expout
+    return SquishString(output) == SquishString(expout)
   },
 } # }}}
 
 export def CompareOutput(out_bufnr: number, ans_bufnr: number, method: any): bool # {{{
-  sleep 1m # should wait, because datas aren't fully loaded
+  sleep 1m # should wait, for datas aren't fully loaded
   silent bufload(ans_bufnr)
-  var outputs: list<string> = getbufline(out_bufnr, 1, '$')
-  var answers: list<string> = getbufline(ans_bufnr, 1, '$')
-
-  # handle CRLF
-  var output: string = join(outputs, "\n") -> substitute('\r\n\', '\n', 'g')
-  var answer: string = join(answers, "\n") -> substitute('\r\n\', '\n', 'g')
+  const output = getbufline(out_bufnr, 1, '$')->join("\n")
+  const answer = getbufline(ans_bufnr, 1, '$')->join("\n")
 
   if type(method) == v:t_string && has_key(methods, method)
     return methods[method](output, answer)
   elseif type(method) == v:t_func
-    var Method = method
+    const Method = method
     return Method(output, answer)
   else
     echoerr "compare_output: unrecognized method " .. string(method)
     return false
   endif
-
 enddef # }}}
 # }}}
 
@@ -393,7 +384,7 @@ def JobExit(runner: TCRunner, tcindex: number, Callback: func, job: job, status:
         tc.status = "DONE"
         tc.hlgroup = "CompetiTestDone"
       else
-        var correct = CompareOutput(tc.stdout_bufnr, tc.ans_bufnr, runner.config.output_compare_method)
+        const correct = CompareOutput(tc.stdout_bufnr, tc.ans_bufnr, runner.config.output_compare_method)
         if correct == true
           tc.status = "CORRECT"
           tc.hlgroup = "CompetiTestCorrect"
@@ -416,17 +407,17 @@ def JobTimeout(runner: TCRunner, tcindex: number, timer: any) # {{{
   runner.KillProcess(tcindex)
 enddef # }}}
 
-var parallelism_ability: number = 1
-# SetParallelism {{{
-if executable('nproc') # On Unix-like OS
-  var result = systemlist('nproc --all')
-  if !empty(result) && result[0] =~ '^\d\+$'
-    parallelism_ability = str2nr(result[0])
+const parallelism_ability = (): number => { # {{{
+  if executable('nproc') # On Unix-like OS
+    const result = systemlist('nproc --all')
+    if !empty(result) && result[0] =~ '^\d\+$'
+      return str2nr(result[0])
+    endif
+  elseif executable('wmic') # On Windows OS
+    const result = systemlist('wmic cpu get NumberOfCores')
+    if len(result) > 1 && result[1]->substitute('[^0-9]', '', 'g') =~ '^\d\+$'
+      return str2nr(result[1]->substitute('[^0-9]', '', 'g'))
+    endif
   endif
-elseif executable('wmic') # On Windows OS
-  var result = systemlist('wmic cpu get NumberOfCores')
-  if len(result) > 1 && result[1]->substitute('[^0-9]', '', 'g') =~ '^\d\+$'
-    parallelism_ability = str2nr(result[1]->substitute('[^0-9]', '', 'g'))
-  endif
-endif
-# }}}
+  return 1
+}() # }}}
