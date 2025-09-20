@@ -377,7 +377,7 @@ def StoreReceivedTaskConfig(filepath: string, confirm_overwriting: bool, task: C
       writefile(readfile(template_file), filepath)
     endif
   else
-    utils.WriteStringOnFile(filepath, "")
+    utils.WriteStringOnFile(filepath, null_string)
   endif
 
   var tctbl: dict<dict<string>> = {}
@@ -417,7 +417,9 @@ def StoreSingleProblem(task: CCTask, cfg: dict<any>, Finished: func() = null_fun
       Finished()
     endif
   else
-    Finished()
+    if Finished != null_function
+      Finished()
+    endif
   endif
 enddef # }}}
 
@@ -460,9 +462,13 @@ def StoreContest(tasks: list<CCTask>, cfg: dict<any>, Finished: func() = null_fu
         Finished()
       endif
     else
-      Finished()
+      if Finished != null_function
+        Finished()
+      endif
     endif
   else
-    Finished()
+    if Finished != null_function
+      Finished()
+    endif
   endif
 enddef # }}}
