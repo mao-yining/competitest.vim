@@ -9,6 +9,7 @@ import autoload "./runner.vim"
 import autoload "./testcases.vim"
 import autoload "./widgets.vim"
 import autoload "./receive.vim"
+import autoload "./utils.vim"
 
 export def Complete(_: string, cmdline: string, cursorpos: number): string # {{{
   const ending_space = cmdline[cursorpos - 1] == " "
@@ -34,9 +35,9 @@ export def Handle(arguments: string): void # {{{
       return true
     endif
     if min_args == max_args
-      echoerr $"command: {args[0]}: exactly {min_args} sub-arguments required."
+      utils.EchoErr($"commands: {args[0]}: exactly {min_args} sub-arguments required.")
     else
-      echoerr $"command: {args[0]}: from {min_args} to {max_args} sub-arguments required."
+      utils.EchoErr($"commands: {args[0]}: from {min_args} to {max_args} sub-arguments required.")
     endif
     return false
   enddef
@@ -88,7 +89,7 @@ export def Handle(arguments: string): void # {{{
   if has_key(subcommands, args[0])
     subcommands[args[0]]()
   else
-    echoerr $"command: subcommand {args[0]} doesn't exist!"
+    utils.EchoErr($"commands: subcommand {args[0]} doesn't exist!")
   endif
 enddef # }}}
 
@@ -98,7 +99,7 @@ def EditTestcase(add_testcase: bool, tcnum = -1): void # {{{
   var tctbl = testcases.BufGetTestcases(bufnr)
   def StartEditor(n: number)
     if !has_key(tctbl, n)
-      echoerr $"edit_testcase: testcase {n} doesn't exist!"
+      utils.EchoErr($"edit_testcase: testcase {n} doesn't exist!")
       return
     endif
     widgets.Editor(bufnr, n)
@@ -159,7 +160,7 @@ def Receive(mode: string) # {{{
       throw $"receive: unrecognized mode {string(mode)}"
     endif
   catch /^receive:/
-    echoerr v:exception
+    utils.EchoErr(v:exception)
   endtry
 enddef # }}}
 
@@ -173,7 +174,7 @@ def RunTestcases(testcases_list: list<string>, compile: bool, only_show = false)
     for i in testcases_list
       var tcnum = str2nr(i) # if i is empty or error, return 0。
       if !has_key(tctbl, tcnum) # invalid testcase
-        echoerr $"run_testcases: testcase {tcnum} doesn't exist!"
+        utils.EchoErr($"run_testcases: testcase {tcnum} doesn't exist!")
       else
         new_tctbl[tcnum] = tctbl[tcnum]
       endif
@@ -182,7 +183,7 @@ def RunTestcases(testcases_list: list<string>, compile: bool, only_show = false)
   endif
 
   if tctbl == null_dict
-    echoerr "run_testcases: need a valid testcase!"
+    utils.EchoErr("run_testcases: need a valid testcase!")
     return
   endif
 
@@ -190,7 +191,7 @@ def RunTestcases(testcases_list: list<string>, compile: bool, only_show = false)
     try
       b:competitest_runner = runner.TCRunner.new(bufnr)
     catch /^TCRunner.new:/
-      echoerr string(v:exception)
+      utils.EchoErr(string(v:exception))
       return
     endtry
   endif

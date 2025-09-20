@@ -68,7 +68,7 @@ export def EvalString(filepath: string, str: string): string
   try
     return FormatStringModifiers(str, file_format_modifiers, filepath)
   catch /^FormatStringModifiers:/
-    echoerr string(v:exception)
+    EchoErr(string(v:exception))
   endtry
   return null_string
 enddef
@@ -112,3 +112,10 @@ export def GetBorderChars(style: string): list<string>
   endif
 enddef
 
+export def EchoErr(msg: string)
+  echohl ErrorMsg | echom $'[competitest] {msg}' | echohl None
+enddef
+
+export def EchoWarn(msg: string)
+  echohl WarningMsg | echom $'[competitest] {msg}' | echohl None
+enddef

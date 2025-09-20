@@ -53,9 +53,7 @@ class Receiver # {{{
       elseif data.type == 'problem'
         this.CallBack(CCTask.new(data.data))
       elseif data.type == 'error'
-        echohl ErrorMsg
-        echom data.message
-        echohl None
+        utils.EchoErr(data.message)
       endif
     enddef
 
@@ -292,7 +290,7 @@ def EvalReceiveModifiers(str: string, task: CCTask, file_extension: string, remo
   try
     return utils.FormatStringModifiers(str, receive_modifiers)
   catch /^FormatStringModifiers:/
-    echoerr string(v:exception)
+    utils.EchoErr(string(v:exception))
   endtry
   return null_string
 enddef # }}}
@@ -352,7 +350,6 @@ def StoreReceivedTaskConfig(filepath: string, confirm_overwriting: bool, task: C
   var template_file = null_string
   if type(cfg.template_file) == v:t_string # string with CompetiTest file-format modifiers
     template_file = utils.EvalString(filepath, cfg.template_file)
-    echom template_file
   elseif type(cfg.template_file) == v:t_dict # dict with paths to template files
     template_file = get(cfg.template_file, file_extension, null_string)
   endif
@@ -361,9 +358,7 @@ def StoreReceivedTaskConfig(filepath: string, confirm_overwriting: bool, task: C
     template_file = substitute(template_file, "^\\~", expand("~"), "") # expand tilde into home directory
     if !filereadable(template_file)
       if type(cfg.template_file) == v:t_dict # notify file absence when path is explicitly set
-        echohl WarningMsg
-        echo 'template file "' .. template_file .. "\" doesn't exist."
-        echohl None
+        utils.EchoWarn('template file "' .. template_file .. "\" doesn't exist.")
       endif
       template_file = null_string
     endif

@@ -265,7 +265,7 @@ export class TCRunner
     const job = job_start(command, job_opts)
 
     if job_status(job) != 'run'
-      echoerr "TCRunner.ExecuteTestcase: failed to start: " .. string(command)
+      utils.EchoErr("TCRunner.ExecuteTestcase: failed to start: " .. string(command))
       tc.status = "FAILED"
       tc.hlgroup = "CompetiTestWarning"
       this.UpdateUI()
@@ -346,7 +346,7 @@ export def CompareOutput(out_bufnr: number, ans_bufnr: number, method: any): boo
     const Method = method
     return Method(output, answer)
   else
-    echoerr "compare_output: unrecognized method " .. string(method)
+    utils.EchoErr("compare_output: unrecognized method " .. string(method))
     return false
   endif
 enddef # }}}
