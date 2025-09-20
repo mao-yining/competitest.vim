@@ -48,9 +48,7 @@ class Receiver # {{{
   def new(port: number, CallBack: func(CCTask))
     def OnReceive(message: string)
       const data = json_decode(message)
-      if data.type == 'status'
-        echom data.message
-      elseif data.type == 'problem'
+      if data.type == 'problem'
         this.CallBack(CCTask.new(data.data))
       elseif data.type == 'error'
         utils.EchoErr(data.message)
@@ -152,9 +150,9 @@ enddef # }}}
 
 export def ShowStatus(): void # {{{
   if rs == null_object
-    echo "receiving not enabled."
+    EchoMsg("receiving not enabled.")
   else
-    echo $"receiving {rs.mode}, listening on port {rs.companion_port}."
+    EchoMsg($"receiving {rs.mode}, listening on port {rs.companion_port}.")
   endif
 enddef # }}}
 
@@ -172,7 +170,7 @@ export def StartReceiving(mode: ReceiveMode, companion_port: number, notify: boo
     BSP_CallBack = (tasks: list<CCTask>, _) => {
       StopReceiving()
       if notify
-        echo "testcases received successfully!"
+        EchoMsg("testcases received successfully!")
       endif
       StoreTestcases(bufnr, tasks[0].tests, cfg.replace_received_testcases, null_function)
     } # }}}
@@ -180,7 +178,7 @@ export def StartReceiving(mode: ReceiveMode, companion_port: number, notify: boo
     BSP_CallBack = (tasks: list<CCTask>, _) => {
       StopReceiving()
       if notify
-        echo "problem received successfully!"
+        EchoMsg("problem received successfully!")
       endif
       StoreSingleProblem(tasks[0], cfg, null_function)
     } # }}}
@@ -188,7 +186,7 @@ export def StartReceiving(mode: ReceiveMode, companion_port: number, notify: boo
     BSP_CallBack = (tasks: list<CCTask>, _) => {
       StopReceiving()
       if notify
-        echo "contest (" .. len(tasks) .. " tasks) received successfully!"
+        EchoMsg("contest (" .. len(tasks) .. " tasks) received successfully!")
       endif
       StoreContest(tasks, cfg, null_function)
     } # }}}
@@ -196,9 +194,9 @@ export def StartReceiving(mode: ReceiveMode, companion_port: number, notify: boo
     BSP_CallBack = (tasks: list<CCTask>, Finished: func()) => {
       if notify
         if len(tasks) > 1
-          echo "contest (" .. len(tasks) .. " tasks) received successfully!"
+          EchoMsg("contest (" .. len(tasks) .. " tasks) received successfully!")
         else
-          echo "one task received successfully!"
+          EchoMsg("one task received successfully!")
         endif
       endif
 
@@ -242,7 +240,7 @@ export def StartReceiving(mode: ReceiveMode, companion_port: number, notify: boo
   )
 
   if notify
-    echo "ready to receive " .. mode .. ". Press the green plus button in your browser."
+    EchoMsg("ready to receive " .. mode .. ". Press the green plus button in your browser.")
   endif
 enddef # }}}
 
@@ -387,7 +385,7 @@ enddef # }}}
 def StoreSingleProblem(task: CCTask, cfg: dict<any>, Finished: func() = null_function): void # {{{
   const evaluated_problem_path = EvalPath(cfg.received_problems_path, task, cfg.received_files_extension)
   if evaluated_problem_path == null_string
-    echo "'received_problems_path' evaluation failed for task '" .. task.name .. "'"
+    EchoMsg("'received_problems_path' evaluation failed for task '" .. task.name .. "'")
     if Finished != null_function
       Finished()
     endif
@@ -397,7 +395,7 @@ def StoreSingleProblem(task: CCTask, cfg: dict<any>, Finished: func() = null_fun
   if cfg.received_problems_prompt_path
     const filepath = input("Choose problem path: ", evaluated_problem_path, "file")
     if filepath == null_string
-      echom "operation interrupted"
+      EchoMsg("operation interrupted")
       return
     endif
     const local_cfg = config.LoadLocalConfigAndExtend(fnamemodify(filepath, ":h"))
@@ -418,7 +416,7 @@ enddef # }}}
 def StoreContest(tasks: list<CCTask>, cfg: dict<any>, Finished: func() = null_function): void # {{{
   const contest_directory = EvalPath(cfg.received_contests_directory, tasks[0], cfg.received_files_extension)
   if contest_directory == null_string
-    echo "'received_contests_directory' evaluation failed"
+    EchoMsg("'received_contests_directory' evaluation failed")
     if Finished != null_function
       Finished()
     endif
@@ -428,14 +426,14 @@ def StoreContest(tasks: list<CCTask>, cfg: dict<any>, Finished: func() = null_fu
   if cfg.received_contests_prompt_directory
     const directory = input("Choose contest directory: ", contest_directory, "file")
     if directory == null_string
-      echom "operation interrupted"
+      EchoMsg("operation interrupted")
       return
     endif
     const local_cfg = config.LoadLocalConfigAndExtend(directory)
     if local_cfg.received_contests_prompt_extension
       const file_extension = input( "Choose files extension: ", local_cfg.received_files_extension)
       if file_extension == null_string
-        echom "operation interrupted"
+        EchoMsg("operation interrupted")
         return
       endif
       for task in tasks
@@ -447,7 +445,7 @@ def StoreContest(tasks: list<CCTask>, cfg: dict<any>, Finished: func() = null_fu
             execute "edit " .. fnameescape(filepath)
           endif
         else
-          echo "'received_contests_problems_path' evaluation failed for task '" .. task.name .. "'"
+          EchoMsg("'received_contests_problems_path' evaluation failed for task '" .. task.name .. "'")
         endif
       endfor
       if Finished != null_function
@@ -464,3 +462,7 @@ def StoreContest(tasks: list<CCTask>, cfg: dict<any>, Finished: func() = null_fu
     endif
   endif
 enddef # }}}
+
+def EchoMsg(msg: string)
+  echomsg $'[competitest] receive: {msg}'
+enddef
