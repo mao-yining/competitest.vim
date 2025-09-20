@@ -13,12 +13,12 @@ export def FormatStringModifiers(str: string, modifiers: dict<any>, argument = n
     var c = str[i]
     if mod_start == -1  # expect '('
       if c == '('
-        mod_start = i  # 记录 '(' 的位置
+        mod_start = i  # position of '('
       else
         echoerr "FormatStringModifiers: '$' isn't followed by '(' in:\n" .. str
         return null_string
       endif
-    elseif mod_start == 0  # 空闲状态
+    elseif mod_start == 0  # empty
       if c == '$'
         mod_start = -1  # 标记遇到 '$'
       else
@@ -110,14 +110,6 @@ enddef
 
 export def DeleteFile(filepath: string)
   delete(filepath)
-enddef
-
-export def GetUISize(): list<number>
-  var height = &lines - &cmdheight
-  if &laststatus != 0
-    height -= 1
-  endif
-  return [&columns, height]
 enddef
 
 export def GetBorderChars(style: string): list<string>

@@ -64,7 +64,6 @@ export def Picker(bufnr: number, tctbl: dict<any>, title: string, CallBack: func
   })
 
   var config = cfg.GetBufferConfig(bufnr)
-  var [vim_width, vim_height] = utils.GetUISize()
   var popup = popup_menu(menu_items, {
     title: $" {empty(title) ? "Testcase Picker" : title} ",
     border: [],
