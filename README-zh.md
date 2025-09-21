@@ -176,8 +176,7 @@ int main() {
 vim9script
 g:competitest_configs = {
   local_config_file_name: ".competitest.vim",
-  floating_border: "rounded",
-  floating_border_highlight: "FloatBorder",
+  popup_borderchars: ['─', '│', '─', '│', '╭', '╮', '╯', '╰'],
   editor_ui: {
     normal_mode_mappings: {
       switch_window: ["<C-h>", "<C-l>", "<C-i>"],
@@ -246,7 +245,6 @@ g:competitest_configs = {
 #### 说明
 
 - `local_config_file_name`：可以为每个不同的文件夹使用不同的配置。见[本地配置](#本地配置)
-- `floating_border_highlight`：用于弹出窗口边框的高亮组
 - `runner_ui`：与测试用例运行器用户界面相关的设置
   - `mappings`：测试用例选择器窗口的键盘映射
     - `run_again`：重新运行测试用例的快捷键

@@ -201,8 +201,7 @@ DEFAULT CONFIGURATION			*competitest-default-config*
 Full configuration (g:competitest_configs): >
   {
       local_config_file_name: ".competitest.vim",
-      floating_border: "rounded",
-      floating_border_highlight: "FloatBorder",
+      popup_borderchars: ['─', '│', '─', '│', '╭', '╮', '╯', '╰'],
       editor_ui: {
           normal_mode_mappings: {
               switch_window: ["<C-h>", "<C-l>", "<C-i>"],
@@ -275,15 +274,11 @@ local_config_file_name			*competitest-config-local_config_file_name*
   Default: ".competitest.vim"
   Per-folder configuration filename. See |competitest-local-config|
 
-floating_border				*competitest-config-floating_border*
-  Type: string
-  Default: "rounded"
-  Border style for floating windows (same as nvim_open_win()'s border option)
-
-floating_border_highlight		*competitest-config-floating_border_highlight*
-  Type: string
-  Default: "FloatBorder"
-  Highlight group for floating window borders
+popup_borderchars			*competitest-config-popup_borderchars*
+  Type: list
+  Default: ['─', '│', '─', '│', '╭', '╮', '╯', '╰'],
+  Border style for popup windows (same as |popup_create-arguments|'s
+  borderchars option)
 
 editor_ui				*competitest-config-editor_ui*
   Type: dictionary

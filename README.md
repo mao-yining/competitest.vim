@@ -176,8 +176,7 @@ Here you can find CompetiTest default configuration
 vim9script
 g:competitest_configs = {
   local_config_file_name: ".competitest.vim",
-  floating_border: "rounded",
-  floating_border_highlight: "FloatBorder",
+  popup_borderchars: ['─', '│', '─', '│', '╭', '╮', '╯', '╰'],
   editor_ui: {
     normal_mode_mappings: {
       switch_window: ["<C-h>", "<C-l>", "<C-i>"],
@@ -246,7 +245,6 @@ g:competitest_configs = {
 #### Explanation
 
 - `local_config_file_name`: you can use a different configuration for every different folder. See [local configuration](#local-configuration)
-- `floating_border_highlight`: the highlight group used for popups border
 - `runner_ui`: settings related to testcase runner user interface
   - `mappings`: keyboard mappings used in testcase selector window
     - `run_again`: keymaps to run again a testcase

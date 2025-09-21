@@ -8,8 +8,7 @@ import autoload './utils.vim'
 
 const default_config = { # {{{
   local_config_file_name: ".competitest.vim",
-  floating_border: "rounded",
-  floating_border_highlight: "FloatBorder",
+  popup_borderchars: ['─', '│', '─', '│', '╭', '╮', '╯', '╰'],
   editor_ui: {
     normal_mode_mappings: {
       switch_window: ["<C-h>", "<C-l>", "<C-i>"],

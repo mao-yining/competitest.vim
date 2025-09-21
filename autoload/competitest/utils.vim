@@ -100,16 +100,6 @@ export def WriteStringOnFile(filepath: string, content: string)
   writefile(content->split("\n"), filepath)
 enddef
 
-export def GetBorderChars(style: string): list<string>
-  if style == 'double'
-    return ['═', '║', '═', '║', '╔', '╗', '╝', '╚']
-  elseif style == 'rounded'
-    return ['─', '│', '─', '│', '╭', '╮', '╯', '╰']
-  else # 'single' or default
-    return ['─', '│', '─', '│', '┌', '┐', '┘', '└']
-  endif
-enddef
-
 export def EchoErr(msg: string)
   echohl ErrorMsg | echom $'[competitest] {msg}' | echohl None
 enddef

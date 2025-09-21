@@ -4,7 +4,7 @@ vim9script
 # Description: CompetiTest UI Module Testcase editor and picker.
 # Last Modified: 2025-09-20
 
-import autoload './config.vim' as cfg
+import autoload './config.vim'
 import autoload './testcases.vim'
 import autoload './utils.vim'
 
@@ -44,7 +44,7 @@ export def Editor(bufnr: number = 0, tcnum: number = 0): void # {{{
     endfor
   enddef # }}}
 
-  const mappings = cfg.GetBufferConfig(bufnr).editor_ui.normal_mode_mappings
+  const mappings = config.GetBufferConfig(bufnr).editor_ui.normal_mode_mappings
   SetKeymaps(input_win, output_win, mappings)
   SetKeymaps(output_win, input_win, mappings)
 enddef # }}}
@@ -55,22 +55,19 @@ export def Picker(bufnr: number, tctbl: dict<any>, title: string, CallBack: func
     return
   endif
 
-  const menu_items = (): list<dict<any>> => {
-    var res = []
-    for tcnum in keys(tctbl)
-      res->add({ text: 'Testcase ' .. tcnum, data: str2nr(tcnum) })
-    endfor
-    return res
-  }()->sort((u, v) => {
+  var menu_items = []
+  for tcnum in keys(tctbl)
+    menu_items->add({ text: 'Testcase ' .. tcnum, data: str2nr(tcnum) })
+  endfor
+  menu_items->sort((u, v) => {
     return u.data < v.data ? -1 : 1
   })
 
-  const config = cfg.GetBufferConfig(bufnr)
+  const cfg = config.GetBufferConfig(bufnr)
   const popup = popup_menu(menu_items, {
     title: $" {empty(title) ? "Testcase Picker" : title} ",
     border: [],
-    borderchars: utils.GetBorderChars(config.floating_border),
-    borderhighlight: [config.floating_border_highlight],
+    borderchars: cfg.popup_borderchars,
     callback: (id, result) => {
       if result > 0
         CallBack(menu_items[result - 1].data)

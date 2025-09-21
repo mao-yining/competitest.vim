@@ -200,8 +200,7 @@ $(DATE)       当前日期/时间
 完整配置 (g:competitest_configs): >
   {
       local_config_file_name: ".competitest.vim",
-      floating_border: "rounded",
-      floating_border_highlight: "FloatBorder",
+      popup_borderchars: ['─', '│', '─', '│', '╭', '╮', '╯', '╰'],
       editor_ui: {
           normal_mode_mappings: {
               switch_window: ["<C-h>", "<C-l>", "<C-i>"],
@@ -274,15 +273,10 @@ local_config_file_name			*competitest-config-local_config_file_name*
   默认: ".competitest.vim"
   每文件夹配置文件名。参见 |competitest-local-config|
 
-floating_border				*competitest-config-floating_border*
-  类型: 字符串
-  默认: "rounded"
-  浮动窗口的边框样式 (同 nvim_open_win() 的 border 选项)
-
-floating_border_highlight		*competitest-config-floating_border_highlight*
-  类型: 字符串
-  默认: "FloatBorder"
-  浮动窗口边框的高亮组
+popup_borderchars			*competitest-config-popup_borderchars*
+  类型: 列表
+  默认: ['─', '│', '─', '│', '╭', '╮', '╯', '╰'],
+  弹出窗口的边框样式 (同 |popup_create-arguments| 的 borderchars 选项)
 
 editor_ui				*competitest-config-editor_ui*
   类型: 字典
