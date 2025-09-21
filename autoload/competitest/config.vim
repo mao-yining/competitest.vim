@@ -87,13 +87,6 @@ def RecursiveExtend(base: dict<any>, overrides: dict<any>): dict<any> # {{{
   return ret
 enddef # }}}
 
-# Notify a warning message
-def NotifyWarning(msg: string) # {{{
-  echohl WarningMsg
-  echo "CompetiTest.nvim: " .. msg
-  echohl None
-enddef # }}}
-
 # Update configuration table with new options
 def UpdateConfigTable(cfg_tbl = {}, opts = {}): dict<any> # {{{
   if opts == {}

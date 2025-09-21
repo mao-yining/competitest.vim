@@ -9,12 +9,12 @@ import autoload './testcases.vim'
 import autoload './utils.vim'
 
 export def Editor(bufnr: number = 0, tcnum: number = 0): void # {{{
-  var [input_path, output_path] = testcases.IOFileLocate(bufnr, tcnum)
+  const [input_path, output_path] = testcases.IOFileLocate(bufnr, tcnum)
 
   tabnew
 
   # Set input buffer
-  var input_win = win_getid()
+  const input_win = win_getid()
   execute('edit ' .. input_path)
   setlocal bufhidden=delete
   setlocal autowrite
@@ -23,7 +23,7 @@ export def Editor(bufnr: number = 0, tcnum: number = 0): void # {{{
   vsplit
 
   # Set output buffer
-  var output_win = win_getid()
+  const output_win = win_getid()
   execute('edit ' .. output_path)
   setlocal bufhidden=delete
   setlocal autowrite
@@ -44,27 +44,29 @@ export def Editor(bufnr: number = 0, tcnum: number = 0): void # {{{
     endfor
   enddef # }}}
 
-  var mappings = cfg.GetBufferConfig(bufnr).editor_ui.normal_mode_mappings
+  const mappings = cfg.GetBufferConfig(bufnr).editor_ui.normal_mode_mappings
   SetKeymaps(input_win, output_win, mappings)
   SetKeymaps(output_win, input_win, mappings)
 enddef # }}}
 
 export def Picker(bufnr: number, tctbl: dict<any>, title: string, CallBack: func): void # {{{
   if empty(tctbl)
-    echoerr "there's no testcase to pick from."
+    utils.EchoErr("picker: there's no testcase to pick from.")
     return
   endif
 
-  var menu_items = []
-  for [tcnum, _] in items(tctbl)
-    add(menu_items, { text: 'Testcase ' .. tcnum, data: str2nr(tcnum) })
-  endfor
-  menu_items->sort((u, v) => {
+  const menu_items = (): list<dict<any>> => {
+    var res = []
+    for tcnum in keys(tctbl)
+      res->add({ text: 'Testcase ' .. tcnum, data: str2nr(tcnum) })
+    endfor
+    return res
+  }()->sort((u, v) => {
     return u.data < v.data ? -1 : 1
   })
 
-  var config = cfg.GetBufferConfig(bufnr)
-  var popup = popup_menu(menu_items, {
+  const config = cfg.GetBufferConfig(bufnr)
+  const popup = popup_menu(menu_items, {
     title: $" {empty(title) ? "Testcase Picker" : title} ",
     border: [],
     borderchars: utils.GetBorderChars(config.floating_border),
