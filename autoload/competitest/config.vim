@@ -157,13 +157,13 @@ enddef # }}}
 # Module-level variables
 const current_setup = UpdateConfigTable({}, get(g:, 'competitest_configs', {}))
 
-def SetHighlight()
+def SetHighlight() # {{{
   hi CompetiTestRunning cterm=bold     gui=bold
   hi CompetiTestDone    cterm=none     gui=none
   hi CompetiTestCorrect ctermfg=green  guifg=Green
   hi CompetiTestWarning ctermfg=yellow guifg=Yellow
   hi CompetiTestWrong   ctermfg=red    guifg=Red
-enddef
+enddef # }}}
 
 SetHighlight()
 
