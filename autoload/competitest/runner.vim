@@ -24,28 +24,33 @@ export class TestcaseData # {{{
   var stdout_bufname: string
   var stderr_bufname: string
   var tcnum: string
-  public var job: job
-  public var status: string
-  public var killed: bool
-  public var running: bool
-  public var hlgroup: string
-  public var timelimit: number
-  public var timer: number
-  public var time: float
-  public var starting_time: list<number>
-  public var exit_code: number
-  def new(
-      this.ans_bufnr,
-      this.stdin_bufnr,
-      this.stdout_bufnr,
-      this.stderr_bufnr,
-      this.ans_bufname,
-      this.stdin_bufname,
-      this.stdout_bufname,
-      this.stderr_bufname,
-      this.tcnum,
-      this.timelimit)
-  enddef
+  var timelimit: number
+  public var job: job = null_job
+  public var status: string = null_string
+  public var killed: bool = false
+  public var running: bool = false
+  public var hlgroup: string = null_string
+  public var timer: number = 0
+  public var time: float = 0.0
+  public var starting_time: list<number> = null_list
+  public var exit_code: number = 0
+  def JobStart(command: list<string>, options: dict<any>): void # {{{
+    this.job = job_start(command, options)
+
+    if job_status(this.job) != 'run'
+      this.status = "FAILED"
+      this.hlgroup = "CompetiTestWarning"
+      throw "JobStart: failed to start: " .. string(command)
+    endif
+
+    # Update state
+    this.starting_time = reltime()
+    this.status = "RUNNING"
+    this.hlgroup = "CompetiTestRunning"
+    this.running = true
+    this.killed = false
+  enddef # }}}
+
 endclass # }}}
 
 # Testcase Runner class
@@ -260,27 +265,18 @@ export class TCRunner
       command->extend(cmd.args)
     endif
 
-    tc.job = job_start(command, job_opts)
-
-    if job_status(tc.job) != 'run'
-      utils.EchoErr("TCRunner.ExecuteTestcase: failed to start: " .. string(command))
-      tc.status = "FAILED"
-      tc.hlgroup = "CompetiTestWarning"
+    try
+      tc.JobStart(command, job_opts)
+    catch /^JobStart:/
+      utils.EchoErr(v:exception)
       this.UpdateUI()
       return
-    endif
+    endtry
 
     # Set timeout timer
     if tc.timelimit != 0
       tc.timer = timer_start(tc.timelimit, function('JobTimeout', [this, tcindex]))
     endif
-
-    # Update state
-    tc.starting_time = reltime()
-    tc.status = "RUNNING"
-    tc.hlgroup = "CompetiTestRunning"
-    tc.running = true
-    tc.killed = false
 
     this.UpdateUI()
   enddef # }}}
@@ -290,7 +286,7 @@ export class TCRunner
     if !tc.running || tc.job == null_job
       return
     endif
-    job_stop(tc.job, 'kill')
+    tc.job->job_stop('kill')
     tc.killed = true
   enddef # }}}
 
