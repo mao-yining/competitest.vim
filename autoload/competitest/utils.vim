@@ -2,16 +2,12 @@ vim9script
 # File: autoload\competitest\utils.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: utility functions
-# Last Modified: 2025-09-20
+# Last Modified: 2025-09-26
 
 # Formats string by replacing $(modifier) tokens with corresponding values
 # from the provided dictionary, supporting both static string values and
 # callback functions for dynamic replacement.
-export def FormatStringModifiers(
-    str: string,
-    modifiers: dict<any>,
-    argument = null_string
-    ): string
+export def FormatStringModifiers( str: string, modifiers: dict<any>, argument = null_string): string # {{{
   var evaluated_str: list<string>
   var mod_start = 0  # 0: idle, -1: saw '$', >0: position of '('
 
@@ -53,9 +49,9 @@ export def FormatStringModifiers(
   endif
 
   return evaluated_str->join('')
-enddef
+enddef # }}}
 
-var file_format_modifiers = {
+var file_format_modifiers = { # {{{
   '': '$',
   'HOME': (filepath: string): string => expand('~'),
   'FNAME': (filepath: string): string => fnamemodify(filepath, ':t'),
@@ -63,32 +59,32 @@ var file_format_modifiers = {
   'FEXT': (filepath: string): string => fnamemodify(filepath, ':e'),
   'FABSPATH': (filepath: string): string => filepath,
   'ABSDIR': (filepath: string): string => fnamemodify(filepath, ':p:h'),
-  'TCNUM': ''
-}
+  'TCNUM': null_string
+} # }}}
 
-export def EvalString(filepath: string, str: string): string
+export def EvalString(filepath: string, str: string): string # {{{
   try
     return FormatStringModifiers(str, file_format_modifiers, filepath)
   catch /^FormatStringModifiers:/
     EchoErr(string(v:exception))
   endtry
   return null_string
-enddef
+enddef # }}}
 
-export def BufEvalString(bufnr: number, str: string, tcnum: any = null): string
+export def BufEvalString(bufnr: number, str: string, tcnum: any = null): string # {{{
   file_format_modifiers['TCNUM'] = string(tcnum ?? '')
   return EvalString(bufname(bufnr), str)
-enddef
+enddef # }}}
 
-export def LoadFileAsString(filepath: string): string
+export def LoadFileAsString(filepath: string): string # {{{
   if filereadable(filepath)
     return readfile(filepath)->join("\n")->substitute("\r\n", "\n", 'g')
   else
     return null_string
   endif
-enddef
+enddef # }}}
 
-export def CreateDirectory(dirpath: string)
+export def CreateDirectory(dirpath: string) # {{{
   if !isdirectory(dirpath)
     const safedirpath = substitute(dirpath, '[/\\]\+$', '', '')
     const upper_dir = fnamemodify(safedirpath, ':h')
@@ -97,17 +93,17 @@ export def CreateDirectory(dirpath: string)
     endif
     mkdir(safedirpath, 'p')
   endif
-enddef
+enddef # }}}
 
-export def WriteStringOnFile(filepath: string, content: string)
+export def WriteStringOnFile(filepath: string, content: string) # {{{
   CreateDirectory(fnamemodify(filepath, ':h'))
   writefile(content->split("\n"), filepath)
-enddef
+enddef # }}}
 
-export def EchoErr(msg: string)
+export def EchoErr(msg: string) # {{{
   echohl ErrorMsg | echom $'[competitest] {msg}' | echohl None
-enddef
+enddef # }}}
 
-export def EchoWarn(msg: string)
+export def EchoWarn(msg: string) # {{{
   echohl WarningMsg | echom $'[competitest] {msg}' | echohl None
-enddef
+enddef # }}}
