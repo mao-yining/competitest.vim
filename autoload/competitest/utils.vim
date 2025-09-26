@@ -7,7 +7,11 @@ vim9script
 # Formats string by replacing $(modifier) tokens with corresponding values
 # from the provided dictionary, supporting both static string values and
 # callback functions for dynamic replacement.
-export def FormatStringModifiers(str: string, modifiers: dict<any>, argument = null_string): string
+export def FormatStringModifiers(
+    str: string,
+    modifiers: dict<any>,
+    argument = null_string
+    ): string
   var evaluated_str: list<string>
   var mod_start = 0  # 0: idle, -1: saw '$', >0: position of '('
 

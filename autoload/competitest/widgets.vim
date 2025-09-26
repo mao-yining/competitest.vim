@@ -56,21 +56,17 @@ export def Picker(bufnr: number, tctbl: dict<any>, title: string, CallBack: func
   endif
 
   var menu_items = []
-  for tcnum in keys(tctbl)
-    menu_items->add({ text: 'Testcase ' .. tcnum, data: str2nr(tcnum) })
+  for tcnum in tctbl->keys()->sort('N')
+    menu_items->add({ text: 'Testcase ' .. tcnum, num: tcnum })
   endfor
-  menu_items->sort((u, v) => {
-    return u.data < v.data ? -1 : 1
-  })
 
-  const cfg = config.GetBufferConfig(bufnr)
+  const popup_borderchars = config.GetBufferConfig(bufnr).popup_borderchars
   const popup = popup_menu(menu_items, {
     title: $" {empty(title) ? "Testcase Picker" : title} ",
-    border: [],
-    borderchars: cfg.popup_borderchars,
+    borderchars: popup_borderchars,
     callback: (id, result) => {
       if result > 0
-        CallBack(menu_items[result - 1].data)
+        CallBack(menu_items[result - 1].num->str2nr())
       endif
     }
   })
