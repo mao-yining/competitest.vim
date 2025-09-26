@@ -2,7 +2,7 @@ vim9script
 # File: autoload\competitest\receive.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: Receive contest, problem and testcases from competitive-companion
-# Last Modified: 2025-09-20
+# Last Modified: 2025-09-26
 
 import autoload "./config.vim"
 import autoload "./testcases.vim"
@@ -69,7 +69,7 @@ class Receiver # {{{
 endclass # }}}
 
 class TasksCollector # {{{
-  var batches: dict<any> # TODO: test whether list<any> <24-07-25> #
+  var batches: dict<any>
   var CallBack: func(list<CCTask>)
   def new(CallBack: func(list<CCTask>))
     this.batches = {}
@@ -112,7 +112,7 @@ class BatchesSerialProcessor # {{{
     const batch = this.batches->remove(0)
     this.CallBack(
       batch,
-      () => {
+      () => { # Finished() is passed in here
         this.callback_busy = false
         this.Process()
       })
@@ -463,6 +463,6 @@ def StoreContest(tasks: list<CCTask>, cfg: dict<any>, Finished: func() = null_fu
   endif
 enddef # }}}
 
-def EchoMsg(msg: string)
+def EchoMsg(msg: string) # {{{
   echomsg $'[competitest] receive: {msg}'
-enddef
+enddef # }}}
