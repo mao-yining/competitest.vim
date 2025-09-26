@@ -2,7 +2,7 @@ vim9script
 # File: autoload\competitest\runner.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: A class that manage all testcases' process.
-# Last Modified: 2025-09-20
+# Last Modified: 2025-09-26
 
 import autoload './utils.vim'
 import autoload './config.vim' as cfg
@@ -57,9 +57,9 @@ export class TCRunner
   var rc: SystemCommand
   var compile_directory: string
   var running_directory: string
-  var tcdata: list<TestcaseData>
+  var tcdata: list<TestcaseData> = []
   var compile: bool
-  var next_tc: number
+  var next_tc: number = 0
   var ui: runner_ui.RunnerUI
   # }}}
 
@@ -116,9 +116,7 @@ export class TCRunner
     this.bufnr = bufnr
     this.compile_directory = filedir .. buf_cfg.compile_directory .. '/'
     this.running_directory = filedir .. buf_cfg.running_directory .. '/'
-    this.tcdata = []
     this.compile = this.cc != null_object
-    this.next_tc = 0
   enddef # }}}
 
   def RunTestcase(tcindex: number) # {{{
@@ -262,9 +260,9 @@ export class TCRunner
       command->extend(cmd.args)
     endif
 
-    const job = job_start(command, job_opts)
+    tc.job = job_start(command, job_opts)
 
-    if job_status(job) != 'run'
+    if job_status(tc.job) != 'run'
       utils.EchoErr("TCRunner.ExecuteTestcase: failed to start: " .. string(command))
       tc.status = "FAILED"
       tc.hlgroup = "CompetiTestWarning"
@@ -279,7 +277,6 @@ export class TCRunner
 
     # Update state
     tc.starting_time = reltime()
-    tc.job = job
     tc.status = "RUNNING"
     tc.hlgroup = "CompetiTestRunning"
     tc.running = true
@@ -334,11 +331,13 @@ export const methods = { # {{{
   },
 } # }}}
 
-export def CompareOutput(out_bufnr: number, ans_bufnr: number, method: any): bool # {{{
-  sleep 1m # should wait, for datas aren't fully loaded
+def CompareOutput(out_bufnr: number, ans_bufnr: number, method: any): bool # {{{
   silent bufload(ans_bufnr)
-  const output = getbufline(out_bufnr, 1, '$')->join("\n")
-  const answer = getbufline(ans_bufnr, 1, '$')->join("\n")
+  sleep 1m # should wait, for datas aren't fully loaded
+
+  # For some unknown reasons, somtimes will mixed with some ^M
+  const output = getbufline(out_bufnr, 1, '$')->join("\n")->substitute("\r\n", "\n", "g")
+  const answer = getbufline(ans_bufnr, 1, '$')->join("\n")->substitute("\r\n", "\n", "g")
 
   if type(method) == v:t_string && has_key(methods, method)
     return methods[method](output, answer)
