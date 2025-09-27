@@ -2,7 +2,7 @@ vim9script
 # File: autoload\competitest\runner.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: A class that manage all testcases' process.
-# Last Modified: 2025-09-26
+# Last Modified: 2025-09-27
 
 import autoload './utils.vim'
 import autoload './config.vim' as cfg
@@ -15,32 +15,58 @@ class SystemCommand # {{{
 endclass # }}}
 
 export class TestcaseData # {{{
-  var ans_bufnr: number
-  var stdin_bufnr: number
-  var stdout_bufnr: number
-  var stderr_bufnr: number
-  var ans_bufname: string
-  var stdin_bufname: string
-  var stdout_bufname: string
-  var stderr_bufname: string
-  var tcnum: string
-  var timelimit: number
-  public var job: job = null_job
-  public var status: string = null_string
-  public var killed: bool = false
-  public var running: bool = false
-  public var hlgroup: string = null_string
-  public var timer: number = 0
-  public var time: float = 0.0
-  public var starting_time: list<number> = null_list
-  public var exit_code: number = 0
-  def JobStart(command: list<string>, options: dict<any>): void # {{{
+  const ans_bufnr: number
+  const stdin_bufnr: number
+  const stdout_bufnr: number
+  const stderr_bufnr: number
+  const ans_bufname: string
+  const stdin_bufname: string
+  const stdout_bufname: string
+  const stderr_bufname: string
+  const tcnum: string
+  const timelimit: number
+
+  var job: job = null_job
+  var status: string = null_string
+  var killed: bool = false
+  var running: bool = false
+  var hlgroup: string = null_string
+  var timer: number = 0
+  var time: float = 0.0
+  var starting_time: list<number> = null_list
+  var exit_code: number = 0
+
+  def JobStart(command: list<string>, dir: string, CallBack: func(): void, compare_method: any): void # {{{
+    var options = {
+      cwd: dir,
+      out_io: 'buffer',
+      out_buf: this.stdout_bufnr,
+      err_io: 'buffer',
+      err_buf: this.stderr_bufnr,
+      exit_cb: (job: job, status: number) => {
+        this.JobExit(status, compare_method, CallBack)
+      }
+    }
+
+    if this.stdin_bufnr == 0
+      options.in_io = "null"
+    else
+      # It is faster than "buffer"
+      options.in_io = "file"
+      options.in_name = this.stdin_bufname
+    endif
+
     this.job = job_start(command, options)
 
     if job_status(this.job) != 'run'
       this.status = "FAILED"
       this.hlgroup = "CompetiTestWarning"
       throw "JobStart: failed to start: " .. string(command)
+    endif
+
+    # Set timeout timer
+    if this.timelimit != 0
+      this.timer = timer_start(this.timelimit, (_: number) => this.JobKill())
     endif
 
     # Update state
@@ -51,13 +77,59 @@ export class TestcaseData # {{{
     this.killed = false
   enddef # }}}
 
+  def JobKill() # {{{
+    this.job->job_stop('kill')
+    this.killed = true
+  enddef # }}}
+
+  def JobExit(status: number, compare_method: any, CallBack: func) # {{{
+    this.running = false
+    this.time = reltime(this.starting_time)->reltimefloat() * 1000
+    this.exit_code = status
+
+    timer_stop(this.timer)
+    this.timer = 0
+
+    # Determine status
+    if this.killed
+      if this.timelimit != 0 && this.time >= this.timelimit
+        this.status = "TIMEOUT"
+        this.hlgroup = "CompetiTestWrong"
+      else
+        this.status = "KILLED"
+        this.hlgroup = "CompetiTestWarning"
+      endif
+    else
+      if status != 0
+        this.status = "RET " .. status
+        this.hlgroup = "CompetiTestWarning"
+      else
+        if this.ans_bufnr == 0
+          this.status = "DONE"
+          this.hlgroup = "CompetiTestDone"
+        else
+          const correct = CompareOutput(this.stdout_bufnr, this.ans_bufnr, compare_method)
+          if correct == true
+            this.status = "CORRECT"
+            this.hlgroup = "CompetiTestCorrect"
+          elseif correct == false
+            this.status = "WRONG"
+            this.hlgroup = "CompetiTestWrong"
+          endif
+        endif
+      endif
+    endif
+
+    CallBack()
+  enddef # }}}
+
 endclass # }}}
 
 # Testcase Runner class
 export class TCRunner
   # var {{{
+  const bufnr: number
   var config: dict<any>
-  var bufnr: number
   var cc: SystemCommand
   var rc: SystemCommand
   var compile_directory: string
@@ -207,7 +279,7 @@ export class TCRunner
       const start = this.next_tc
       this.next_tc = start + mut
       for idx in range(start, min([start + mut - 1, tc_size - 1]))
-        this.ExecuteTestcase(idx, this.rc, this.running_directory, function('RunNextCallback', [this]))
+        this.ExecuteTestcase(idx, this.rc, this.running_directory, this.RunNextTestcase)
       endfor
     enddef
 
@@ -215,12 +287,12 @@ export class TCRunner
       RunFirstTestcases()
     else
       this.next_tc = 1
-      def CompileCallback()
+      def CompileCallBack()
         if this.tcdata[0].exit_code == 0
           RunFirstTestcases()
         endif
       enddef
-      this.ExecuteTestcase(0, this.cc, this.compile_directory, CompileCallback)
+      this.ExecuteTestcase(0, this.cc, this.compile_directory, CompileCallBack)
     endif
   enddef # }}}
 
@@ -230,10 +302,10 @@ export class TCRunner
     endif
     const current_tc = this.next_tc
     this.next_tc += 1
-    this.ExecuteTestcase(current_tc, this.rc, this.running_directory, function('RunNextCallback', [this]))
+    this.ExecuteTestcase(current_tc, this.rc, this.running_directory, this.RunNextTestcase)
   enddef # }}}
 
-  def ExecuteTestcase(tcindex: number, cmd: SystemCommand, dir: string, Callback: func = null_function) # {{{
+  def ExecuteTestcase(tcindex: number, cmd: SystemCommand, dir: string, CallBack: func(): void = null_function) # {{{
     const tc = this.tcdata[tcindex]
 
     if tc.running
@@ -243,22 +315,6 @@ export class TCRunner
     deletebufline(tc.stdout_bufnr,  1, '$')
     deletebufline(tc.stderr_bufnr,  1, '$')
 
-    var job_opts = {
-      cwd: dir,
-      out_io: 'buffer',
-      out_buf: tc.stdout_bufnr,
-      err_io: 'buffer',
-      err_buf: tc.stderr_bufnr,
-      exit_cb: function('JobExit', [this, tcindex, Callback]),
-    }
-    if tc.stdin_bufnr == 0
-      job_opts.in_io = "null"
-    else
-      # It is faster than "buffer"
-      job_opts.in_io = "file"
-      job_opts.in_name = tc.stdin_bufname
-    endif
-
     utils.CreateDirectory(dir)
     var command = [cmd.exec]
     if cmd.args != null_list
@@ -266,17 +322,21 @@ export class TCRunner
     endif
 
     try
-      tc.JobStart(command, job_opts)
+      tc.JobStart(
+        command,
+        dir,
+        () => {
+          this.UpdateUI()
+          if CallBack != null_function
+            CallBack() # RunNextTestcase()
+          endif
+        },
+        this.config.output_compare_method)
     catch /^JobStart:/
       utils.EchoErr(v:exception)
       this.UpdateUI()
       return
     endtry
-
-    # Set timeout timer
-    if tc.timelimit != 0
-      tc.timer = timer_start(tc.timelimit, function('JobTimeout', [this, tcindex]))
-    endif
 
     this.UpdateUI()
   enddef # }}}
@@ -286,8 +346,7 @@ export class TCRunner
     if !tc.running || tc.job == null_job
       return
     endif
-    tc.job->job_stop('kill')
-    tc.killed = true
+    tc.JobKill()
   enddef # }}}
 
   def KillAllProcesses() # {{{
@@ -341,66 +400,11 @@ def CompareOutput(out_bufnr: number, ans_bufnr: number, method: any): bool # {{{
     const Method = method
     return Method(output, answer)
   else
-    utils.EchoErr("compare_output: unrecognized method " .. string(method))
+    utils.EchoErr("CompareOutput: unrecognized method " .. string(method))
     return false
   endif
 enddef # }}}
 # }}}
-
-def RunNextCallback(runner: TCRunner) # {{{
-  runner.RunNextTestcase()
-enddef # }}}
-
-def JobExit(runner: TCRunner, tcindex: number, Callback: func, job: job, status: number) # {{{
-  var tc = runner.tcdata[tcindex]
-  tc.running = false
-  tc.time = reltime(tc.starting_time)->reltimefloat() * 1000
-  tc.exit_code = status
-
-  timer_stop(tc.timer)
-  tc.timer = 0
-
-
-  # Determine status
-  if tc.killed
-    if tc.timelimit != 0 && tc.time >= tc.timelimit
-      tc.status = "TIMEOUT"
-      tc.hlgroup = "CompetiTestWrong"
-    else
-      tc.status = "KILLED"
-      tc.hlgroup = "CompetiTestWarning"
-    endif
-  else
-    if status != 0
-      tc.status = "RET " .. status
-      tc.hlgroup = "CompetiTestWarning"
-    else
-      if tc.ans_bufnr == 0
-        tc.status = "DONE"
-        tc.hlgroup = "CompetiTestDone"
-      else
-        const correct = CompareOutput(tc.stdout_bufnr, tc.ans_bufnr, runner.config.output_compare_method)
-        if correct == true
-          tc.status = "CORRECT"
-          tc.hlgroup = "CompetiTestCorrect"
-        elseif correct == false
-          tc.status = "WRONG"
-          tc.hlgroup = "CompetiTestWrong"
-        endif
-      endif
-    endif
-  endif
-
-  runner.UpdateUI()
-
-  if Callback != null_function
-    Callback()
-  endif
-enddef # }}}
-
-def JobTimeout(runner: TCRunner, tcindex: number, timer: any) # {{{
-  runner.KillProcess(tcindex)
-enddef # }}}
 
 const parallelism_ability = (): number => { # {{{
   if executable('nproc') # On Unix-like OS
@@ -414,5 +418,5 @@ const parallelism_ability = (): number => { # {{{
       return str2nr(result[1]->substitute('[^0-9]', '', 'g'))
     endif
   endif
-  return 1
+  return 1 # default
 }() # }}}
