@@ -2,102 +2,63 @@ vim9script
 # File: autoload\competitest\receive.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: Receive contest, problem and testcases from competitive-companion
-# Last Modified: 2025-09-26
+# Last Modified: 2025-10-03
 
 import autoload "./config.vim"
 import autoload "./testcases.vim"
 import autoload "./utils.vim"
 
 # Task Format (https://github.com/jmerle/competitive-companion/#the-format)
-class CCTask # {{{
-  var name: string
-  var group: string
-  var url: string
-  var interactive: bool
-  var memoryLimit: number
-  var timeLimit: number
-  var tests: list<dict<string>>
-  var testType: string
-  var input: dict<any>
-  var output: dict<any>
-  var languages: dict<any>
-  var batch: dict<any>
-  def new(data: dict<any>)
-    this.name = data.name
-    this.group = data.group
-    this.url = data.url
-    this.interactive = data.interactive
-    this.memoryLimit = data.memoryLimit
-    this.timeLimit = data.timeLimit
-    this.tests = data.tests
-    this.testType = data.testType
-    this.input = data.input
-    this.output = data.output
-    this.languages = data.languages
-    this.batch = data.batch
-  enddef
-endclass # }}}
+type CCTask = dict<any>
 
 # RECEIVE UTILITIES
 
 const SCRIPT_DIR = expand('<sfile>:p:h')
+
 class Receiver # {{{
-  var server: job
   var port: number
   var CallBack: func(CCTask)
-  def new(port: number, CallBack: func(CCTask))
-    def OnReceive(message: string)
-      const data = json_decode(message)
-      if data.type == 'problem'
-        this.CallBack(CCTask.new(data.data))
-      elseif data.type == 'error'
-        utils.EchoErr(data.message)
-      endif
-    enddef
-
-    this.server = job_start(["python", SCRIPT_DIR .. '/receiver.py', string(port)], {
-      out_cb: (_, message: string) => OnReceive(message),
+  var server: job
+  def new(this.port, this.CallBack)
+    this.server = $"python3 {SCRIPT_DIR}/receiver.py {this.port}"->job_start({
+      out_cb: (_, message: string) => this.CallBack(json_decode(message)),
+      err_cb: (_, message: string) => utils.EchoErr(message)
     })
-    this.CallBack = CallBack
+    if this.server->job_status() == "fail"
+      throw "Failed to start the receiver server. Please ensure python3 is installed and in your $PATH."
+    endif
   enddef
 
   def Close(): void
-    if ch_status(this.server) == 'open'
-      ch_close(this.server)
+    if this.server->job_status() == 'run'
+      this.server->job_stop()
     endif
   enddef
 endclass # }}}
 
 class TasksCollector # {{{
-  var batches: dict<any>
   var CallBack: func(list<CCTask>)
-  def new(CallBack: func(list<CCTask>))
-    this.batches = {}
-    this.CallBack = CallBack
-  enddef
+  var batches = {}
 
   def Insert(task: CCTask): void
     if !has_key(this.batches, task.batch.id)
       this.batches[task.batch.id] = { size: task.batch.size, tasks: [] }
     endif
     var b = this.batches[task.batch.id]
-    add(b.tasks, task)
+    b.tasks->add(task)
     if b.size == len(b.tasks) # batch fully received
       const tasks = b.tasks
-      this.batches = remove(this.batches, task.batch.id)
+      this.batches = this.batches->remove(task.batch.id)
       this.CallBack(tasks)
     endif
   enddef
 endclass # }}}
 
 class BatchesSerialProcessor # {{{
-  var batches: list<list<CCTask>> = []
   var CallBack: func(list<CCTask>, func())
+  var batches: list<list<CCTask>> = []
   var callback_busy: bool = false
   var stopped: bool = false
-  def new(CallBack: func(list<CCTask>, func()))
-    this.CallBack = CallBack
-  enddef
 
   def EnQueue(batch: list<CCTask>)
     add(this.batches, batch)
@@ -121,6 +82,7 @@ class BatchesSerialProcessor # {{{
   def Stop()
     this.stopped = true
   enddef
+
 endclass # }}}
 
 # RECEIVE METHODS
@@ -134,8 +96,6 @@ class ReceiveStatus # {{{
   var receiver: Receiver
   var tasks_collector: TasksCollector
   var batches_serial_processor: BatchesSerialProcessor
-  def new(this.mode, this.companion_port, this.receiver, this.tasks_collector, this.batches_serial_processor)
-  enddef
 endclass # }}}
 
 var rs: ReceiveStatus = null_object
@@ -194,7 +154,7 @@ export def StartReceiving(mode: ReceiveMode, companion_port: number, notify: boo
     BSP_CallBack = (tasks: list<CCTask>, Finished: func()) => {
       if notify
         if len(tasks) > 1
-          EchoMsg("contest (" .. len(tasks) .. " tasks) received successfully!")
+          EchoMsg($"contest ({len(tasks)} tasks) received successfully!")
         else
           EchoMsg("one task received successfully!")
         endif
@@ -204,7 +164,7 @@ export def StartReceiving(mode: ReceiveMode, companion_port: number, notify: boo
         StoreContest(tasks, cfg, Finished)
       else
         var choice = confirm(
-          "One task received (" .. tasks[0].name .. ").\nDo you want to store its testcases only or the full problem?",
+          $"One task received ({tasks[0].name}).\nDo you want to store its testcases only or the full problem?",
           "Testcases\nProblem\nCancel"
         )
         if choice == 1 # user chose "Testcases"
@@ -298,23 +258,19 @@ enddef # }}}
 def StoreTestcases(bufnr: number, tclist: list<dict<string>>, replace: bool, Finished: func() = null_function): void # {{{
   var tctbl = testcases.BufGetTestcases(bufnr)
   if !empty(tctbl)
-    var choice = 2
-    if !replace
-      choice = confirm("Some testcases already exist. Do you want to keep them along the new ones?", "Keep\nReplace\nCancel")
-    endif
-    if choice == 2 # user chose "Replace"
-      for tcnum in keys(tctbl) # delete existing files
+    if replace || "Some testcases already exist. Do you want to keep them along the new ones?"->confirm("Keep\nReplace") == 2
+      for tcnum in tctbl->keys() # delete existing files
         testcases.IOFilesDelete(bufnr, str2nr(tcnum))
       endfor
       tctbl = {}
-    elseif choice == 0 || choice == 3 # user pressed <Esc> or chose "Cancel"
+    else
       return
     endif
   endif
 
   var tcindex = 0
   for tc in tclist
-    while has_key(tctbl, tcindex)
+    while tctbl->has_key(tcindex)
       tcindex += 1
     endwhile
     tctbl[tcindex] = tc
@@ -329,8 +285,7 @@ enddef # }}}
 
 def StoreReceivedTaskConfig(filepath: string, confirm_overwriting: bool, task: CCTask, cfg: dict<any>): void # {{{
   if confirm_overwriting && filereadable(filepath)
-    const choice = confirm($'Do you want to overwrite "{filepath}"?', "Yes\nNo")
-    if choice == 0 || choice == 2 # user pressed <Esc> or chose "No"
+    if $'Do you want to overwrite "{filepath}"?'->confirm("Yes\nNo") != 1
       return
     endif
   endif
