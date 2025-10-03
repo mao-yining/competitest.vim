@@ -2,7 +2,7 @@ vim9script
 # File: autoload\competitest\runner_ui.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: A class show information of runner.
-# Last Modified: 2025-09-20
+# Last Modified: 2025-10-03
 
 import autoload './runner.vim' as r
 
@@ -21,7 +21,7 @@ export class RunnerUI
   # }}}
 
   def new(this.runner) # {{{
-    this.diff_view     = this.runner.config.view_output_diff
+    this.diff_view = this.runner.config.view_output_diff
   enddef # }}}
 
   def Show() # {{{
@@ -196,8 +196,8 @@ export class RunnerUI
       if data.tcnum == "Compile"
         l.header = data.tcnum
         if this.runner.config.runner_ui.open_when_compilation_fails
-              \ && !data.killed && data.exit_code != 0
-              \ && data.time != this.latest_compilation_timestamp
+            && !data.killed && data.exit_code != 0
+            && data.time != this.latest_compilation_timestamp
           if line('.') == 1
             this.update_testcase = 0
             compile_error = true
