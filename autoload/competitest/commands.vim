@@ -2,7 +2,7 @@ vim9script
 # File: autoload\competitest\commands.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: Handle Commands
-# Last Modified: 2025-09-20
+# Last Modified: 2025-10-03
 
 import autoload "./config.vim"
 import autoload "./runner.vim"
@@ -122,13 +122,12 @@ enddef # }}}
 def DeleteTestcase(tcnum = -1): void # {{{
   const bufnr = bufnr()
   const tctbl = testcases.BufGetTestcases(bufnr)
-  def Delete(num: number)
+  def Delete(num: number): void
     if !has_key(tctbl, num)
-      echoerr $"delete_testcase: testcase {num} doesn't exist!"
+      utils.EchoErr($"delete_testcase: testcase {num} doesn't exist!")
       return
     endif
-    const choice = confirm($"Are you sure you want to delete Testcase {num} ?", "Yes\nNo")
-    if choice == 0 || choice == 2 # user pressed <Esc> or chose "No"
+    if $"Are you sure you want to delete Testcase {num} ?"->confirm("Yes\nNo") == 1
       return
     endif
     testcases.IOFilesDelete(bufnr, num)
@@ -140,7 +139,7 @@ def DeleteTestcase(tcnum = -1): void # {{{
   endif
 enddef # }}}
 
-def Receive(mode: string) # {{{
+def Receive(mode: string): void # {{{
   try
     if mode == "stop"
       receive.StopReceiving()
@@ -150,12 +149,19 @@ def Receive(mode: string) # {{{
       const bufnr = bufnr()
       config.LoadBufferConfig(bufnr)
       const bufcfg = config.GetBufferConfig(bufnr)
-      const notify = bufcfg.receive_print_message
-      receive.StartReceiving("testcases", bufcfg.companion_port, notify, bufcfg, bufnr)
+      receive.StartReceiving(
+        "testcases",
+        bufcfg.companion_port,
+        bufcfg.receive_print_message,
+        bufcfg,
+        bufnr)
     elseif mode == "problem" || mode == "contest" || mode == "persistently"
       const cfg = config.LoadLocalConfigAndExtend(getcwd())
-      const notify = cfg.receive_print_message
-      receive.StartReceiving(mode, cfg.companion_port, notify, cfg)
+      receive.StartReceiving(
+        mode,
+        cfg.companion_port,
+        cfg.receive_print_message,
+        cfg)
     else
       throw $"receive: unrecognized mode {string(mode)}"
     endif
