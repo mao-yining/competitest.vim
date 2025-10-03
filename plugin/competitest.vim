@@ -1,9 +1,13 @@
-vim9script
+vim9script noclear
 # Vim global plugin for competitive programing
-# Last Modified:  2025-09-19
-# Maintainer:   Mao-Yining <mao.yining@outlook.com>
+# Maintainer:     Mao-Yining <mao.yining@outlook.com>
+# Last Modified:  2025-10-03
 
-g:loaded_competitest = 1
+if exists("g:loaded_competitest")
+  finish
+endif
+
+g:loaded_competitest = true
 
 import autoload "../autoload/competitest/commands.vim"
 
