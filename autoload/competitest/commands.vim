@@ -86,7 +86,7 @@ export def Handle(arguments: string): void # {{{
     },
   }
 
-  if has_key(subcommands, args[0])
+  if subcommands->has_key(args[0])
     subcommands[args[0]]()
   else
     utils.EchoErr($"commands: subcommand {args[0]} doesn't exist!")
@@ -98,7 +98,7 @@ def EditTestcase(add_testcase: bool, tcnum = -1): void # {{{
   config.LoadBufferConfig(bufnr) # reload buffer configuration since it may have been updated in the meantime
   var tctbl = testcases.BufGetTestcases(bufnr)
   def StartEditor(n: number)
-    if !has_key(tctbl, n)
+    if !tctbl->has_key(n)
       utils.EchoErr($"edit_testcase: testcase {n} doesn't exist!")
       return
     endif
@@ -107,7 +107,7 @@ def EditTestcase(add_testcase: bool, tcnum = -1): void # {{{
 
   if add_testcase
     var num = 0
-    while has_key(tctbl, num)
+    while tctbl->has_key(num)
       num = num + 1
     endwhile
     tctbl[num] = { input: "", output: "" }
@@ -123,7 +123,7 @@ def DeleteTestcase(tcnum = -1): void # {{{
   const bufnr = bufnr()
   const tctbl = testcases.BufGetTestcases(bufnr)
   def Delete(num: number): void
-    if !has_key(tctbl, num)
+    if !tctbl->has_key(num)
       utils.EchoErr($"delete_testcase: testcase {num} doesn't exist!")
       return
     endif
@@ -179,7 +179,7 @@ def RunTestcases(testcases_list: list<string>, compile: bool, only_show = false)
     var new_tctbl = {}
     for i in testcases_list
       var tcnum = str2nr(i) # if i is empty or error, return 0。
-      if !has_key(tctbl, tcnum) # invalid testcase
+      if !tctbl->has_key(tcnum) # invalid testcase
         utils.EchoErr($"run_testcases: testcase {tcnum} doesn't exist!")
       else
         new_tctbl[tcnum] = tctbl[tcnum]

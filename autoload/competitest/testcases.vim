@@ -2,7 +2,7 @@ vim9script
 # File: autoload\competitest\testcases.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: Handle testcases tasks.
-# Last Modified: 2025-09-20
+# Last Modified: 2025-10-03
 
 import autoload './config.vim'
 import autoload './utils.vim'
@@ -39,7 +39,7 @@ def IOFilesLoad(directory: string, input_file_match: string, output_file_match: 
     # Check input file
     var tcnum = MatchNumber(fname, input_file_match)
     if tcnum > -1
-      if !has_key(tctbl, tcnum)
+      if !tctbl->has_key(tcnum)
         tctbl[tcnum] = {}
       endif
       const bufnr = bufadd(fpath)
@@ -51,7 +51,7 @@ def IOFilesLoad(directory: string, input_file_match: string, output_file_match: 
       # check if the given file is part of a testcase and is an output file
       tcnum = MatchNumber(fname, output_file_match)
       if tcnum > -1
-        if !has_key(tctbl, tcnum)
+        if !tctbl->has_key(tcnum)
           tctbl[tcnum] = {}
         endif
         const bufnr = bufadd(fpath)

@@ -2,7 +2,7 @@ vim9script
 # File: autoload\competitest\runner.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: A class that manage all testcases' process.
-# Last Modified: 2025-09-27
+# Last Modified: 2025-10-03
 
 import autoload './utils.vim'
 import autoload './config.vim' as cfg
@@ -155,7 +155,7 @@ export class TCRunner
         exec = filedir .. exec
       endif
       var args = [] # null_list can't be added
-      if !has_key(cmd, 'args')
+      if !cmd->has_key('args')
         return SystemCommand.new(exec, args)
       endif
       for arg in cmd.args
@@ -171,7 +171,7 @@ export class TCRunner
     const buf_cfg = cfg.GetBufferConfig(bufnr)
 
     this.cc = (): SystemCommand => {
-      if has_key(buf_cfg.compile_command, filetype) && buf_cfg.compile_command[filetype] != null_object
+      if buf_cfg.compile_command->has_key(filetype) && buf_cfg.compile_command[filetype] != null_object
         const cmd = EvalCommand(buf_cfg.compile_command[filetype])
         if cmd == null_object
           throw $"TCRunner.new: compile command for filetype '{filetype}' isn't formatted properly"
@@ -181,7 +181,7 @@ export class TCRunner
       return null_object
     }()
 
-    if !has_key(buf_cfg.run_command, filetype) || buf_cfg.run_command[filetype] == null_object
+    if !buf_cfg.run_command->has_key(filetype) || buf_cfg.run_command[filetype] == null_object
       throw $"TCRunner.new: run command for filetype '{filetype}' isn't configured"
     endif
     this.rc = EvalCommand(buf_cfg.run_command[filetype])
@@ -394,7 +394,7 @@ def CompareOutput(out_bufnr: number, ans_bufnr: number, method: any): bool # {{{
   const output = getbufline(out_bufnr, 1, '$')->join("\n")->substitute("\r\n", "\n", "g")
   const answer = getbufline(ans_bufnr, 1, '$')->join("\n")->substitute("\r\n", "\n", "g")
 
-  if type(method) == v:t_string && has_key(methods, method)
+  if type(method) == v:t_string && methods->has_key(method)
     return methods[method](output, answer)
   elseif type(method) == v:t_func
     const Method = method

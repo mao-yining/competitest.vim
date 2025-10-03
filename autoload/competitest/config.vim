@@ -2,7 +2,7 @@ vim9script
 # File: autoload\competitest\config.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: Deal with settings of the plugin.
-# Last Modified: 2025-09-19
+# Last Modified: 2025-10-03
 
 import autoload './utils.vim'
 
@@ -77,7 +77,7 @@ const default_config = { # {{{
 def RecursiveExtend(base: dict<any>, overrides: dict<any>): dict<any> # {{{
   var ret = deepcopy(base)
   for [key, value] in items(overrides)
-    if type(value) == v:t_dict && has_key(ret, key) && type(ret[key]) == v:t_dict
+    if type(value) == v:t_dict && ret->has_key(key) && type(ret[key]) == v:t_dict
       ret[key] = RecursiveExtend(ret[key], value)
     else
       ret[key] = deepcopy(value)
@@ -97,18 +97,18 @@ def UpdateConfigTable(cfg_tbl = {}, opts = {}): dict<any> # {{{
   var new_config = RecursiveExtend(base_cfg, opts_copy)
 
   # Handle compile_command args replacement
-  if has_key(opts, 'compile_command') && type(opts.compile_command) == v:t_dict
+  if opts->has_key('compile_command') && type(opts.compile_command) == v:t_dict
     for lang in keys(opts.compile_command)
-      if type(opts.compile_command[lang]) == v:t_dict && has_key(opts.compile_command[lang], 'args')
+      if type(opts.compile_command[lang]) == v:t_dict && opts.compile_command[lang]->has_key('args')
         new_config.compile_command[lang].args = deepcopy(opts.compile_command[lang].args)
       endif
     endfor
   endif
 
   # Handle run_command args replacement
-  if has_key(opts, 'run_command') && type(opts.run_command) == v:t_dict
+  if opts->has_key('run_command') && type(opts.run_command) == v:t_dict
     for lang in keys(opts.run_command)
-      if type(opts.run_command[lang]) == v:t_dict && has_key(opts.run_command[lang], 'args')
+      if type(opts.run_command[lang]) == v:t_dict && opts.run_command[lang]->has_key('args')
         new_config.run_command[lang].args = deepcopy(opts.run_command[lang].args)
       endif
     endfor

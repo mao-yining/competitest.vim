@@ -41,7 +41,7 @@ class TasksCollector # {{{
   var batches = {}
 
   def Insert(task: CCTask): void
-    if !has_key(this.batches, task.batch.id)
+    if !this.batches->has_key(task.batch.id)
       this.batches[task.batch.id] = { size: task.batch.size, tasks: [] }
     endif
     var b = this.batches[task.batch.id]
