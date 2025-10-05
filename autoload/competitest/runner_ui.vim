@@ -2,13 +2,12 @@ vim9script
 # File: autoload\competitest\runner_ui.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: A class show information of runner.
-# Last Modified: 2025-10-03
+# Last Modified: 2025-10-05
 
 import autoload './runner.vim' as r
 
 export class RunnerUI
-  # variables {{{
-  var runner: r.TCRunner
+  const runner: r.TCRunner
   var visible: bool = false
   var viewer_content: string = null_string
   var diff_view: bool = false
@@ -19,7 +18,6 @@ export class RunnerUI
   var latest_compilation_timestamp: float = 0.0
   var showing_data: r.TestcaseData = null_object
   var acmds: list<dict<any>> = null_list
-  # }}}
 
   def new(this.runner) # {{{
     this.diff_view = this.runner.config.view_output_diff
