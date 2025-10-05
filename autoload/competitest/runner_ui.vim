@@ -18,6 +18,7 @@ export class RunnerUI
   var latest_line: number
   var latest_compilation_timestamp: float = 0.0
   var showing_data: r.TestcaseData = null_object
+  var acmds: list<dict<any>> = null_list
   # }}}
 
   def new(this.runner) # {{{
@@ -30,7 +31,19 @@ export class RunnerUI
       const bufnr = this.runner.bufnr
       execute("tabnew Testcases" .. bufnr)
       const new_tab = tabpagenr()
-      execute($"autocmd WinClosed <buffer> call getbufvar({bufnr}, 'competitest_runner').ui.CallBack()")
+
+      this.acmds = [
+        { 
+          group: "CompetiTestTestcase", event: "CursorMoved", bufnr: bufnr(),
+          cmd: $"getbufvar({bufnr}, 'competitest_runner').ui.Update(line('.'))"
+        },
+        { 
+          group: "CompetiTestTestcase", event: "WinClosed", bufnr: bufnr(),
+          cmd: $"getbufvar({bufnr}, 'competitest_runner').ui.CallBack()"
+        }
+      ]
+      autocmd_add(this.acmds) # deleted in CallBack()
+
       this.windows.tc = { winid: win_getid(), bufnr: bufnr() }
       setlocal nobuflisted
       setlocal diffopt+=iwhiteeol
@@ -71,40 +84,40 @@ export class RunnerUI
         endif
       endfor
 
+      const buf_runner = $"call getbufvar({bufnr}, 'competitest_runner')"
       win_gotoid(this.windows.tc.winid)
       # {{{ set kaymaps
       for map in get(runner_ui_mappings, 'close', [])
         execute($"nnoremap <buffer><nowait> {map} <Cmd>tabclose<CR>")
       endfor
       for map in get(runner_ui_mappings, 'kill', [])
-        execute($"nnoremap <buffer><nowait> {map} <Cmd>call getbufvar({bufnr}, 'competitest_runner').KillProcess(line('.') - 1)<CR>")
+        execute($"nnoremap <buffer><nowait> {map} <Cmd>{buf_runner}.KillProcess(line('.') - 1)<CR>")
       endfor
       for map in get(runner_ui_mappings, 'kill_all', [])
-        execute($"nnoremap <buffer><nowait> {map} <Cmd>call getbufvar({bufnr}, 'competitest_runner').KillAllProcesses()<CR>")
+        execute($"nnoremap <buffer><nowait> {map} <Cmd>{buf_runner}.KillAllProcesses()<CR>")
       endfor
       for map in get(runner_ui_mappings, 'run_again', [])
-        execute($"nnoremap <buffer><nowait> {map} <Cmd>call getbufvar({bufnr}, 'competitest_runner').RunTestcase(line('.') - 1)<CR>")
+        execute($"nnoremap <buffer><nowait> {map} <Cmd>{buf_runner}.RunTestcase(line('.') - 1)<CR>")
       endfor
       for map in get(runner_ui_mappings, 'run_all_again', [])
-        execute($"nnoremap <buffer><nowait> {map} <Cmd>call getbufvar({bufnr}, 'competitest_runner').RunTestcases()<CR>")
+        execute($"nnoremap <buffer><nowait> {map} <Cmd>{buf_runner}.RunTestcases()<CR>")
       endfor
       for map in get(runner_ui_mappings, 'toggle_diff', [])
-        execute($"nnoremap <buffer><nowait> {map} <Cmd>call getbufvar({bufnr}, 'competitest_runner').ui.ToggleDiffView()<CR>")
+        execute($"nnoremap <buffer><nowait> {map} <Cmd>{buf_runner}.ui.ToggleDiffView()<CR>")
       endfor
       for map in get(runner_ui_mappings, 'view_answer', [])
-        execute($"nnoremap <buffer><nowait> {map} <Cmd>call getbufvar({bufnr}, 'competitest_runner').ui.WinView('ans')<CR>")
+        execute($"nnoremap <buffer><nowait> {map} <Cmd>{buf_runner}.ui.WinView('ans')<CR>")
       endfor
       for map in get(runner_ui_mappings, 'view_input', [])
-        execute($"nnoremap <buffer><nowait> {map} <Cmd>call getbufvar({bufnr}, 'competitest_runner').ui.WinView('stdin')<CR>")
+        execute($"nnoremap <buffer><nowait> {map} <Cmd>{buf_runner}.ui.WinView('stdin')<CR>")
       endfor
       for map in get(runner_ui_mappings, 'view_stdout', [])
-        execute($"nnoremap <buffer><nowait> {map} <Cmd>call getbufvar({bufnr}, 'competitest_runner').ui.WinView('stdout')<CR>")
+        execute($"nnoremap <buffer><nowait> {map} <Cmd>{buf_runner}.ui.WinView('stdout')<CR>")
       endfor
       for map in get(runner_ui_mappings, 'view_stderr', [])
-        execute($"nnoremap <buffer><nowait> {map} <Cmd>call getbufvar({bufnr}, 'competitest_runner').ui.WinView('stderr')<CR>")
+        execute($"nnoremap <buffer><nowait> {map} <Cmd>{buf_runner}.ui.WinView('stderr')<CR>")
       endfor
 
-      execute($"autocmd CursorMoved <buffer> call getbufvar({bufnr}, 'competitest_runner').ui.Update(line('.'))")
       # }}}
 
       this.visible = true
@@ -153,7 +166,7 @@ export class RunnerUI
   enddef # }}}
 
   def CallBack() # {{{
-    if this.visible
+    if this.diff_view
       this.DisableDiffView()
     endif
     for [name, win] in items(this.windows)
@@ -161,6 +174,7 @@ export class RunnerUI
         this.windows[name] = null_dict
       endif
     endfor
+    autocmd_delete(this.acmds)
     this.visible = false
     this.update_testcase = -1 # Means nil
     this.latest_line = 0

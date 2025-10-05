@@ -10,8 +10,8 @@ import autoload './runner_ui.vim'
 
 # System command with arguments
 class SystemCommand # {{{
-  var exec: string
-  var args: list<string>
+  const exec: string
+  const args: list<string>
 endclass # }}}
 
 export class TestcaseData # {{{
@@ -37,7 +37,7 @@ export class TestcaseData # {{{
   var exit_code: number = 0
 
   def JobStart(command: list<string>, dir: string, CallBack: func(): void, compare_method: any): void # {{{
-    var options = {
+    final options = {
       cwd: dir,
       out_io: 'buffer',
       out_buf: this.stdout_bufnr,
@@ -127,18 +127,16 @@ endclass # }}}
 
 # Testcase Runner class
 export class TCRunner
-  # var {{{
+  const cc: SystemCommand
+  const rc: SystemCommand
+  const compile_directory: string
+  const running_directory: string
   const bufnr: number
-  var config: dict<any>
-  var cc: SystemCommand
-  var rc: SystemCommand
-  var compile_directory: string
-  var running_directory: string
-  var tcdata: list<TestcaseData> = []
+  const config: dict<any>
   var compile: bool
   var next_tc: number = 0
+  var tcdata: list<TestcaseData> = []
   var ui: runner_ui.RunnerUI
-  # }}}
 
   def new(bufnr: number) # {{{
     const filetype = getbufvar(bufnr, '&filetype')
@@ -154,7 +152,7 @@ export class TCRunner
       if exec[0] == '.'
         exec = filedir .. exec
       endif
-      var args = [] # null_list can't be added
+      final args = [] # null_list can't be added
       if !cmd->has_key('args')
         return SystemCommand.new(exec, args)
       endif
@@ -316,7 +314,7 @@ export class TCRunner
     deletebufline(tc.stderr_bufnr,  1, '$')
 
     utils.CreateDirectory(dir)
-    var command = [cmd.exec]
+    final command = [cmd.exec]
     if cmd.args != null_list
       command->extend(cmd.args)
     endif

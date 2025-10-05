@@ -96,7 +96,7 @@ enddef # }}}
 def EditTestcase(add_testcase: bool, tcnum = -1): void # {{{
   const bufnr = bufnr()
   config.LoadBufferConfig(bufnr) # reload buffer configuration since it may have been updated in the meantime
-  var tctbl = testcases.BufGetTestcases(bufnr)
+  final tctbl = testcases.BufGetTestcases(bufnr)
   def StartEditor(n: number)
     if !tctbl->has_key(n)
       utils.EchoErr($"edit_testcase: testcase {n} doesn't exist!")
@@ -176,9 +176,9 @@ def RunTestcases(testcases_list: list<string>, compile: bool, only_show = false)
   var tctbl = testcases.BufGetTestcases(bufnr)
 
   if testcases_list != null_list
-    var new_tctbl = {}
+    final new_tctbl = {}
     for i in testcases_list
-      var tcnum = str2nr(i) # if i is empty or error, return 0。
+      const tcnum = str2nr(i) # if i is empty or error, return 0。
       if !tctbl->has_key(tcnum) # invalid testcase
         utils.EchoErr($"run_testcases: testcase {tcnum} doesn't exist!")
       else
