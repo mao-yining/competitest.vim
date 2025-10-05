@@ -139,14 +139,16 @@ export def LoadLocalConfig(directory: string): dict<any> # {{{
 enddef # }}}
 
 # Load and extend local configuration
-export def LoadLocalConfigAndExtend(directory: string): dict<any> # {{{
-  return UpdateConfigTable(current_setup, LoadLocalConfig(directory))
+export def LoadLocalConfigAndExtend(directory: string, bufnr = -1): dict<any> # {{{
+  return UpdateConfigTable(
+    bufnr->getbufvar("competitest_configs", current_setup),
+    LoadLocalConfig(directory))
 enddef # }}}
 
 # Load buffer configuration
 export def LoadBufferConfig(bufnr: number) # {{{
   setbufvar(bufnr, "competitest_configs",
-    LoadLocalConfigAndExtend(bufname(bufnr)->fnamemodify(":p:h")))
+    LoadLocalConfigAndExtend(bufname(bufnr)->fnamemodify(":p:h"), bufnr))
 enddef # }}}
 
 # Get buffer configuration
