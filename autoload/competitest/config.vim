@@ -87,7 +87,7 @@ def RecursiveExtend(base: dict<any>, overrides: dict<any>): dict<any> # {{{
 enddef # }}}
 
 # Update configuration table with new options
-def UpdateConfigTable(cfg_tbl = {}, opts = {}): dict<any> # {{{
+def UpdateConfigTable(cfg_tbl: dict<any>, opts: dict<any>): dict<any> # {{{
   if opts == {}
     return deepcopy(cfg_tbl ?? default_config)
   endif
@@ -123,7 +123,7 @@ export def LoadLocalConfig(directory: string): dict<any> # {{{
   var dir = directory
   while prev_len != len(dir)
     prev_len = len(dir)
-    const config_file = dir .. "/" .. current_setup->get(
+    const config_file = dir .. "/" .. g:competitest_configs->get(
       "local_config_file_name", default_config.local_config_file_name)
     if config_file->filereadable()
       const local_config = config_file->readfile()->join("\n")->eval()
@@ -141,7 +141,7 @@ enddef # }}}
 # Load and extend local configuration
 export def LoadLocalConfigAndExtend(directory: string, bufnr = -1): dict<any> # {{{
   return UpdateConfigTable(
-    bufnr->getbufvar("competitest_configs", current_setup),
+    bufnr->getbufvar("competitest_configs", g:competitest_configs),
     LoadLocalConfig(directory))
 enddef # }}}
 
@@ -156,8 +156,7 @@ export def GetBufferConfig(bufnr: number): dict<any> # {{{
   return getbufvar(bufnr, "competitest_configs")
 enddef # }}}
 
-# Module-level variables
-const current_setup = UpdateConfigTable({}, get(g:, 'competitest_configs', {}))
+g:competitest_configs = UpdateConfigTable({}, get(g:, "competitest_configs", {}))
 
 def SetHighlight() # {{{
   hi CompetiTestRunning cterm=bold     gui=bold
