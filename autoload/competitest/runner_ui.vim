@@ -2,7 +2,7 @@ vim9script
 # File: autoload\competitest\runner_ui.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: A class show information of runner.
-# Last Modified: 2025-10-05
+# Last Modified: 2025-10-18
 
 import autoload './runner.vim' as r
 
@@ -31,11 +31,11 @@ export class RunnerUI
       const new_tab = tabpagenr()
 
       this.acmds = [
-        { 
+        {
           group: "CompetiTestTestcase", event: "CursorMoved", bufnr: bufnr(),
           cmd: $"getbufvar({bufnr}, 'competitest_runner').ui.Update(line('.'))"
         },
-        { 
+        {
           group: "CompetiTestTestcase", event: "WinClosed", bufnr: bufnr(),
           cmd: $"getbufvar({bufnr}, 'competitest_runner').ui.CallBack()"
         }
@@ -66,7 +66,7 @@ export class RunnerUI
       setlocal filetype=competitest_ans
       # }}}
 
-      for [name, win] in items(this.windows)
+      for win in values(this.windows)
         setbufvar(win.bufnr, "&buftype", "nofile")
         setbufvar(win.bufnr, "&swapfile", false)
         setbufvar(win.bufnr, "&buflisted", false)

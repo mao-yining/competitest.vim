@@ -2,7 +2,7 @@ vim9script
 # File: autoload\competitest\config.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: Deal with settings of the plugin.
-# Last Modified: 2025-10-05
+# Last Modified: 2025-10-17
 
 import autoload './utils.vim'
 
