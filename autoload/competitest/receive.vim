@@ -2,7 +2,7 @@ vim9script
 # File: autoload\competitest\receive.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: Receive contest, problem and testcases from competitive-companion
-# Last Modified: 2025-10-03
+# Last Modified: 2025-10-26
 
 import autoload "./config.vim"
 import autoload "./testcases.vim"
@@ -13,7 +13,7 @@ type CCTask = dict<any>
 
 # RECEIVE UTILITIES
 
-const SCRIPT_DIR = expand('<sfile>:p:h')
+const SCRIPT_DIR = expand("<sfile>:p:h")
 
 class Receiver # {{{
   var port: number
@@ -30,7 +30,7 @@ class Receiver # {{{
   enddef
 
   def Close(): void
-    if this.server->job_status() == 'run'
+    if this.server->job_status() == "run"
       this.server->job_stop()
     endif
   enddef
@@ -224,7 +224,7 @@ def EvalReceiveModifiers(str: string, task: CCTask, file_extension: string, remo
     "URL": task.url, # problem url, url field
     "MEMLIM": string(task.memoryLimit), # available memory, memoryLimit field
     "TIMELIM": string(task.timeLimit), # time limit, timeLimit field
-    "JAVA_MAIN_CLASS": task.languages.java.mainClass, # it's almost always 'Main'
+    "JAVA_MAIN_CLASS": task.languages.java.mainClass, # it's almost always "Main"
     "JAVA_TASK_CLASS": task.languages.java.taskClass, # classname-friendly version of problem name
     "DATE": strftime(date_format != null_string ? date_format : "%Y-%m-%d"),
   }
@@ -232,7 +232,7 @@ def EvalReceiveModifiers(str: string, task: CCTask, file_extension: string, remo
   if remove_illegal_characters
     for [modifier, value] in items(receive_modifiers)
       if modifier != "HOME" && modifier != "CWD"
-        receive_modifiers[modifier] = substitute(value, '[<>:"/\\|?*]', "_", "g")
+        receive_modifiers[modifier] = value->substitute('[<>:"/\\|?*]', "_", "g")
       endif
     endfor
   endif
@@ -285,7 +285,7 @@ enddef # }}}
 
 def StoreReceivedTaskConfig(filepath: string, confirm_overwriting: bool, task: CCTask, cfg: dict<any>): void # {{{
   if confirm_overwriting && filereadable(filepath)
-    if $'Do you want to overwrite "{filepath}"?'->confirm("Yes\nNo") != 1
+    if $"Do you want to overwrite \"{filepath}\"?"->confirm("Yes\nNo") != 1
       return
     endif
   endif
@@ -303,7 +303,7 @@ def StoreReceivedTaskConfig(filepath: string, confirm_overwriting: bool, task: C
     template_file = substitute(template_file, "^\\~", expand("~"), "") # expand tilde into home directory
     if !filereadable(template_file)
       if type(cfg.template_file) == v:t_dict # notify file absence when path is explicitly set
-        utils.EchoWarn('template file "' .. template_file .. "\" doesn't exist.")
+        utils.EchoWarn($"template file \"{template_file}\" doesn't exist.")
       endif
       template_file = null_string
     endif
@@ -314,7 +314,7 @@ def StoreReceivedTaskConfig(filepath: string, confirm_overwriting: bool, task: C
   if template_file != null_string
     if cfg.evaluate_template_modifiers
       const str = utils.LoadFileAsString(template_file)
-      assert_true(str != null_string, "CompetiTest.vim: StoreReceivedTaskConfig: cannot load '" .. template_file .. "'")
+      assert_true(str != null_string, $"CompetiTest.vim: StoreReceivedTaskConfig: cannot load \"{template_file}\"")
       const evaluated_str = EvalReceiveModifiers(str, task, file_extension, false, cfg.date_format)
       utils.WriteStringOnFile(filepath, evaluated_str != null_string ? evaluated_str : "")
     else
@@ -340,7 +340,7 @@ enddef # }}}
 def StoreSingleProblem(task: CCTask, cfg: dict<any>, Finished: func() = null_function): void # {{{
   const evaluated_problem_path = EvalPath(cfg.received_problems_path, task, cfg.received_files_extension)
   if evaluated_problem_path == null_string
-    EchoMsg("'received_problems_path' evaluation failed for task '" .. task.name .. "'")
+    EchoMsg($"\"received_problems_path\" evaluation failed for task \"{task.name}\"")
     if Finished != null_function
       Finished()
     endif
@@ -371,7 +371,7 @@ enddef # }}}
 def StoreContest(tasks: list<CCTask>, cfg: dict<any>, Finished: func() = null_function): void # {{{
   const contest_directory = EvalPath(cfg.received_contests_directory, tasks[0], cfg.received_files_extension)
   if contest_directory == null_string
-    EchoMsg("'received_contests_directory' evaluation failed")
+    EchoMsg("\"received_contests_directory\" evaluation failed")
     if Finished != null_function
       Finished()
     endif
@@ -400,7 +400,7 @@ def StoreContest(tasks: list<CCTask>, cfg: dict<any>, Finished: func() = null_fu
             execute "edit " .. fnameescape(filepath)
           endif
         else
-          EchoMsg("'received_contests_problems_path' evaluation failed for task '" .. task.name .. "'")
+          EchoMsg($"\"received_contests_problems_path\" evaluation failed for task \"{task.name}\"")
         endif
       endfor
       if Finished != null_function
@@ -419,5 +419,5 @@ def StoreContest(tasks: list<CCTask>, cfg: dict<any>, Finished: func() = null_fu
 enddef # }}}
 
 def EchoMsg(msg: string) # {{{
-  echomsg $'[competitest] receive: {msg}'
+  echomsg $"[competitest] receive: {msg}"
 enddef # }}}

@@ -2,13 +2,13 @@ vim9script
 # File: autoload\competitest\config.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: Deal with settings of the plugin.
-# Last Modified: 2025-10-17
+# Last Modified: 2025-10-26
 
-import autoload './utils.vim'
+import autoload "./utils.vim"
 
 const default_config = { # {{{
   local_config_file_name: ".competitest.vim",
-  popup_borderchars: ['─', '│', '─', '│', '╭', '╮', '╯', '╰'],
+  popup_borderchars: ["─", "│", "─", "│", "╭", "╮", "╯", "╰"],
   editor_ui: {
     normal_mode_mappings: {
       switch_window: ["<C-h>", "<C-l>", "<C-i>"],
@@ -97,18 +97,18 @@ def UpdateConfigTable(cfg_tbl: dict<any>, opts: dict<any>): dict<any> # {{{
   var new_config = RecursiveExtend(base_cfg, opts_copy)
 
   # Handle compile_command args replacement
-  if opts->has_key('compile_command') && type(opts.compile_command) == v:t_dict
+  if opts->has_key("compile_command") && type(opts.compile_command) == v:t_dict
     for lang in keys(opts.compile_command)
-      if type(opts.compile_command[lang]) == v:t_dict && opts.compile_command[lang]->has_key('args')
+      if type(opts.compile_command[lang]) == v:t_dict && opts.compile_command[lang]->has_key("args")
         new_config.compile_command[lang].args = deepcopy(opts.compile_command[lang].args)
       endif
     endfor
   endif
 
   # Handle run_command args replacement
-  if opts->has_key('run_command') && type(opts.run_command) == v:t_dict
+  if opts->has_key("run_command") && type(opts.run_command) == v:t_dict
     for lang in keys(opts.run_command)
-      if type(opts.run_command[lang]) == v:t_dict && opts.run_command[lang]->has_key('args')
+      if type(opts.run_command[lang]) == v:t_dict && opts.run_command[lang]->has_key("args")
         new_config.run_command[lang].args = deepcopy(opts.run_command[lang].args)
       endif
     endfor
@@ -128,7 +128,7 @@ export def LoadLocalConfig(directory: string): dict<any> # {{{
     if config_file->filereadable()
       const local_config = config_file->readfile()->join("\n")->eval()
       if type(local_config) != v:t_dict
-        echo "LoadLocalConfig: '" .. config_file .. "' doesn't return a dict."
+        echo $"LoadLocalConfig: \"{config_file}\" doesn't return a dict."
         return null_dict
       endif
       return local_config

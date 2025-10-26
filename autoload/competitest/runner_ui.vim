@@ -2,9 +2,9 @@ vim9script
 # File: autoload\competitest\runner_ui.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: A class show information of runner.
-# Last Modified: 2025-10-18
+# Last Modified: 2025-10-26
 
-import autoload './runner.vim' as r
+import autoload "./runner.vim" as r
 
 export class RunnerUI
   const runner: r.TCRunner
@@ -85,34 +85,34 @@ export class RunnerUI
       const buf_runner = $"call getbufvar({bufnr}, 'competitest_runner')"
       win_gotoid(this.windows.tc.winid)
       # {{{ set kaymaps
-      for map in get(runner_ui_mappings, 'close', [])
+      for map in get(runner_ui_mappings, "close", [])
         execute($"nnoremap <buffer><nowait> {map} <Cmd>tabclose<CR>")
       endfor
-      for map in get(runner_ui_mappings, 'kill', [])
+      for map in get(runner_ui_mappings, "kill", [])
         execute($"nnoremap <buffer><nowait> {map} <Cmd>{buf_runner}.KillProcess(line('.') - 1)<CR>")
       endfor
-      for map in get(runner_ui_mappings, 'kill_all', [])
+      for map in get(runner_ui_mappings, "kill_all", [])
         execute($"nnoremap <buffer><nowait> {map} <Cmd>{buf_runner}.KillAllProcesses()<CR>")
       endfor
-      for map in get(runner_ui_mappings, 'run_again', [])
+      for map in get(runner_ui_mappings, "run_again", [])
         execute($"nnoremap <buffer><nowait> {map} <Cmd>{buf_runner}.RunTestcase(line('.') - 1)<CR>")
       endfor
-      for map in get(runner_ui_mappings, 'run_all_again', [])
+      for map in get(runner_ui_mappings, "run_all_again", [])
         execute($"nnoremap <buffer><nowait> {map} <Cmd>{buf_runner}.RunTestcases()<CR>")
       endfor
-      for map in get(runner_ui_mappings, 'toggle_diff', [])
+      for map in get(runner_ui_mappings, "toggle_diff", [])
         execute($"nnoremap <buffer><nowait> {map} <Cmd>{buf_runner}.ui.ToggleDiffView()<CR>")
       endfor
-      for map in get(runner_ui_mappings, 'view_answer', [])
+      for map in get(runner_ui_mappings, "view_answer", [])
         execute($"nnoremap <buffer><nowait> {map} <Cmd>{buf_runner}.ui.WinView('ans')<CR>")
       endfor
-      for map in get(runner_ui_mappings, 'view_input', [])
+      for map in get(runner_ui_mappings, "view_input", [])
         execute($"nnoremap <buffer><nowait> {map} <Cmd>{buf_runner}.ui.WinView('stdin')<CR>")
       endfor
-      for map in get(runner_ui_mappings, 'view_stdout', [])
+      for map in get(runner_ui_mappings, "view_stdout", [])
         execute($"nnoremap <buffer><nowait> {map} <Cmd>{buf_runner}.ui.WinView('stdout')<CR>")
       endfor
-      for map in get(runner_ui_mappings, 'view_stderr', [])
+      for map in get(runner_ui_mappings, "view_stderr", [])
         execute($"nnoremap <buffer><nowait> {map} <Cmd>{buf_runner}.ui.WinView('stderr')<CR>")
       endfor
 

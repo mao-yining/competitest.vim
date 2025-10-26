@@ -2,23 +2,23 @@ vim9script
 # File: autoload\competitest\testcases.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: Handle testcases tasks.
-# Last Modified: 2025-10-03
+# Last Modified: 2025-10-26
 
-import autoload './config.vim'
-import autoload './utils.vim'
+import autoload "./config.vim"
+import autoload "./utils.vim"
 
 # Get testcases path for buffer
 export def BufGetTestcasesPath(bufnr: number): string
-  return fnamemodify(bufname(bufnr), ':h') .. '/' .. config.GetBufferConfig(bufnr).testcases_directory .. '/'
+  return bufname(bufnr)->fnamemodify(":h") .. "/" .. config.GetBufferConfig(bufnr).testcases_directory .. "/"
 enddef
 
 # Load testcases from directory with input/output files
 def IOFilesLoad(directory: string, input_file_match: string, output_file_match: string): dict<any>
   if !isdirectory(directory)
-    return {}
+    return null_dict
   endif
 
-  var tctbl: dict<any> = {}
+  var tctbl = {}
 
   # Helper: Extract consistent number from filename
   def MatchNumber(filename: string, match: string): number
@@ -32,7 +32,7 @@ def IOFilesLoad(directory: string, input_file_match: string, output_file_match: 
   # Process directory files
   for fname in readdir(directory)
     const fpath = directory .. fname
-    if getftype(fpath) != 'file'
+    if getftype(fpath) != "file"
       continue
     endif
 
@@ -43,8 +43,8 @@ def IOFilesLoad(directory: string, input_file_match: string, output_file_match: 
         tctbl[tcnum] = {}
       endif
       const bufnr = bufadd(fpath)
-      setbufvar(bufnr, '&filetype', "competitest_in")
-      setbufvar(bufnr, '&bufhidden', 'hide')
+      setbufvar(bufnr, "&filetype", "competitest_in")
+      setbufvar(bufnr, "&bufhidden", "hide")
       tctbl[tcnum].input_bufnr = bufnr
       tctbl[tcnum].input_bufname = fpath
     else
@@ -55,8 +55,8 @@ def IOFilesLoad(directory: string, input_file_match: string, output_file_match: 
           tctbl[tcnum] = {}
         endif
         const bufnr = bufadd(fpath)
-        setbufvar(bufnr, '&filetype', "competitest_ans")
-        setbufvar(bufnr, '&bufhidden', 'hide')
+        setbufvar(bufnr, "&filetype", "competitest_ans")
+        setbufvar(bufnr, "&bufhidden", "hide")
         tctbl[tcnum].ans_bufnr = bufnr
         tctbl[tcnum].ans_bufname = fpath
       endif
@@ -72,15 +72,15 @@ export def IOFileLocate(bufnr: number, tcnum: number): list<string>
   const cfg = config.GetBufferConfig(bufnr)
 
   def ComputeFormat(format: string): string
-    var parts = split(format, '$(TCNUM)', 1)
-    for idx in range(len(parts))
+    final parts = format->split("$(TCNUM)", 1)
+    for idx in parts->len()->range()
       const evaluated = utils.EvalString(filepath, parts[idx])
       if evaluated == null_string
         return null_string
       endif
-      parts[idx] = evaluated->escape('%')
+      parts[idx] = evaluated->escape("%")
     endfor
-    return parts->join('%d')
+    return parts->join("%d")
   enddef
 
   const input_format = ComputeFormat(cfg.testcases_input_file_format)
@@ -117,22 +117,21 @@ enddef
 def IOFilesLoadEvalFormatString(directory: string, filepath: string, input_file_format: string, output_file_format: string): dict<any>
   # Helper: Convert format string to match pattern
   def ComputeMatch(format: string): string
-    var parts = split(format, '$(TCNUM)', 1)
+    final parts = format->split("$(TCNUM)", 1)
     for [idx, str] in items(parts)
-      var evaluated = utils.EvalString(filepath, str)
+      const evaluated = utils.EvalString(filepath, str)
       if evaluated == null_string
-        return ''
+        return null_string
       endif
-      evaluated = substitute(evaluated, "([^%w])", "%%%1", 'g')
-      parts[idx] = escape(evaluated, '^$~.*[]\\')
+      parts[idx] = evaluated->substitute("([^%w])", "%%%1", "g")->escape('^$~.*[]\\')
     endfor
-    return '^' .. join(parts, '\([0-9]\+\)') .. '$'
+    return "^" .. parts->join('\([0-9]\+\)') .. "$"
   enddef
 
   const input_match = ComputeMatch(input_file_format)
   const output_match = ComputeMatch(output_file_format)
   if input_match == null_string || output_match == null_string
-    return {}
+    return null_dict
   endif
 
   return IOFilesLoad(directory, input_match, output_match)
@@ -152,7 +151,7 @@ enddef
 def IOFilesWrite(directory: string, tctbl: dict<any>, input_file_format: string, output_file_format: string)
   # Helper: Write or delete file based on content
   def WriteFile(fpath: string, content: any)
-    if type(content) != v:t_string || content == ''
+    if type(content) != v:t_string || content == null_string
       if fpath->filereadable()
         delete(fpath)
       endif
@@ -164,8 +163,8 @@ def IOFilesWrite(directory: string, tctbl: dict<any>, input_file_format: string,
   for [tcnum, tc] in items(tctbl)
     const input_file = printf(input_file_format, str2nr(tcnum))
     const output_file = printf(output_file_format, str2nr(tcnum))
-    const input_content = tc->get('input', v:null)
-    const output_content = tc->get('output', v:null)
+    const input_content = tc->get("input", null)
+    const output_content = tc->get("output", null)
 
     WriteFile(directory .. input_file, input_content)
     WriteFile(directory .. output_file, output_content)
@@ -176,15 +175,15 @@ enddef
 export def IOFilesWriteEvalFormatString(directory: string, tctbl: dict<any>, filepath: string, input_file_format: string, output_file_format: string)
   # Helper: Convert format string with modifiers
   def ComputeFormat(format: string): string
-    var parts = split(format, '$(TCNUM)', 1)
-    for idx in range(len(parts))
+    final parts = format->split("$(TCNUM)", 1)
+    for idx in parts->len()->range()
       const evaluated = utils.EvalString(filepath, parts[idx])
       if evaluated == null_string
         return null_string
       endif
-      parts[idx] = evaluated->escape('%')
+      parts[idx] = evaluated->escape("%")
     endfor
-    return parts->join('%d')
+    return parts->join("%d")
   enddef
 
   const input_format = ComputeFormat(input_file_format)

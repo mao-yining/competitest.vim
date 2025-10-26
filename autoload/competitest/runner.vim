@@ -2,11 +2,11 @@ vim9script
 # File: autoload\competitest\runner.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: A class that manage all testcases' process.
-# Last Modified: 2025-10-05
+# Last Modified: 2025-10-26
 
-import autoload './utils.vim'
-import autoload './config.vim' as cfg
-import autoload './runner_ui.vim'
+import autoload "./utils.vim"
+import autoload "./config.vim" as cfg
+import autoload "./runner_ui.vim"
 
 # System command with arguments
 class SystemCommand # {{{
@@ -39,9 +39,9 @@ export class TestcaseData # {{{
   def JobStart(command: list<string>, dir: string, CallBack: func(): void, compare_method: any): void # {{{
     final options = {
       cwd: dir,
-      out_io: 'buffer',
+      out_io: "buffer",
       out_buf: this.stdout_bufnr,
-      err_io: 'buffer',
+      err_io: "buffer",
       err_buf: this.stderr_bufnr,
       exit_cb: (job: job, status: number) => {
         this.JobExit(status, compare_method, CallBack)
@@ -58,7 +58,7 @@ export class TestcaseData # {{{
 
     this.job = job_start(command, options)
 
-    if job_status(this.job) != 'run'
+    if job_status(this.job) != "run"
       this.status = "FAILED"
       this.hlgroup = "CompetiTestWarning"
       throw "JobStart: failed to start: " .. string(command)
@@ -78,7 +78,7 @@ export class TestcaseData # {{{
   enddef # }}}
 
   def JobKill() # {{{
-    this.job->job_stop('kill')
+    this.job->job_stop("kill")
     this.killed = true
   enddef # }}}
 
@@ -139,9 +139,9 @@ export class TCRunner
   var ui: runner_ui.RunnerUI
 
   def new(bufnr: number) # {{{
-    const filetype = getbufvar(bufnr, '&filetype')
+    const filetype = getbufvar(bufnr, "&filetype")
     const bufname = bufname(bufnr)
-    const filedir = (empty(bufname) ? getcwd() : fnamemodify(bufname, ':p:h')) .. '/'
+    const filedir = (empty(bufname) ? getcwd() : fnamemodify(bufname, ":p:h")) .. "/"
 
     # Evaluate CompetiTest file-format modifiers
     def EvalCommand(cmd: dict<any>): SystemCommand
@@ -149,11 +149,11 @@ export class TCRunner
       if exec == null_string
         return null_object
       endif
-      if exec[0] == '.'
+      if exec[0] == "."
         exec = filedir .. exec
       endif
       final args = [] # null_list can't be added
-      if !cmd->has_key('args')
+      if !cmd->has_key("args")
         return SystemCommand.new(exec, args)
       endif
       for arg in cmd.args
@@ -172,7 +172,7 @@ export class TCRunner
       if buf_cfg.compile_command->has_key(filetype) && buf_cfg.compile_command[filetype] != null_object
         const cmd = EvalCommand(buf_cfg.compile_command[filetype])
         if cmd == null_object
-          throw $"TCRunner.new: compile command for filetype '{filetype}' isn't formatted properly"
+          throw $"TCRunner.new: compile command for filetype \"{filetype}\" isn't formatted properly"
         endif
         return cmd
       endif
@@ -180,17 +180,17 @@ export class TCRunner
     }()
 
     if !buf_cfg.run_command->has_key(filetype) || buf_cfg.run_command[filetype] == null_object
-      throw $"TCRunner.new: run command for filetype '{filetype}' isn't configured"
+      throw $"TCRunner.new: run command for filetype \"{filetype}\" isn't configured"
     endif
     this.rc = EvalCommand(buf_cfg.run_command[filetype])
     if this.rc == null_object
-      throw $"TCRunner.new: run command for filetype '{filetype}' isn't formatted properly"
+      throw $"TCRunner.new: run command for filetype \"{filetype}\" isn't formatted properly"
     endif
 
     this.config = buf_cfg
     this.bufnr = bufnr
-    this.compile_directory = filedir .. buf_cfg.compile_directory .. '/'
-    this.running_directory = filedir .. buf_cfg.running_directory .. '/'
+    this.compile_directory = filedir .. buf_cfg.compile_directory .. "/"
+    this.running_directory = filedir .. buf_cfg.running_directory .. "/"
     this.compile = this.cc != null_object
   enddef # }}}
 
@@ -213,9 +213,9 @@ export class TCRunner
 
       def InitBuf(bufname: string, mode: string): number # {{{
         const bufnr = bufadd(bufname)
-        setbufvar(bufnr, '&buftype', 'nofile')
-        setbufvar(bufnr, '&bufhidden', 'hide')
-        setbufvar(bufnr, '&filetype', "competitest_" .. mode)
+        setbufvar(bufnr, "&buftype", "nofile")
+        setbufvar(bufnr, "&bufhidden", "hide")
+        setbufvar(bufnr, "&filetype", "competitest_" .. mode)
 
         return bufnr
       enddef # }}}
@@ -228,8 +228,8 @@ export class TCRunner
           0,                                                # stdin_bufnr
           InitBuf(this.bufnr .. "_stdout_compile", "out"),  # stdour_bufnr
           InitBuf(this.bufnr .. "_stderr_compile", "err"),  # stderr_bufnr
-          '',                                               # ans_bufname
-          '',                                               # stdin_bufname
+          "",                                               # ans_bufname
+          "",                                               # stdin_bufname
           this.bufnr .. "_stdout_compile",                  # stdout_bufname
           this.bufnr .. "_stderr_compile",                  # stderr_bufname
           "Compile",                                        # tcnum
@@ -310,8 +310,8 @@ export class TCRunner
       return
     endif
 
-    deletebufline(tc.stdout_bufnr,  1, '$')
-    deletebufline(tc.stderr_bufnr,  1, '$')
+    deletebufline(tc.stdout_bufnr,  1, "$")
+    deletebufline(tc.stderr_bufnr,  1, "$")
 
     utils.CreateDirectory(dir)
     final command = [cmd.exec]
@@ -375,10 +375,10 @@ export const methods = { # {{{
   squish: (output: string, expout: string) => {
     def SquishString(str: string): string
       return str
-        ->substitute('\n', ' ', 'g')
-        ->substitute('\s\+', ' ', 'g')
-        ->substitute('^\s*', '', '')
-        ->substitute('\s*$', '', '')
+        ->substitute('\n', " ", "g")
+        ->substitute('\s\+', " ", "g")
+        ->substitute('^\s*', "", "")
+        ->substitute('\s*$', "", "")
     enddef
     return SquishString(output) == SquishString(expout)
   },
@@ -389,8 +389,8 @@ def CompareOutput(out_bufnr: number, ans_bufnr: number, method: any): bool # {{{
   sleep 1m # should wait, for datas aren't fully loaded
 
   # For some unknown reasons, somtimes will mixed with some ^M
-  const output = getbufline(out_bufnr, 1, '$')->join("\n")->substitute("\r\n", "\n", "g")
-  const answer = getbufline(ans_bufnr, 1, '$')->join("\n")->substitute("\r\n", "\n", "g")
+  const output = getbufline(out_bufnr, 1, "$")->join("\n")->substitute("\r\n", "\n", "g")
+  const answer = getbufline(ans_bufnr, 1, "$")->join("\n")->substitute("\r\n", "\n", "g")
 
   if type(method) == v:t_string && methods->has_key(method)
     return methods[method](output, answer)
@@ -405,15 +405,15 @@ enddef # }}}
 # }}}
 
 const parallelism_ability = (): number => { # {{{
-  if executable('nproc') # On Unix-like OS
-    const result = systemlist('nproc --all')
+  if executable("nproc") # On Unix-like OS
+    const result = systemlist("nproc --all")
     if !empty(result) && result[0] =~ '^\d\+$'
       return str2nr(result[0])
     endif
-  elseif executable('wmic') # On Windows OS
-    const result = systemlist('wmic cpu get NumberOfCores')
-    if len(result) > 1 && result[1]->substitute('[^0-9]', '', 'g') =~ '^\d\+$'
-      return str2nr(result[1]->substitute('[^0-9]', '', 'g'))
+  elseif executable("wmic") # On Windows OS
+    const result = systemlist("wmic cpu get NumberOfCores")
+    if len(result) > 1 && result[1]->substitute('[^0-9]', "", "g") =~ '^\d\+$'
+      return str2nr(result[1]->substitute('[^0-9]', "", "g"))
     endif
   endif
   return 1 # default

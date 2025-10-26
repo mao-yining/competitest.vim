@@ -2,20 +2,20 @@ vim9script
 # File: autoload\competitest\widgets.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: CompetiTest UI Module Testcase editor and picker.
-# Last Modified: 2025-09-26
+# Last Modified: 2025-10-26
 
-import autoload './config.vim'
-import autoload './testcases.vim'
-import autoload './utils.vim'
+import autoload "./config.vim"
+import autoload "./testcases.vim"
+import autoload "./utils.vim"
 
-export def Editor(bufnr: number = 0, tcnum: number = 0): void # {{{
+export def Editor(bufnr: number, tcnum: number): void # {{{
   const [input_path, output_path] = testcases.IOFileLocate(bufnr, tcnum)
 
   tabnew
 
   # Set input buffer
   const input_win = win_getid()
-  execute('edit ' .. input_path)
+  execute("edit " .. input_path)
   setlocal bufhidden=delete
   setlocal autowrite
   setlocal filetype=competitest_in
@@ -24,7 +24,7 @@ export def Editor(bufnr: number = 0, tcnum: number = 0): void # {{{
 
   # Set output buffer
   const output_win = win_getid()
-  execute('edit ' .. output_path)
+  execute("edit " .. output_path)
   setlocal bufhidden=delete
   setlocal autowrite
   setlocal filetype=competitest_ans
@@ -37,7 +37,7 @@ export def Editor(bufnr: number = 0, tcnum: number = 0): void # {{{
       win_execute(winid, $"nnoremap <buffer><nowait> {action} <Cmd>call win_gotoid({other_winid})<CR>")
     endfor
     for action in mappings.save_and_close
-      win_execute(winid, $"nnoremap <buffer><nowait> {action} <Cmd>write<CR><Cmd>tabclose<CR>")
+      win_execute(winid, $"nnoremap <buffer><nowait> {action} <Cmd>write <Bar> tabclose<CR>")
     endfor
     for action in mappings.cancel
       win_execute(winid, $"nnoremap <buffer><nowait> {action} <Cmd>tabclose<CR>")
@@ -49,15 +49,15 @@ export def Editor(bufnr: number = 0, tcnum: number = 0): void # {{{
   SetKeymaps(output_win, input_win, mappings)
 enddef # }}}
 
-export def Picker(bufnr: number, tctbl: dict<any>, title: string, CallBack: func): void # {{{
+export def Picker(bufnr: number, tctbl: dict<any>, title: string, CallBack: func(number)): void # {{{
   if empty(tctbl)
     utils.EchoErr("picker: there's no testcase to pick from.")
     return
   endif
 
   var menu_items = []
-  for tcnum in tctbl->keys()->sort('N')
-    menu_items->add({ text: 'Testcase ' .. tcnum, num: tcnum })
+  for tcnum in tctbl->keys()->sort("N")
+    menu_items->add({ text: "Testcase " .. tcnum, num: tcnum })
   endfor
 
   const popup_borderchars = config.GetBufferConfig(bufnr).popup_borderchars
