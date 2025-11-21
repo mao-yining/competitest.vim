@@ -3,7 +3,7 @@ vim9script
 # The global variable TestName should be set to the name of the file
 # containing the tests.
 def LoadPlugin()
-	language en
+	$LANG = 'en'
 	filetype on
 	set wildmenu
 	# Set the $LSP_PROFILE environment variable to profile the LSP plugin
