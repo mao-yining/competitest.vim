@@ -3,6 +3,7 @@ vim9script
 # The global variable TestName should be set to the name of the file
 # containing the tests.
 def LoadPlugin()
+	language en
 	filetype on
 	set wildmenu
 	# Set the $LSP_PROFILE environment variable to profile the LSP plugin
@@ -20,7 +21,6 @@ enddef
 
 def RunTests()
 	set nomore
-	set debug=beep
 	delete('results.txt')
 
 	# Get the list of test functions in this file and call them
