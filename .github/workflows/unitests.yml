@@ -1,0 +1,31 @@
+name: unit-tests
+on: [push, pull_request]
+jobs:
+  linux:
+    name: linux
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        vim:
+          - nightly
+          - v9.0.0000
+    steps:
+      - name: Install packages
+        run: |
+          sudo apt update
+          sudo apt install -y python3
+          sudo apt install -y gcc
+      - name: Setup Vim
+        uses: rhysd/action-setup-vim@v1
+        id: vim
+        with:
+          version: ${{ matrix.vim }}
+      - name: Checkout CompetiTest plugin Code
+        uses: actions/checkout@v5
+      - name: Run Tests
+        run: |
+          uname -a
+          export VIMPRG=${{ steps.vim.outputs.executable }}
+          $VIMPRG --version
+          cd test
+          ./run_tests.sh
