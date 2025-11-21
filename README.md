@@ -470,8 +470,8 @@ GNU General Public License version 3 (GPL v3) or, at your option, any later vers
 
 Copyright © 2025 Mao-Yining <mao.yining@outlook.com>
 
-CompetiTest.vim is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+CompetiTest.Vim is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 
-CompetiTest.vim is distributed in the hope that it will be useful, but **without any warranty**; without even the implied warranty of **merchantability** or **fitness for a particular purpose**. See the GNU General Public License for more details.
+CompetiTest.Vim is distributed in the hope that it will be useful, but **without any warranty**; without even the implied warranty of **merchantability** or **fitness for a particular purpose**. See the GNU General Public License for more details.
 
-You should have received a copy of the GNU General Public License along with CompetiTest.vim. If not, see <https://www.gnu.org/licenses/>.
+You should have received a copy of the GNU General Public License along with CompetiTest.Vim. If not, see <https://www.gnu.org/licenses/>.
