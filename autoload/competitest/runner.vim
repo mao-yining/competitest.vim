@@ -2,7 +2,7 @@ vim9script
 # File: autoload\competitest\runner.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: A class that manage all testcases' process.
-# Last Modified: 2025-10-26
+# Last Modified: 2025-11-22
 
 import autoload "./utils.vim"
 import autoload "./config.vim" as cfg
@@ -208,7 +208,7 @@ export class TCRunner
       if this.config.save_all_files
         wall
       elseif this.config.save_current_file
-        write
+        update
       endif
 
       def InitBuf(bufname: string, mode: string): number # {{{
