@@ -1,5 +1,4 @@
 tags
 *.swp
 
-test/*.c
 test/results.txt

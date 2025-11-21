@@ -23,9 +23,9 @@ jobs:
       - name: Checkout CompetiTest plugin Code
         uses: actions/checkout@v5
       - name: Run Tests
+        working-directory: ./test
         run: |
           uname -a
           export VIMPRG=${{ steps.vim.outputs.executable }}
           $VIMPRG --version
-          cd test
           ./run_tests.sh
