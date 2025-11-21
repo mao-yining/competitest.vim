@@ -1,3 +1,3 @@
 {
-	template_file: false,
+  template_file: false
 }
