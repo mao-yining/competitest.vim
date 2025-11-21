@@ -8,7 +8,6 @@ jobs:
       matrix:
         vim:
           - nightly
-          - v9.1.0000
     steps:
       - name: Install packages
         run: |
