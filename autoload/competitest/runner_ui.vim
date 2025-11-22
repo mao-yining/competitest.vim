@@ -2,7 +2,7 @@ vim9script
 # File: autoload\competitest\runner_ui.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: A class show information of runner.
-# Last Modified: 2025-10-26
+# Last Modified: 2025-11-22
 
 import autoload "./runner.vim" as r
 
@@ -49,19 +49,19 @@ export class RunnerUI
       setlocal filetype=competitest_testcases
       set winwidth=37 # Testcases windows width
 
-      silent rightbelow vsplit Output
+      rightbelow vsplit
       this.windows.stdout = { winid: win_getid(), bufnr: bufnr() }
       setlocal filetype=competitest_out
 
-      silent rightbelow split Input
+      execute("rightbelow split Input")
       this.windows.stdin = { winid: win_getid(), bufnr: bufnr() }
       setlocal filetype=competitest_in
 
-      wincmd l | silent rightbelow vsplit Errors
+      wincmd l | rightbelow vsplit
       this.windows.stderr = { winid: win_getid(), bufnr: bufnr() }
       setlocal filetype=competitest_err
 
-      wincmd k | silent rightbelow vsplit Answer
+      wincmd k | execute("rightbelow vsplit Answer")
       this.windows.ans = { winid: win_getid(), bufnr: bufnr() }
       setlocal filetype=competitest_ans
       # }}}
