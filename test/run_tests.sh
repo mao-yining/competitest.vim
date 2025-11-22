@@ -10,7 +10,7 @@ fi
 
 VIM_CMD="$VIMPRG -u NONE -U NONE -i NONE --noplugin -N --not-a-term"
 
-TESTS="commands_tests.vim"
+TESTS="commands_tests.vim receive_tests.vim"
 
 RunTestsInFile() {
   testfile=$1

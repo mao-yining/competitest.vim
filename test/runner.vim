@@ -3,12 +3,15 @@ vim9script
 # The global variable TestName should be set to the name of the file
 # containing the tests.
 def LoadPlugin()
-	$LANG = 'en'
+	$LANG = "en"
 	filetype on
 	set wildmenu
-	# Set the $LSP_PROFILE environment variable to profile the LSP plugin
+	set nomore
+	set noswapfile
+
+	# Set the $DO_PROFILE environment variable to profile the plugin
 	var do_profile: bool = false
-	if exists('$LSP_PROFILE')
+	if exists("$DO_PROFILE")
 		do_profile = true
 	endif
 	if do_profile
@@ -20,46 +23,45 @@ def LoadPlugin()
 enddef
 
 def RunTests()
-	set nomore
-	delete('results.txt')
+	delete("results.txt")
 
 	# Get the list of test functions in this file and call them
-	var fns: list<string> = execute('function /^Test_')
+	const fns: list<string> = execute("function /^Test_")
 		->split("\n")
-		->map("v:val->substitute('^def ', '', '')")
+		->map((_, v: string) => v->substitute("^def ", "", ""))
 		->sort()
 	if fns->empty()
-		# No tests are found
-		writefile(['No tests are found'], 'results.txt')
+		["No tests are found"]->writefile("results.txt")
 		return
 	endif
 	for f in fns
 		v:errors = []
-		v:errmsg = ''
+		v:errmsg = ""
 		try
-			:%bw!
-			exe $'g:{f}'
+			:%bwipeout!
+			silent tabonly
+			execute $"g:{f}"
 		catch
-			call add(v:errors, $'Error: Test {f} failed with exception {v:exception} at {v:throwpoint}')
+			v:errors->add($"Error: Test {f} failed with exception {v:exception} at {v:throwpoint}")
 		endtry
-		if v:errmsg != ''
-			call add(v:errors, $'Error: Test {f} generated error {v:errmsg}')
+		if v:errmsg != ""
+			v:errors->add($"Error: Test {f} generated error {v:errmsg}")
 		endif
 		if !v:errors->empty()
-			writefile(v:errors, 'results.txt', 'a')
-			writefile([$'{f}: FAIL'], 'results.txt', 'a')
+			v:errors->writefile("results.txt", "a")
+			[$"{f}: FAIL"]->writefile("results.txt", "a")
 		else
-			writefile([$'{f}: pass'], 'results.txt', 'a')
+			[$"{f}: pass"]->writefile("results.txt", "a")
 		endif
 	endfor
 enddef
 
 try
 	LoadPlugin()
-	exe $'source {g:TestName}'
+	execute($"source {g:TestName}")
 	RunTests()
 catch
-	writefile(['FAIL: Tests in ' .. g:TestName .. ' failed with exception ' .. v:exception .. ' at ' .. v:throwpoint], 'results.txt', 'a')
+	[$"FAIL: Tests in {g:TestName} failed with exception {v:exception} at {v:throwpoint}"]->writefile("results.txt", "a")
 endtry
 
 qall!
