@@ -2,7 +2,7 @@ vim9script
 # File: autoload\competitest\commands.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: Handle Commands
-# Last Modified: 2025-10-05
+# Last Modified: 2025-11-22
 
 import autoload "./config.vim"
 import autoload "./runner.vim"
@@ -125,9 +125,6 @@ def DeleteTestcase(tcnum = -1): void # {{{
   def Delete(num: number): void
     if !tctbl->has_key(num)
       utils.EchoErr($"delete_testcase: testcase {num} doesn't exist!")
-      return
-    endif
-    if $"Are you sure you want to delete Testcase {num} ?"->confirm("Yes\nNo") == 1
       return
     endif
     testcases.IOFilesDelete(bufnr, num)
