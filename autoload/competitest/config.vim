@@ -2,7 +2,7 @@ vim9script
 # File: autoload\competitest\config.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: Deal with settings of the plugin.
-# Last Modified: 2025-10-26
+# Last Modified: 2025-11-22
 
 import autoload "./utils.vim"
 
@@ -153,7 +153,10 @@ enddef # }}}
 
 # Get buffer configuration
 export def GetBufferConfig(bufnr: number): dict<any> # {{{
-  return getbufvar(bufnr, "competitest_configs")
+  if bufnr->getbufvar("competitest_configs")->type() == v:t_string
+    LoadBufferConfig(bufnr)
+  endif
+  return bufnr->getbufvar("competitest_configs")
 enddef # }}}
 
 g:competitest_configs = UpdateConfigTable({}, get(g:, "competitest_configs", {}))
