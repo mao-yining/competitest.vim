@@ -1,72 +1,86 @@
 vim9script
 
-# Test for :CompetiTest run in a C file.
+# Test :CompetiTest run command functionality with C files
 def g:Test_Runner_c()
-	assert_equal("\n[competitest] commands: subcommand r doesn't exist!", execute("CompetiTest r"))
-	assert_equal("\n[competitest] run_testcases: need a valid testcase!", execute("CompetiTest run"))
-	silent! edit Xmain.c
-	var lines: list<string> =<< trim END
-		#include "stdio.h"
+  execute("CompetiTest r")->assert_equal("\n[competitest] commands: subcommand r doesn't exist!")
+  execute("CompetiTest run")->assert_equal("\n[competitest] run_testcases: need a valid testcase!")
+  silent! edit test_runner.c
+  var lines: list<string> =<< trim END
+    #include "stdio.h"
 
-		int main() {
-				int a, b;
-				scanf("%d%d", &a, &b);
-				printf("%d", a + b);
+    int main() {
+        int a, b;
+        scanf("%d%d", &a, &b);
+        printf("%d", a + b);
 
-				return 0;
-		}
-	END
-	setline(1, lines)
-	silent! write
-	try
-		:CompetiTest add_testcase
-		setline(1, "1 2")
-		feedkeys("\<Tab>", 'tx')
-		setline(1, "3")
-		feedkeys("s", 'tx')
-		assert_equal("\n[competitest] run_testcases: testcase 1 doesn't exist!", execute("CompetiTest run 0 1"))
-		tabclose
-	finally
-		CompetiTest delete_testcase 0
-		delete("Xmain.c")
-	endtry
+        return 0;
+    }
+  END
+  lines->setline(1)
+  silent! write
+  try
+    :CompetiTest add_testcase
+    "1 2"->setline(1)
+    "\<Tab>"->feedkeys("tx")
+    "3"->setline(1)
+    "s"->feedkeys("tx")
+    execute("CompetiTest run 0 1")->assert_equal("\n[competitest] run_testcases: testcase 1 doesn't exist!")
+    tabclose
+    execute("CompetiTest run")->assert_equal("")
+  finally
+    tabclose
+    CompetiTest delete_testcase 0
+    delete("test_runner.c")
+    delete(has("win32") ? "test_runner.exe" : "test_runner")
+    var failed = false
+    failed = delete("test_runner0.in")  == 0 || failed
+    failed = delete("test_runner0.ans") == 0 || failed
+    failed->assert_false("Command \"delete_testcase\" Failed")
+  endtry
 enddef
 
-
 def g:Test_Testcase_Actions()
-	silent! edit XTest_Testcase_Actions.c
-	assert_equal("\n[competitest] commands: add_testcase: exactly 0 sub-arguments required.", execute("CompetiTest add_testcase 0"))
-	assert_equal("\n[competitest] picker: there's no testcase to pick from.", execute("CompetiTest edit_testcase"))
-	assert_equal("\n[competitest] edit_testcase: testcase 0 doesn't exist!", execute("CompetiTest edit_testcase 0"))
-	:CompetiTest add_testcase
-	setline(1, "1 2")
-	feedkeys("\<Tab>", 'tx')
-	setline(1, "3")
-	feedkeys("s", 'tx')
-	try
-		assert_equal("", execute("CompetiTest edit_testcase"))
-		assert_false(popup_list()->empty())
-		assert_equal(" Edit a Testcase ", popup_getoptions(popup_list()[0]).title)
-		normal x
-		assert_equal("", execute("CompetiTest edit_testcase 0"))
-		assert_equal("1 2", getline(1))
-		feedkeys("\<Tab>", 'tx')
-		assert_equal("3", getline(1))
-		normal q
-		assert_equal("\n[competitest] edit_testcase: testcase 1 doesn't exist!", execute("CompetiTest edit_testcase 1"))
-		:CompetiTest add_testcase
-		setline(1, "4 5")
-		feedkeys("\<Tab>", 'tx')
-		setline(1, "8")
-		feedkeys("s", 'tx')
+  silent! edit test_testcase_actions.c
+  execute("CompetiTest add_testcase 0")->assert_equal("\n[competitest] commands: add_testcase: exactly 0 sub-arguments required.")
+  execute("CompetiTest edit_testcase")->assert_equal("\n[competitest] picker: there's no testcase to pick from.")
+  execute("CompetiTest edit_testcase 0")->assert_equal("\n[competitest] edit_testcase: testcase 0 doesn't exist!")
+  :CompetiTest add_testcase
+  "1 2"->setline(1)
+  "\<Tab>"->feedkeys("tx")
+  "3"->setline(1)
+  "s"->feedkeys("tx")
+  try
+    execute("CompetiTest edit_testcase")->assert_equal("")
+    assert_false(popup_list()->empty())
+    popup_getoptions(popup_list()[0]).title->assert_equal(" Edit a Testcase ")
+    "x"->feedkeys("tx")
+    execute("CompetiTest edit_testcase 0")->assert_equal("")
+    getline(1)->assert_equal("1 2")
+    "\<Tab>"->feedkeys("tx")
+    getline(1)->assert_equal("3")
+    "q"->feedkeys("tx")
+    execute("CompetiTest edit_testcase 1")->assert_equal("\n[competitest] edit_testcase: testcase 1 doesn't exist!")
+    :CompetiTest add_testcase
+    "4 5"->setline(1)
+    "\<Tab>"->feedkeys("tx")
+    "8"->setline(1)
+    "s"->feedkeys("tx")
 
-		# Delete Testcase 1
-		assert_equal("", execute("CompetiTest delete_testcase"))
-		assert_false(popup_list()->empty())
-		assert_equal(" Delete a Testcase ", popup_getoptions(popup_list()[0]).title)
-		feedkeys("j\<CR>", 'tx')
-	finally
-		CompetiTest delete_testcase 0
-		assert_equal("\n[competitest] delete_testcase: testcase 1 doesn't exist!", execute("CompetiTest delete_testcase 1"))
-	endtry
+    CompetiTest delete_testcase 0
+
+    # Delete Testcase 1 with popup_select
+    execute("CompetiTest delete_testcase")->assert_equal("")
+    popup_list()->empty()->assert_false()
+    popup_getoptions(popup_list()[0]).title->assert_equal(" Delete a Testcase ")
+    "j\<CR>"->feedkeys("tx")
+    execute("CompetiTest delete_testcase 1")->assert_equal("\n[competitest] delete_testcase: testcase 1 doesn't exist!")
+
+  finally
+    var failed = false # delete_testcase failed
+    failed = delete("test_testcase_actions0.in")  == 0 || failed
+    failed = delete("test_testcase_actions0.ans") == 0 || failed
+    failed = delete("test_testcase_actions1.in")  == 0 || failed
+    failed = delete("test_testcase_actions1.ans") == 0 || failed
+    failed->assert_false("Command \"delete_testcase\" Failed")
+  endtry
 enddef
