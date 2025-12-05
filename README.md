@@ -1,9 +1,5 @@
 # CompetiTest.Vim
 
-![Run Testcases Interface](./image/runner_ui.jpg)
-
-## Competitive Programming with Vim Made Easy
-
 Inspired by <https://github.com/xeluxee/competitest.nvim>.
 
 `competitest.vim` is a testcase manager and checker. It saves you time in competitive programming contests by automating common tasks related to testcase management. It can compile, run and test your solutions across all the available testcases, displaying results in a nice interactive user interface.
