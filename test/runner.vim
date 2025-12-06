@@ -1,3 +1,8 @@
+if !has("patch-9.1.1000")
+  echoerr "Needs Vim version 9.1.1000 and above"
+  finish
+endif
+
 vim9script
 # Script to run a unit tests
 # The global variable TestName should be set to the name of the file
