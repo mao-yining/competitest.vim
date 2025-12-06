@@ -2,17 +2,9 @@ on: [push]
 jobs:
   test:
     runs-on: codeberg-small
-    strategy:
-      matrix:
-        vim:
-          - nightly
     steps:
       - uses: actions/setup-python@v6
-      - name: Setup Vim
-        uses: rhysd/action-setup-vim@v1
-        id: vim
-        with:
-          version: ${{ matrix.vim }}
+      - uses: https://github.com/rhysd/action-setup-vim@v1
       - uses: actions/checkout@v6
       - name: Run Tests
         working-directory: ./test
