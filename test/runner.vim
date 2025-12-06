@@ -1,6 +1,6 @@
 if !has("patch-9.1.1000")
-  echoerr "Needs Vim version 9.1.1000 and above"
-  finish
+  call writefile(["FAIL: Needs Vim version 9.1.1000 and above"], "results.txt", "a")
+  quit
 endif
 
 vim9script
