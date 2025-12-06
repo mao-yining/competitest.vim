@@ -1,7 +1,12 @@
+if !has("patch-9.1.1000")
+  echoerr "Needs Vim version 9.1.1000 and above"
+  finish
+endif
+
 vim9script noclear
 # Vim global plugin for competitive programing
 # Maintainer:     Mao-Yining <mao.yining@outlook.com>
-# Last Modified:  2025-11-22
+# Last Modified:  2025-12-06
 
 if get(g:, 'loaded_competitest', false)
   finish
