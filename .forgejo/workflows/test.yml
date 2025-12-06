@@ -5,12 +5,13 @@ jobs:
     steps:
       - uses: actions/setup-python@v6
       - uses: https://github.com/rhysd/action-setup-vim@v1
-      - uses: actions/checkout@v6
         id: vim
+      - uses: actions/checkout@v6
       - name: Run Tests
         working-directory: ./test
+        env:
+          VIMPRG: ${{ steps.vim.outputs.executable }}
         run: |
           uname -a
-          export VIMPRG=${{ steps.vim.outputs.executable }}
           $VIMPRG --version
           ./run_tests.sh
