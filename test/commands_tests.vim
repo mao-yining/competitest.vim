@@ -4,6 +4,10 @@ vim9script
 def g:Test_Runner_c()
   execute("CompetiTest r")->assert_equal("\n[competitest] commands: subcommand r doesn't exist!")
   execute("CompetiTest run")->assert_equal("\n[competitest] run_testcases: need a valid testcase!")
+  if !executable("gcc")
+    return
+  endif
+
   silent! edit test_runner.c
   var lines: list<string> =<< trim END
     #include "stdio.h"
@@ -83,4 +87,37 @@ def g:Test_Testcase_Actions()
     failed = delete("test_testcase_actions1.ans") == 0 || failed
     failed->assert_false("Command \"delete_testcase\" Failed")
   endtry
+enddef
+
+def g:Test_Runner_python()
+  if !executable("python")
+    return
+  endif
+  writefile(["print(sum(map(int, input().split())))"], "test_py.py", "D")
+  writefile(["1 2"], "test_py0.in", "D")
+  writefile(["3"], "test_py0.ans", "D")
+  silent! edit test_py.py
+  const bufnr = bufnr()
+  execute("CompetiTest run")
+  sleep 100m
+  getbufvar(bufnr, "competitest_runner").tcdata[0].status->assert_equal("CORRECT")
+  getline(1)->assert_match('TC 0      CORRECT   \d.\d\d\d seconds')
+  # execute("ls!")->assert_equal("execute('ls')")
+enddef
+
+def g:Test_Runner_Python_Error()
+  if !executable("python")
+    return
+  endif
+  writefile(["print(um(map(int, input().split())))"], "test_runner_py_fail.py", "D")
+  writefile(["1 2"], "test_runner_py_fail0.in", "D")
+  writefile(["3"], "test_runner_py_fail0.ans", "D")
+  silent! edit test_runner_py_fail.py
+  const bufnr = bufnr()
+  execute("CompetiTest run")
+  while getbufvar(bufnr, "competitest_runner").tcdata[0].status ==# "RUNNING"
+    sleep 1m
+  endwhile
+  getbufvar(bufnr, "competitest_runner").tcdata[0].status->assert_equal("RET 1")
+  getline(1)->assert_match('TC 0      RET 1     \d.\d\d\d seconds')
 enddef
