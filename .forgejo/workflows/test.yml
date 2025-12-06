@@ -1,19 +1,13 @@
-name: unit-tests
-on: [push, pull_request]
+on: [push]
 jobs:
-  linux:
-    name: linux
-    runs-on: ubuntu-latest
+  test:
+    runs-on: docker
     strategy:
       matrix:
         vim:
           - nightly
     steps:
-      - name: Install packages
-        run: |
-          sudo apt update
-          sudo apt install -y python3
-          sudo apt install -y gcc
+      - uses: actions/setup-python@v6
       - name: Setup Vim
         uses: rhysd/action-setup-vim@v1
         id: vim
