@@ -40,6 +40,7 @@ def RunTests()
     v:errors = []
     v:errmsg = ""
     try
+      silent tabnew
       :%bwipeout!
       silent tabonly
       execute $"g:{f}"
