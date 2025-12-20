@@ -2,7 +2,7 @@ vim9script
 # File: autoload\competitest\runner_ui.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: A class show information of runner.
-# Last Modified: 2025-11-22
+# Last Modified: 2025-12-20
 
 import autoload "./runner.vim" as r
 
@@ -29,6 +29,7 @@ export class RunnerUI
       const bufnr = this.runner.bufnr
       execute("tabnew Testcases" .. bufnr)
       const new_tab = tabpagenr()
+      setlocal winfixbuf
 
       this.acmds = [
         {
