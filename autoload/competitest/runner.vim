@@ -370,15 +370,14 @@ endclass
 
 # Compare Output {{{
 # Builtin methods to compare output and expected output
-export const methods = { # {{{
+const methods = { # {{{
   exact: (output: string, expout: string) => output == expout,
   squish: (output: string, expout: string) => {
     def SquishString(str: string): string
       return str
+        ->trim()
         ->substitute('\n', " ", "g")
         ->substitute('\s\+', " ", "g")
-        ->substitute('^\s*', "", "")
-        ->substitute('\s*$', "", "")
     enddef
     return SquishString(output) == SquishString(expout)
   },
