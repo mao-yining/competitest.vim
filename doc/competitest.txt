@@ -368,7 +368,7 @@ output_compare_method			*competitest-config-output_compare_method*
   Default: "squish"
   Output comparison methods:
       "exact"   : Character-by-character
-      "squish"  : Ignore trailing whitespace/newlines
+      "squish"  : Compare while ignoring all trailing whitespace characters
       Custom function: (output: string, expected: string) => bool
 
 view_output_diff			*competitest-config-view_output_diff*

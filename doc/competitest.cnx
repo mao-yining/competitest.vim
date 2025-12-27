@@ -366,7 +366,7 @@ output_compare_method			*competitest-config-output_compare_method*
   默认："squish"
   输出比较方法:
       "exact"   : 逐字符比较
-      "squish"  : 忽略末尾空白/换行符
+      "squish"  : 忽略所有行末空白字符比较
       自定义函数: (output: string, expected: string) => bool
 
 view_output_diff			*competitest-config-view_output_diff*

@@ -372,15 +372,10 @@ endclass
 # Builtin methods to compare output and expected output
 const methods = { # {{{
   exact: (output: string, expout: string) => output == expout,
-  squish: (output: string, expout: string) => {
-    def SquishString(str: string): string
-      return str
-        ->trim()
-        ->substitute('\n', " ", "g")
-        ->substitute('\s\+', " ", "g")
-    enddef
-    return SquishString(output) == SquishString(expout)
-  },
+  squish: (output: string, expout: string) =>
+    output->trim()->substitute('\s\+\n', '\n', 'g')
+    ==
+    expout->trim()->substitute('\s\+\n', '\n', 'g'),
 } # }}}
 
 def CompareOutput(out_bufnr: number, ans_bufnr: number, method: any): bool # {{{

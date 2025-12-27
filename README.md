@@ -267,7 +267,7 @@ g:competitest_configs = {
 - `maximum_time`: maximum time, in milliseconds, given to processes. If it's exceeded process will be killed
 - `output_compare_method`: how given output (stdout) and expected output should be compared. It can be a string, representing the method to use, or a custom function. Available options follows:
   - `"exact"`: character by character comparison
-  - `"squish"`: compare stripping extra white spaces and newlines
+  - `"squish"`: compare while ignoring all trailing whitespace characters
   - custom function: you can use a function accepting two arguments, two strings representing output and expected output. It should return true if the given output is acceptable, false otherwise. Example:
     ```vim
     {
