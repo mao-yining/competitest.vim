@@ -2,7 +2,7 @@ vim9script
 # File: autoload\competitest\commands.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: Handle Commands
-# Last Modified: 2025-11-22
+# Last Modified: 2025-12-31
 
 import autoload "./config.vim"
 import autoload "./runner.vim"
@@ -11,18 +11,25 @@ import autoload "./widgets.vim"
 import autoload "./receive.vim"
 import autoload "./utils.vim"
 
-export def Complete(_: string, cmdline: string, cursorpos: number): string # {{{
-  const ending_space = cmdline[cursorpos - 1] == " "
-  const words = split(cmdline)
-  const wlen = len(words)
-
-  if wlen == 1 || wlen == 2 && !ending_space
+var complete_cache: list<string>
+export def Complete(arglead: string, cmdline: string, cursorpos: number): string # {{{
+  const parts = cmdline->strpart(0, cursorpos)->split()
+    ->extend(arglead == null_string ? [' '] : [])
+  if parts->len() == 2
     return "add_testcase\nedit_testcase\ndelete_testcase\nrun\nrun_no_compile\nshow_ui\nreceive"
-  elseif wlen == 2 && words[-1] == "receive" || wlen == 3 && words[-2] == "receive" && !ending_space
-    return "testcases\nproblem\ncontest\npersistently\nstatus\nstop"
-  else
-    return null_string
+  elseif parts->len() == 3
+    if parts[1] == 'receive'
+      return "testcases\nproblem\ncontest\npersistently\nstatus\nstop"
+    elseif parts[1] =~? 'edit_testcase\|delete_testcase'
+      return testcases.BufGetTestcases(bufnr())->keys()->join("\n")
+    elseif parts[1] =~? 'run\|run_no_compile'
+      complete_cache = testcases.BufGetTestcases(bufnr())->keys()->join("\n")
+      return complete_cache
+    endif
+  elseif parts->len() > 3 && parts[1] =~? 'run\|run_no_compile'
+    return complete_cache
   endif
+  return null_string
 enddef # }}}
 
 export def Handle(arguments: string): void # {{{
@@ -177,7 +184,7 @@ def RunTestcases(testcases_list: list<string>, compile: bool, only_show = false)
     for i in testcases_list
       const tcnum = str2nr(i) # if i is empty or error, return 0。
       if !tctbl->has_key(tcnum) # invalid testcase
-        utils.EchoErr($"run_testcases: testcase {tcnum} doesn't exist!")
+        utils.EchoWarn($"run_testcases: testcase {tcnum} doesn't exist!")
       else
         new_tctbl[tcnum] = tctbl[tcnum]
       endif
