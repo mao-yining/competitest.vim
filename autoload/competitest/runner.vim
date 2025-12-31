@@ -2,7 +2,7 @@ vim9script
 # File: autoload\competitest\runner.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: A class that manage all testcases' process.
-# Last Modified: 2025-11-22
+# Last Modified: 2025-12-31
 
 import autoload "./utils.vim"
 import autoload "./config.vim" as cfg
@@ -304,9 +304,9 @@ export class TCRunner
   enddef # }}}
 
   def ExecuteTestcase(tcindex: number, cmd: SystemCommand, dir: string, CallBack: func(): void = null_function) # {{{
-    const tc = this.tcdata[tcindex]
+    const tc = this.tcdata->get(tcindex)
 
-    if tc.running
+    if tc == 0 || tc.running
       return
     endif
 

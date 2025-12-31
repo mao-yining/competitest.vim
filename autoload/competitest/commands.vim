@@ -11,7 +11,7 @@ import autoload "./widgets.vim"
 import autoload "./receive.vim"
 import autoload "./utils.vim"
 
-var complete_cache: list<string>
+var complete_cache: string
 export def Complete(arglead: string, cmdline: string, cursorpos: number): string # {{{
   const parts = cmdline->strpart(0, cursorpos)->split()
     ->extend(arglead == null_string ? [' '] : [])
