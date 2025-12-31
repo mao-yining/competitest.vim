@@ -33,7 +33,7 @@ export def Complete(arglead: string, cmdline: string, cursorpos: number): string
 enddef # }}}
 
 export def Handle(arguments: string): void # {{{
-  const args = split(arguments, ' ')
+  const args = arguments->split(' ')
 
   # Check if current subcommand has the correct number of arguments
   def CheckSubargs(min_args: number, max_args: number): bool
@@ -182,7 +182,7 @@ def RunTestcases(testcases_list: list<string>, compile: bool, only_show = false)
   if testcases_list != null_list
     final new_tctbl = {}
     for i in testcases_list
-      const tcnum = str2nr(i) # if i is empty or error, return 0。
+      const tcnum = i # if i is empty or error, return 0。
       if !tctbl->has_key(tcnum) # invalid testcase
         utils.EchoWarn($"run_testcases: testcase {tcnum} doesn't exist!")
       else
