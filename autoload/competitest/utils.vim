@@ -1,8 +1,8 @@
 vim9script
-# File: autoload\competitest\utils.vim
+# File: autoload/competitest/utils.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: utility functions
-# Last Modified: 2025-10-26
+# Last Modified: 2026-01-02
 
 # Formats string by replacing $(modifier) tokens with corresponding values
 # from the provided dictionary, supporting both static string values and

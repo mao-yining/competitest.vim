@@ -1,8 +1,8 @@
 vim9script
-# File: autoload\competitest\commands.vim
+# File: autoload/competitest/commands.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: Handle Commands
-# Last Modified: 2025-12-31
+# Last Modified: 2026-01-02
 
 import autoload "./config.vim"
 import autoload "./runner.vim"

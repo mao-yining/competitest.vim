@@ -1,5 +1,5 @@
 vim9script
-# File: autoload\competitest\receive.vim
+# File: autoload/competitest/receive.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: Receive contest, problem and testcases from competitive-companion
 # Last Modified: 2026-01-02

@@ -1,8 +1,8 @@
 vim9script
-# File: autoload\competitest\runner.vim
+# File: autoload/competitest/runner.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: A class that manage all testcases' process.
-# Last Modified: 2025-12-31
+# Last Modified: 2026-01-02
 
 import autoload "./utils.vim"
 import autoload "./config.vim" as cfg
