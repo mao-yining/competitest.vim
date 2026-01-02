@@ -41,8 +41,8 @@ def RunTests()
     v:errmsg = ""
     try
       silent tabnew
-      :%bwipeout!
       silent tabonly
+      :%bwipeout!
       execute $"g:{f}"
     catch
       v:errors->add($"Error: Test {f} failed with exception {v:exception} at {v:throwpoint}")
