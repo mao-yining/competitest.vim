@@ -60,7 +60,7 @@ def g:Test_FormatStringModifiers()
   try
     utils.FormatStringModifiers("Test $(NUM)", {NUM: 123})
   catch
-    assert_exception("FormatStringModifiers: unrecognized modifier $(NUM)")
+    assert_exception("FormatStringModifiers: invalid modifier type for $(NUM)")
   endtry
 
   try

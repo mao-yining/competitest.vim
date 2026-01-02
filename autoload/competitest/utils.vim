@@ -27,8 +27,8 @@ export def FormatStringModifiers(str: string, modifiers: dict<any>, argument = n
       endif
     elseif mod_start != 0 && c == ')'
       const mod = str[mod_start + 1 : i - 1]
-      const replacement = modifiers->get(mod) # return number 0 in default
-      if type(replacement) == v:t_number
+      const replacement = modifiers->get(mod, null)
+      if type(replacement) == v:t_none
         throw $"FormatStringModifiers: unrecognized modifier $({mod})"
       elseif type(replacement) == v:t_string
         evaluated_str->add(replacement)
