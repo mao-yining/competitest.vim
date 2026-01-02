@@ -2,7 +2,7 @@ vim9script
 # File: autoload\competitest\receive.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: Receive contest, problem and testcases from competitive-companion
-# Last Modified: 2025-10-26
+# Last Modified: 2026-01-02
 
 import autoload "./config.vim"
 import autoload "./testcases.vim"
@@ -21,8 +21,8 @@ class Receiver # {{{
   var server: job
   def new(this.port, this.CallBack)
     this.server = $"python3 {SCRIPT_DIR}/receiver.py {this.port}"->job_start({
-      out_cb: (_, message: string) => this.CallBack(json_decode(message)),
-      err_cb: (_, message: string) => utils.EchoErr(message)
+      out_cb: (_, msg: string) => this.CallBack(json_decode(msg)),
+      err_cb: (_, msg: string) => utils.EchoErr("receiver.py: " .. msg)
     })
     if this.server->job_status() == "fail"
       throw "Failed to start the receiver server. Please ensure python3 is installed and in your $PATH."
