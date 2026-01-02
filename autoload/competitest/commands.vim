@@ -20,13 +20,13 @@ export def Complete(arglead: string, cmdline: string, cursorpos: number): string
   elseif parts->len() == 3
     if parts[1] == 'receive'
       return "testcases\nproblem\ncontest\npersistently\nstatus\nstop"
-    elseif parts[1] =~? 'edit_testcase\|delete_testcase'
+    elseif parts[1] =~# 'edit_testcase\|delete_testcase'
       return testcases.BufGetTestcases(bufnr())->keys()->join("\n")
-    elseif parts[1] =~? 'run\|run_no_compile'
+    elseif parts[1] =~# 'run\|run_no_compile'
       complete_cache = testcases.BufGetTestcases(bufnr())->keys()->join("\n")
       return complete_cache
     endif
-  elseif parts->len() > 3 && parts[1] =~? 'run\|run_no_compile'
+  elseif parts->len() > 3 && parts[1] =~# 'run\|run_no_compile'
     return complete_cache
   endif
   return null_string
