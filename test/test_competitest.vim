@@ -74,24 +74,23 @@ def g:Test_Runner_c()
     }
   END
   writefile(lines, "Xrun.c", "D")
-  const tcnum = 9
-  for i in range(tcnum)
+  for i in range(12)
     writefile(["1 2"], $"Xrun{i}.in", "D")
     writefile(["3"], $"Xrun{i}.ans", "D")
   endfor
   silent! edit Xrun.c
   const bufnr = bufnr()
-  execute("CompetiTest run")->assert_equal("")
+  execute("CompetiTest run 1 2 3 4 5 6 7 8 9")->assert_equal("")
   defer delete(has("win32") ? "Xrun.exe" : "Xrun")
   while getbufvar(bufnr, "competitest_runner").tcdata[0].status ==# "RUNNING"
     sleep 1m
   endwhile
   getline(1)->assert_match('Compile   DONE      \d.\d\d\d seconds')
-  for i in range(tcnum)
-    while getbufvar(bufnr, "competitest_runner").tcdata[i + 1].status ==# "RUNNING"
+  for i in range(1, 9)
+    while getbufvar(bufnr, "competitest_runner").tcdata[i].status ==# "RUNNING"
       sleep 1m
     endwhile
-    getline(i + 2)->assert_match($'TC {i}      CORRECT   \d.\d\d\d seconds')
+    getline(i + 1)->assert_match($'TC {i}      CORRECT   \d.\d\d\d seconds')
   endfor
 enddef
 
