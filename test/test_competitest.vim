@@ -1,7 +1,56 @@
 vim9script
+import autoload "../autoload/competitest/commands.vim"
 # commands {{{
+def g:Test_Commands_Complete()
+  const Complete: func(string, string, number): string = commands.Complete
+  var result: string
+  writefile([""], "XCommands_Complete.c", "D")
+  const tcnum = 3
+  for i in range(tcnum)
+    writefile([""], $"XCommands_Complete{i}.in", "D")
+    writefile([""], $"XCommands_Complete{i}.ans", "D")
+  endfor
+  silent! edit XCommands_Complete.c
+  result = Complete(null_string, 'CompetiTest', 11)
+  result->assert_equal("add_testcase\nedit_testcase\ndelete_testcase\nrun\nrun_no_compile\nshow_ui\nreceive")
+
+  result = Complete(null_string, 'CompetiTest receive ', 20)
+  result->assert_equal("testcases\nproblem\ncontest\npersistently\nstatus\nstop")
+
+  result = Complete('t', 'CompetiTest receive t', 21)
+  result->assert_equal("testcases\nproblem\ncontest\npersistently\nstatus\nstop")
+
+  result = Complete('edit_testcase', 'CompetiTest edit_testcase', 25)
+  result->assert_equal("add_testcase\nedit_testcase\ndelete_testcase\nrun\nrun_no_compile\nshow_ui\nreceive")
+
+  result = Complete(null_string, 'CompetiTest edit_testcase ', 26)
+  result->assert_equal("0\n1\n2")
+
+  result = Complete(null_string, 'CompetiTest EDIT_TESTCASE ', 26)
+  result->assert_equal(null_string)
+
+  result = Complete(null_string, 'CompetiTest show_ui ', 18)
+  result->assert_equal(null_string)
+
+  result = Complete(null_string, 'CompetiTest run ', 16)
+  result->assert_equal("0\n1\n2")
+
+  result = Complete(null_string, 'CompetiTest run_no_compile ', 27)
+  result->assert_equal("0\n1\n2")
+
+  result = Complete(null_string, 'CompetiTest edit_testcase ', 26)
+  result->assert_equal("0\n1\n2")
+
+  result = Complete(null_string, 'CompetiTest unknown_command', 28)
+  result->assert_equal(null_string)
+
+  result = Complete('ru', 'CompetiTest ru', 13)
+  result->assert_equal("add_testcase\nedit_testcase\ndelete_testcase\nrun\nrun_no_compile\nshow_ui\nreceive")
+enddef
+
 def g:Test_Command_error()
   execute("CompetiTest r")->assert_equal("\n[competitest] commands: subcommand r doesn't exist!")
+  execute("CompetiTest run")->assert_equal("\n[competitest] run_testcases: need a valid testcase!")
 enddef
 # }}}
 # runner {{{
@@ -39,7 +88,6 @@ def g:Test_Runner_c()
     getline(i + 2)->assert_match($'TC {i}      CORRECT   \d.\d\d\d seconds')
   endfor
 enddef
-
 
 def g:Test_Runner_python()
   if !executable("python")
