@@ -1,14 +1,13 @@
 vim9script
-
+# commands {{{
+def g:Test_Command_error()
+  execute("CompetiTest r")->assert_equal("\n[competitest] commands: subcommand r doesn't exist!")
+enddef
+# }}}
+# runner {{{
 # Test :CompetiTest run command functionality with C files
 def g:Test_Runner_c()
-  execute("CompetiTest r")->assert_equal("\n[competitest] commands: subcommand r doesn't exist!")
-  execute("CompetiTest run")->assert_equal("\n[competitest] run_testcases: need a valid testcase!")
-  if !executable("gcc")
-    return
-  endif
-
-  silent! edit test_runner.c
+  if !executable("gcc") | return | endif
   var lines: list<string> =<< trim END
     #include "stdio.h"
 
@@ -20,27 +19,25 @@ def g:Test_Runner_c()
         return 0;
     }
   END
-  lines->setline(1)
-  silent! write
-  try
-    :CompetiTest add_testcase
-    "1 2"->setline(1)
-    "\<Tab>"->feedkeys("tx")
-    "3"->setline(1)
-    "s"->feedkeys("tx")
-    execute("CompetiTest run 0 1")->assert_equal("\n[competitest] run_testcases: testcase 1 doesn't exist!")
-    tabclose
-    execute("CompetiTest run")->assert_equal("")
-  finally
-    tabclose
-    CompetiTest delete_testcase 0
-    delete("test_runner.c")
-    delete(has("win32") ? "test_runner.exe" : "test_runner")
-    var failed = false
-    failed = delete("test_runner0.in")  == 0 || failed
-    failed = delete("test_runner0.ans") == 0 || failed
-    failed->assert_false("Command \"delete_testcase\" Failed")
-  endtry
+  writefile(lines, "Xrun.c", "D")
+  const tcnum = 9
+  for i in range(tcnum)
+    writefile(["1 2"], $"Xrun{i}.in", "D")
+    writefile(["3"], $"Xrun{i}.ans", "D")
+  endfor
+  silent! edit Xrun.c
+  const bufnr = bufnr()
+  execute("CompetiTest run")->assert_equal("")
+  while getbufvar(bufnr, "competitest_runner").tcdata[0].status ==# "RUNNING"
+    sleep 1m
+  endwhile
+  getline(1)->assert_match('Compile   DONE      \d.\d\d\d seconds')
+  for i in range(tcnum)
+    while getbufvar(bufnr, "competitest_runner").tcdata[i + 1].status ==# "RUNNING"
+      sleep 1m
+    endwhile
+    getline(i + 2)->assert_match($'TC {i}      CORRECT   \d.\d\d\d seconds')
+  endfor
 enddef
 
 
@@ -53,7 +50,7 @@ def g:Test_Runner_python()
   writefile(["3"], "Xrun0.ans", "D")
   silent! edit Xrun.py
   const bufnr = bufnr()
-  execute("CompetiTest run")
+  execute("CompetiTest run")->assert_equal("")
   sleep 10m
   while getbufvar(bufnr, "competitest_runner").tcdata[0].status ==# "RUNNING"
     sleep 1m
@@ -78,7 +75,8 @@ def g:Test_Runner_Python_Error()
   getbufvar(bufnr, "competitest_runner").tcdata[0].status->assert_equal("RET 1")
   getline(1)->assert_match('TC 0      RET 1     \d.\d\d\d seconds')
 enddef
-
+# }}}
+# testcases {{{
 def g:Test_Testcase_Actions()
   silent! edit test_testcase_actions.c
   execute("CompetiTest add_testcase 0")->assert_equal("\n[competitest] commands: add_testcase: exactly 0 sub-arguments required.")
@@ -124,6 +122,8 @@ def g:Test_Testcase_Actions()
     failed->assert_false("Command \"delete_testcase\" Failed")
   endtry
 enddef
+# }}}
+# receive {{{
 def g:Test_Receive_status()
   execute("CompetiTest receive status")->assert_equal("\n[competitest] receive: receiving not enabled.")
 enddef
@@ -131,4 +131,5 @@ enddef
 def g:Test_Receive_SubCommand()
   execute("CompetiTest receive start")->assert_equal("\n[competitest] receive: unrecognized mode 'start'")
 enddef
+# }}}
 # vim:fdm=marker
