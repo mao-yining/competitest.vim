@@ -78,7 +78,7 @@ enddef
 # }}}
 # testcases {{{
 def g:Test_Testcase_Actions()
-  silent! edit test_testcase_actions.c
+  silent! edit Xtestcase_actions.c
   execute("CompetiTest add_testcase 0")->assert_equal("\n[competitest] commands: add_testcase: exactly 0 sub-arguments required.")
   execute("CompetiTest edit_testcase")->assert_equal("\n[competitest] picker: there's no testcase to pick from.")
   execute("CompetiTest edit_testcase 0")->assert_equal("\n[competitest] edit_testcase: testcase 0 doesn't exist!")
@@ -86,7 +86,7 @@ def g:Test_Testcase_Actions()
   "1 2"->setline(1)
   "\<Tab>"->feedkeys("tx")
   "3"->setline(1)
-  "s"->feedkeys("tx")
+  execute("normal s")
   try
     execute("CompetiTest edit_testcase")->assert_equal("")
     assert_false(popup_list()->empty())
@@ -102,7 +102,7 @@ def g:Test_Testcase_Actions()
     "4 5"->setline(1)
     "\<Tab>"->feedkeys("tx")
     "8"->setline(1)
-    "s"->feedkeys("tx")
+    execute("normal s")
 
     CompetiTest delete_testcase 0
 
@@ -115,10 +115,10 @@ def g:Test_Testcase_Actions()
 
   finally
     var failed = false # delete_testcase failed
-    failed = delete("test_testcase_actions0.in")  == 0 || failed
-    failed = delete("test_testcase_actions0.ans") == 0 || failed
-    failed = delete("test_testcase_actions1.in")  == 0 || failed
-    failed = delete("test_testcase_actions1.ans") == 0 || failed
+    failed = delete("Xtestcase_actions0.in")  == 0 || failed
+    failed = delete("Xtestcase_actions0.ans") == 0 || failed
+    failed = delete("Xtestcase_actions1.in")  == 0 || failed
+    failed = delete("Xtestcase_actions1.ans") == 0 || failed
     failed->assert_false("Command \"delete_testcase\" Failed")
   endtry
 enddef
