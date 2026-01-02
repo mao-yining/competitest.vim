@@ -89,21 +89,21 @@ def g:Test_Testcase_Actions()
   endtry
 enddef
 
-# def g:Test_Runner_python()
-#   if !executable("python")
-#     return
-#   endif
-#   writefile(["print(sum(map(int, input().split())))"], "test_py.py", "D")
-#   writefile(["1 2"], "test_py0.in", "D")
-#   writefile(["3"], "test_py0.ans", "D")
-#   silent! edit test_py.py
-#   const bufnr = bufnr()
-#   execute("CompetiTest run")
-#   sleep 100m
-#   getbufvar(bufnr, "competitest_runner").tcdata[0].status->assert_equal("CORRECT")
-#   getline(1)->assert_match('TC 0      CORRECT   \d.\d\d\d seconds')
-#   # execute("ls!")->assert_equal("execute('ls')")
-# enddef
+def g:Test_Runner_python()
+  if !executable("python")
+    return
+  endif
+  writefile(["print(sum(map(int, input().split())))"], "test_py.py", "D")
+  writefile(["1 2"], "test_py0.in", "D")
+  writefile(["3"], "test_py0.ans", "D")
+  silent! edit test_py.py
+  const bufnr = bufnr()
+  execute("CompetiTest run")
+  sleep 100m
+  getbufvar(bufnr, "competitest_runner").tcdata[0].status->assert_equal("CORRECT")
+  getline(1)->assert_match('TC 0      CORRECT   \d.\d\d\d seconds')
+  # execute("ls!")->assert_equal("execute('ls')")
+enddef
 
 def g:Test_Runner_Python_Error()
   if !executable("python")
