@@ -25,7 +25,7 @@ setlocal
 set testfile=%~1
 echo Running tests in %testfile%
 
-%VIM_CMD% -c "let g:TestName='%testfile%'" -S runner.vim
+%VIM_CMD% -c "let g:TestName='%testfile%'" -S launcher.vim
 
 if not exist results.txt (
   echo ERROR: Test results file 'results.txt' is not found.
