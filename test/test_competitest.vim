@@ -43,6 +43,42 @@ def g:Test_Runner_c()
   endtry
 enddef
 
+
+def g:Test_Runner_python()
+  if !executable("python")
+    return
+  endif
+  writefile(["print(sum(map(int, input().split())))"], "Xrun.py", "D")
+  writefile(["1 2"], "Xrun0.in", "D")
+  writefile(["3"], "Xrun0.ans", "D")
+  silent! edit Xrun.py
+  const bufnr = bufnr()
+  execute("CompetiTest run")
+  sleep 10m
+  while getbufvar(bufnr, "competitest_runner").tcdata[0].status ==# "RUNNING"
+    sleep 1m
+  endwhile
+  getbufvar(bufnr, "competitest_runner").tcdata[0].status->assert_equal("CORRECT")
+  getline(1)->assert_match('TC 0      CORRECT   \d.\d\d\d seconds')
+enddef
+
+def g:Test_Runner_Python_Error()
+  if !executable("python")
+    return
+  endif
+  writefile(["print(um(map(int, input().split())))"], "test_runner_py_fail.py", "D")
+  writefile(["1 2"], "test_runner_py_fail0.in", "D")
+  writefile(["3"], "test_runner_py_fail0.ans", "D")
+  silent! edit test_runner_py_fail.py
+  const bufnr = bufnr()
+  execute("CompetiTest run")
+  while getbufvar(bufnr, "competitest_runner").tcdata[0].status ==# "RUNNING"
+    sleep 1m
+  endwhile
+  getbufvar(bufnr, "competitest_runner").tcdata[0].status->assert_equal("RET 1")
+  getline(1)->assert_match('TC 0      RET 1     \d.\d\d\d seconds')
+enddef
+
 def g:Test_Testcase_Actions()
   silent! edit test_testcase_actions.c
   execute("CompetiTest add_testcase 0")->assert_equal("\n[competitest] commands: add_testcase: exactly 0 sub-arguments required.")
@@ -88,36 +124,11 @@ def g:Test_Testcase_Actions()
     failed->assert_false("Command \"delete_testcase\" Failed")
   endtry
 enddef
-
-def g:Test_Runner_python()
-  if !executable("python")
-    return
-  endif
-  writefile(["print(sum(map(int, input().split())))"], "test_py.py", "D")
-  writefile(["1 2"], "test_py0.in", "D")
-  writefile(["3"], "test_py0.ans", "D")
-  silent! edit test_py.py
-  const bufnr = bufnr()
-  execute("CompetiTest run")
-  sleep 100m
-  getbufvar(bufnr, "competitest_runner").tcdata[0].status->assert_equal("CORRECT")
-  getline(1)->assert_match('TC 0      CORRECT   \d.\d\d\d seconds')
-  # execute("ls!")->assert_equal("execute('ls')")
+def g:Test_Receive_status()
+  execute("CompetiTest receive status")->assert_equal("\n[competitest] receive: receiving not enabled.")
 enddef
 
-def g:Test_Runner_Python_Error()
-  if !executable("python")
-    return
-  endif
-  writefile(["print(um(map(int, input().split())))"], "test_runner_py_fail.py", "D")
-  writefile(["1 2"], "test_runner_py_fail0.in", "D")
-  writefile(["3"], "test_runner_py_fail0.ans", "D")
-  silent! edit test_runner_py_fail.py
-  const bufnr = bufnr()
-  execute("CompetiTest run")
-  while getbufvar(bufnr, "competitest_runner").tcdata[0].status ==# "RUNNING"
-    sleep 1m
-  endwhile
-  getbufvar(bufnr, "competitest_runner").tcdata[0].status->assert_equal("RET 1")
-  getline(1)->assert_match('TC 0      RET 1     \d.\d\d\d seconds')
+def g:Test_Receive_SubCommand()
+  execute("CompetiTest receive start")->assert_equal("\n[competitest] receive: unrecognized mode 'start'")
 enddef
+# vim:fdm=marker

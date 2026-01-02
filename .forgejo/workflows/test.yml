@@ -14,4 +14,4 @@ jobs:
         run: |
           uname -a
           $VIMPRG --version
-          ./run_tests.sh
+          ./launch_tests.sh

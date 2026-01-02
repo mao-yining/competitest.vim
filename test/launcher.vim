@@ -1,6 +1,6 @@
 if !has("patch-9.1.1000")
   call writefile(["Warning: Needs Vim version 9.1.1000 and above"], "results.txt", "a")
-  quit
+  quitall!
 endif
 
 vim9script
@@ -42,7 +42,7 @@ def RunTests()
     try
       silent tabnew
       silent tabonly
-      :%bwipeout!
+      silent :%bwipeout!
       execute $"g:{f}"
     catch
       v:errors->add($"Error: Test {f} failed with exception {v:exception} at {v:throwpoint}")

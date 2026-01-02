@@ -26,4 +26,4 @@ jobs:
           uname -a
           export VIMPRG=${{ steps.vim.outputs.executable }}
           $VIMPRG --version
-          ./run_tests.sh
+          ./launch_tests.sh
