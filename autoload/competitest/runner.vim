@@ -145,7 +145,7 @@ export class TCRunner
 
     # Evaluate CompetiTest file-format modifiers
     def EvalCommand(cmd: dict<any>): SystemCommand
-      var exec = utils.BufEvalString(bufnr, cmd.exec, null_string)
+      var exec = utils.EvalString(bufname, cmd.exec)
       if exec == null_string
         return null_object
       endif
@@ -157,7 +157,7 @@ export class TCRunner
         return SystemCommand.new(exec, args)
       endif
       for arg in cmd.args
-        const eval_arg = utils.BufEvalString(bufnr, arg, null_string)
+        const eval_arg = utils.EvalString(bufname, arg)
         if eval_arg == null_string
           break
         endif

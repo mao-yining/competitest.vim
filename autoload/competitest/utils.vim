@@ -7,7 +7,7 @@ vim9script
 # Formats string by replacing $(modifier) tokens with corresponding values
 # from the provided dictionary, supporting both static string values and
 # callback functions for dynamic replacement.
-export def FormatStringModifiers( str: string, modifiers: dict<any>, argument = null_string): string # {{{
+export def FormatStringModifiers(str: string, modifiers: dict<any>, argument = null_string): string # {{{
   var evaluated_str: list<string>
   var mod_start = 0  # 0: idle, -1: saw '$', >0: position of '('
 
@@ -31,10 +31,10 @@ export def FormatStringModifiers( str: string, modifiers: dict<any>, argument = 
       if type(replacement) == v:t_number
         throw $"FormatStringModifiers: unrecognized modifier $({mod})"
       elseif type(replacement) == v:t_string
-        add(evaluated_str, replacement)
+        evaluated_str->add(replacement)
       elseif type(replacement) == v:t_func
         const Replacement = replacement
-        add(evaluated_str, Replacement(argument))
+        evaluated_str->add(Replacement(argument))
       else
         throw $"FormatStringModifiers: invalid modifier type for $({mod})"
       endif
@@ -48,18 +48,17 @@ export def FormatStringModifiers( str: string, modifiers: dict<any>, argument = 
     throw "FormatStringModifiers: unclosed modifier starting at position " .. mod_start
   endif
 
-  return evaluated_str->join('')
+  return evaluated_str->join(null_string)
 enddef # }}}
 
-var file_format_modifiers = { # {{{
+const file_format_modifiers = { # {{{
   "": "$",
-  "HOME": (filepath: string): string => expand("~"),
-  "FNAME": (filepath: string): string => fnamemodify(filepath, ":t"),
-  "FNOEXT": (filepath: string): string => fnamemodify(filepath, ":t:r"),
-  "FEXT": (filepath: string): string => fnamemodify(filepath, ":e"),
-  "FABSPATH": (filepath: string): string => filepath,
-  "ABSDIR": (filepath: string): string => fnamemodify(filepath, ":p:h"),
-  "TCNUM": null_string
+  "ABSDIR": (filepath: string) => fnamemodify(filepath, ":p:h"),
+  "FABSPATH": (filepath: string) => filepath,
+  "FEXT": (filepath: string) => fnamemodify(filepath, ":e"),
+  "FNAME": (filepath: string) => fnamemodify(filepath, ":t"),
+  "FNOEXT": (filepath: string) => fnamemodify(filepath, ":t:r"),
+  "HOME": (_) => expand("~"),
 } # }}}
 
 export def EvalString(filepath: string, str: string): string # {{{
@@ -69,11 +68,6 @@ export def EvalString(filepath: string, str: string): string # {{{
     EchoErr(string(v:exception))
   endtry
   return null_string
-enddef # }}}
-
-export def BufEvalString(bufnr: number, str: string, tcnum: any = null): string # {{{
-  file_format_modifiers["TCNUM"] = string(tcnum ?? "")
-  return EvalString(bufname(bufnr), str)
 enddef # }}}
 
 export def LoadFileAsString(filepath: string): string # {{{
