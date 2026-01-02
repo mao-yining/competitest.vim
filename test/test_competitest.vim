@@ -50,7 +50,12 @@ enddef
 
 def g:Test_Command_error()
   execute("CompetiTest r")->assert_equal("\n[competitest] commands: subcommand r doesn't exist!")
+  execute("CompetiTest show_ui 1")->assert_equal("\n[competitest] commands: show_ui: exactly 0 sub-arguments required.")
+  execute("CompetiTest edit_testcase 1 2")->assert_equal("\n[competitest] commands: edit_testcase: from 0 to 1 sub-arguments required.")
+  execute("CompetiTest edit_testcase 1")->assert_equal("\n[competitest] edit_testcase: testcase 1 doesn't exist!")
+  execute("CompetiTest delete_testcase 1")->assert_equal("\n[competitest] delete_testcase: testcase 1 doesn't exist!")
   execute("CompetiTest run")->assert_equal("\n[competitest] run_testcases: need a valid testcase!")
+  execute("CompetiTest run 1")->assert_equal("\n[competitest] run_testcases: testcase 1 doesn't exist!\n[competitest] run_testcases: need a valid testcase!")
 enddef
 # }}}
 # runner {{{
