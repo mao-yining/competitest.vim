@@ -94,6 +94,31 @@ def g:Test_Runner_c()
   endfor
 enddef
 
+# If compile error, open the error message window in a newtab and stop
+# consequence testcases.
+def g:Test_Runner_c_error()
+  if !executable("gcc") | return | endif
+  var lines: list<string> =<< trim END
+    int main()
+        return 0
+  END
+  writefile(lines, "Xrun.c", "D")
+  writefile([], "Xrun0.in", "D")
+  writefile([], "Xrun0.ans", "D")
+  silent! edit Xrun.c
+  const bufnr = bufnr()
+  execute("CompetiTest run")->assert_equal("")
+  defer delete(has("win32") ? "Xrun.exe" : "Xrun")
+  while getbufvar(bufnr, "competitest_runner").tcdata[0].status ==# "RUNNING"
+    sleep 1m
+  endwhile
+  bufname()->assert_match('_stderr_compile$')
+  tabclose
+  getline(1)->assert_match('Compile   RET 1     \d.\d\d\d seconds')
+  getline(2)->assert_match('TC 0                0.000 seconds')
+enddef
+
+# Run with non-compile languages
 def g:Test_Runner_python()
   if !executable("python")
     return
