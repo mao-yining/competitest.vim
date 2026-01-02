@@ -77,6 +77,7 @@ def g:Test_Runner_c()
   silent! edit Xrun.c
   const bufnr = bufnr()
   execute("CompetiTest run")->assert_equal("")
+  defer delete(has("win32") ? "Xrun.exe" : "Xrun")
   while getbufvar(bufnr, "competitest_runner").tcdata[0].status ==# "RUNNING"
     sleep 1m
   endwhile

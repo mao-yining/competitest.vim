@@ -10,7 +10,7 @@ fi
 
 VIM_CMD="$VIMPRG -u NONE -U NONE -i NONE --noplugin -N --not-a-term"
 
-TESTS="test_competitest.vim"
+TESTS="test_competitest.vim test_utils.vim"
 
 RunTestsInFile() {
   testfile=$1
@@ -40,5 +40,3 @@ done
 
 echo "SUCCESS: All the tests passed."
 exit 0
-
-# vim: shiftwidth=2 softtabstop=2 noexpandtab
