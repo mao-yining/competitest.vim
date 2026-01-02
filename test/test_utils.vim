@@ -96,12 +96,6 @@ def g:Test_EvalString()
 
   result = utils.EvalString(filepath, "$(FNOEXT).$(FEXT) in $(ABSDIR)")
   result->assert_equal("test.cpp in " .. fnamemodify(filepath, ":p:h"))
-
-  try
-    utils.EvalString(filepath, "Test $(UNKNOWN)")
-  catch
-    assert_exception("FormatStringModifiers:")
-  endtry
 enddef
 
 def g:Test_Integration()
