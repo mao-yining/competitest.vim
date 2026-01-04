@@ -8,16 +8,16 @@ import autoload "./runner.vim" as r
 
 export class RunnerUI
   const runner: r.TCRunner
-  var visible: bool = false
-  var viewer_content: string = null_string
-  var diff_view: bool = false
-  var update_details: bool = false
+  var visible: bool
+  var viewer_content: string
+  var diff_view: bool
+  var update_details: bool
   var update_testcase: number = -1 # Means nil
-  var windows: dict<any> = {}
+  var windows: dict<any>
   var latest_line: number
-  var latest_compilation_timestamp: float = 0.0
-  var showing_data: r.TestcaseData = null_object
-  var acmds: list<dict<any>> = null_list
+  var latest_compilation_timestamp: float
+  var showing_data: r.TestcaseData
+  var acmds: list<dict<any>>
 
   def new(this.runner) # {{{
     this.diff_view = this.runner.config.view_output_diff

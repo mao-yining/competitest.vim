@@ -26,15 +26,15 @@ export class TestcaseData # {{{
   const tcnum: string
   const timelimit: number
 
-  var job: job = null_job
-  var status: string = null_string
-  var killed: bool = false
-  var running: bool = false
-  var hlgroup: string = null_string
-  var timer: number = 0
-  var time: float = 0.0
-  var starting_time: list<number> = null_list
-  var exit_code: number = 0
+  var job: job
+  var status: string
+  var killed: bool
+  var running: bool
+  var hlgroup: string
+  var timer: number
+  var time: float
+  var starting_time: list<number>
+  var exit_code: number
 
   def JobStart(command: list<string>, dir: string, CallBack: func(): void, compare_method: any): void # {{{
     final options = {
@@ -134,8 +134,8 @@ export class TCRunner
   const bufnr: number
   const config: dict<any>
   var compile: bool
-  var next_tc: number = 0
-  var tcdata: list<TestcaseData> = []
+  var next_tc: number
+  var tcdata: list<TestcaseData>
   var ui: runner_ui.RunnerUI
 
   def new(bufnr: number) # {{{
@@ -202,7 +202,7 @@ export class TCRunner
     endif
   enddef # }}}
 
-  def RunAndInitTestcases(tctbl: dict<any>, compile: bool = true) #{{{
+  def RunAndInitTestcases(tctbl: dict<any>, compile: bool) #{{{
     # Init Testcases {{{
     if tctbl != null_dict
       if this.config.save_all_files
