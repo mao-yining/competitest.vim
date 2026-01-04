@@ -30,7 +30,7 @@ def RunTests()
   # Get the list of test functions in this file and call them
   const fns: list<string> = execute("function /^Test_")
     ->split("\n")
-    ->map((_, v: string) => v->substitute("^def ", "", ""))
+    ->map((_, v: string) => v->strpart(4))
     ->sort()
   if fns->empty()
     ["No tests are found"]->writefile("results.txt")
@@ -38,7 +38,7 @@ def RunTests()
   endif
   for f in fns
     v:errors = []
-    v:errmsg = ""
+    v:errmsg = null_string
     try
       silent tabnew
       silent tabonly
@@ -47,7 +47,7 @@ def RunTests()
     catch
       v:errors->add($"Error: Test {f} failed with exception {v:exception} at {v:throwpoint}")
     endtry
-    if v:errmsg != ""
+    if v:errmsg != null_string
       v:errors->add($"Error: Test {f} generated error {v:errmsg}")
     endif
     if !v:errors->empty()

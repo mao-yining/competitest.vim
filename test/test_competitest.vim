@@ -4,11 +4,11 @@ import autoload "../autoload/competitest/commands.vim"
 def g:Test_Commands_Complete()
   const Complete: func(string, string, number): string = commands.Complete
   var result: string
-  writefile([""], "XCommands_Complete.c", "D")
+  writefile([], "XCommands_Complete.c", "D")
   const tcnum = 3
   for i in range(tcnum)
-    writefile([""], $"XCommands_Complete{i}.in", "D")
-    writefile([""], $"XCommands_Complete{i}.ans", "D")
+    writefile([], $"XCommands_Complete{i}.in", "D")
+    writefile([], $"XCommands_Complete{i}.ans", "D")
   endfor
   silent! edit XCommands_Complete.c
   result = Complete(null_string, 'CompetiTest', 11)
