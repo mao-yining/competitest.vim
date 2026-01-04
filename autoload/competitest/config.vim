@@ -172,4 +172,3 @@ enddef # }}}
 SetHighlight()
 
 autocmd ColorScheme * SetHighlight()
-autocmd Filetype competitest_* nnoremap <buffer> q <Cmd>q<CR>
