@@ -2,7 +2,7 @@ vim9script
 # File: autoload/competitest/config.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: Deal with settings of the plugin.
-# Last Modified: 2026-01-02
+# Last Modified: 2026-01-04
 
 import autoload "./utils.vim"
 
@@ -97,19 +97,19 @@ def UpdateConfigTable(cfg_tbl: dict<any>, opts: dict<any>): dict<any> # {{{
   var new_config = RecursiveExtend(base_cfg, opts_copy)
 
   # Handle compile_command args replacement
-  if opts->has_key("compile_command") && type(opts.compile_command) == v:t_dict
-    for lang in keys(opts.compile_command)
-      if type(opts.compile_command[lang]) == v:t_dict && opts.compile_command[lang]->has_key("args")
-        new_config.compile_command[lang].args = deepcopy(opts.compile_command[lang].args)
+  if opts->get("compile_command")->type() == v:t_dict
+    for [lang, compile_command] in items(opts.compile_command)
+      if compile_command->has_key("args")
+        new_config.compile_command[lang].args = deepcopy(compile_command.args)
       endif
     endfor
   endif
 
   # Handle run_command args replacement
-  if opts->has_key("run_command") && type(opts.run_command) == v:t_dict
-    for lang in keys(opts.run_command)
-      if type(opts.run_command[lang]) == v:t_dict && opts.run_command[lang]->has_key("args")
-        new_config.run_command[lang].args = deepcopy(opts.run_command[lang].args)
+  if opts->get("run_command")->type() == v:t_dict
+    for [lang, run_command] in items(opts.run_command)
+      if run_command->has_key("args")
+        new_config.run_command[lang].args = deepcopy(run_command.args)
       endif
     endfor
   endif
@@ -123,8 +123,7 @@ export def LoadLocalConfig(directory: string): dict<any> # {{{
   var dir = directory
   while prev_len != len(dir)
     prev_len = len(dir)
-    const config_file = dir .. "/" .. g:competitest_configs->get(
-      "local_config_file_name", default_config.local_config_file_name)
+    const config_file = $"{dir}/{g:competitest_configs.local_config_file_name}"
     if config_file->filereadable()
       const local_config = config_file->readfile()->join("\n")->eval()
       if type(local_config) != v:t_dict
