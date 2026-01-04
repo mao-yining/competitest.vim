@@ -316,7 +316,7 @@ def StoreReceivedTaskConfig(filepath: string, confirm_overwriting: bool, task: C
       const str = utils.LoadFileAsString(template_file)
       assert_true(str != null_string, $"CompetiTest.vim: StoreReceivedTaskConfig: cannot load \"{template_file}\"")
       const evaluated_str = EvalReceiveModifiers(str, task, file_extension, false, cfg.date_format)
-      utils.WriteStringOnFile(filepath, evaluated_str != null_string ? evaluated_str : "")
+      utils.WriteStringOnFile(filepath, evaluated_str)
     else
       mkdir(file_directory, "p")
       writefile(readfile(template_file), filepath)
