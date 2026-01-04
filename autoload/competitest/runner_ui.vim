@@ -31,18 +31,6 @@ export class RunnerUI
       const new_tab = tabpagenr()
       setlocal winfixbuf
 
-      this.acmds = [
-        {
-          group: "CompetiTestTestcase", event: "CursorMoved", bufnr: bufnr(),
-          cmd: $"getbufvar({bufnr}, 'competitest_runner').ui.Update(line('.'))"
-        },
-        {
-          group: "CompetiTestTestcase", event: "WinClosed", bufnr: bufnr(),
-          cmd: $"getbufvar({bufnr}, 'competitest_runner').ui.CallBack()"
-        }
-      ]
-      autocmd_add(this.acmds) # deleted in CallBack()
-
       this.windows.tc = { winid: win_getid(), bufnr: bufnr() }
       setlocal nobuflisted
       setlocal diffopt+=iwhiteeol
@@ -85,39 +73,32 @@ export class RunnerUI
 
       const buf_runner = $"call getbufvar({bufnr}, 'competitest_runner')"
       win_gotoid(this.windows.tc.winid)
-      # {{{ set kaymaps
-      for map in get(runner_ui_mappings, "close", [])
-        execute($"nnoremap <buffer><nowait> {map} <Cmd>tabclose<CR>")
-      endfor
-      for map in get(runner_ui_mappings, "kill", [])
-        execute($"nnoremap <buffer><nowait> {map} <Cmd>{buf_runner}.KillProcess(line('.') - 1)<CR>")
-      endfor
-      for map in get(runner_ui_mappings, "kill_all", [])
-        execute($"nnoremap <buffer><nowait> {map} <Cmd>{buf_runner}.KillAllProcesses()<CR>")
-      endfor
-      for map in get(runner_ui_mappings, "run_again", [])
-        execute($"nnoremap <buffer><nowait> {map} <Cmd>{buf_runner}.RunTestcase(line('.') - 1)<CR>")
-      endfor
-      for map in get(runner_ui_mappings, "run_all_again", [])
-        execute($"nnoremap <buffer><nowait> {map} <Cmd>{buf_runner}.RunTestcases()<CR>")
-      endfor
-      for map in get(runner_ui_mappings, "toggle_diff", [])
-        execute($"nnoremap <buffer><nowait> {map} <Cmd>{buf_runner}.ui.ToggleDiffView()<CR>")
-      endfor
-      for map in get(runner_ui_mappings, "view_answer", [])
-        execute($"nnoremap <buffer><nowait> {map} <Cmd>{buf_runner}.ui.WinView('ans')<CR>")
-      endfor
-      for map in get(runner_ui_mappings, "view_input", [])
-        execute($"nnoremap <buffer><nowait> {map} <Cmd>{buf_runner}.ui.WinView('stdin')<CR>")
-      endfor
-      for map in get(runner_ui_mappings, "view_stdout", [])
-        execute($"nnoremap <buffer><nowait> {map} <Cmd>{buf_runner}.ui.WinView('stdout')<CR>")
-      endfor
-      for map in get(runner_ui_mappings, "view_stderr", [])
-        execute($"nnoremap <buffer><nowait> {map} <Cmd>{buf_runner}.ui.WinView('stderr')<CR>")
-      endfor
-
-      # }}}
+      def SetMaps(type: string, method: string)
+        for map in get(runner_ui_mappings, type, [])
+          execute($"nnoremap <buffer><nowait> {map} <Cmd>{buf_runner}.{method}<CR>")
+        endfor
+      enddef
+      SetMaps("close", "ui.Clean()<CR><Cmd>tabclose<CR>")
+      SetMaps("kill", "KillProcess(line('.') - 1)")
+      SetMaps("kill_all", "KillAllProcesses()")
+      SetMaps("run_again", "RunTestcase(line('.') - 1)")
+      SetMaps("run_all_again", "RunTestcases()")
+      SetMaps("toggle_diff", "ui.ToggleDiffView()")
+      SetMaps("view_answer", "ui.WinView('ans')")
+      SetMaps("view_input", "ui.WinView('stdin')")
+      SetMaps("view_stdout", "ui.WinView('stdout')")
+      SetMaps("view_stderr", "ui.WinView('stderr')")
+      this.acmds = [
+        {
+          group: "CompetiTestTestcase", event: "CursorMoved", bufnr: bufnr(),
+          cmd: buf_runner .. ".ui.Update(line('.'))"
+        },
+        {
+          group: "CompetiTestTestcase", event: "WinClosed", bufnr: bufnr(),
+          cmd: buf_runner .. ".ui.Clean()"
+        }
+      ]
+      autocmd_add(this.acmds) # deleted in Clean()
 
       this.visible = true
       this.Update()
@@ -164,7 +145,7 @@ export class RunnerUI
     this.WinSetDiff(this.windows.stdout.winid, false)
   enddef # }}}
 
-  def CallBack() # {{{
+  def Clean() # {{{
     if this.diff_view
       this.DisableDiffView()
     endif
