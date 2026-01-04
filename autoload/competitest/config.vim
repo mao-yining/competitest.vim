@@ -77,7 +77,7 @@ const default_config = { # {{{
 def RecursiveExtend(base: dict<any>, overrides: dict<any>): dict<any> # {{{
   var ret = deepcopy(base)
   for [key, value] in items(overrides)
-    if type(value) == v:t_dict && ret->has_key(key) && type(ret[key]) == v:t_dict
+    if type(value) == v:t_dict && type(ret->get(key)) == v:t_dict
       ret[key] = RecursiveExtend(ret[key], value)
     else
       ret[key] = deepcopy(value)
