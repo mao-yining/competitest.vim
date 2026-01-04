@@ -399,16 +399,16 @@ enddef # }}}
 # }}}
 
 const parallelism_ability = (): number => { # {{{
+  var result: number
   if executable("nproc") # On Unix-like OS
-    const result = systemlist("nproc --all")
-    if !empty(result) && result[0] =~ '^\d\+$'
-      return str2nr(result[0])
-    endif
+    result = systemlist("nproc --all")->get(1, '1')->str2nr()
   elseif executable("wmic") # On Windows OS
-    const result = systemlist("wmic cpu get NumberOfCores")
-    if len(result) > 1 && result[1]->substitute('[^0-9]', "", "g") =~ '^\d\+$'
-      return str2nr(result[1]->substitute('[^0-9]', "", "g"))
-    endif
+    result = systemlist("wmic cpu get NumberOfCores")->get(1, '1')
+      ->substitute('\D', null_string, "g")->str2nr()
   endif
-  return 1 # default
+  if result > 1
+    return result
+  else
+    return 1
+  endif
 }() # }}}
