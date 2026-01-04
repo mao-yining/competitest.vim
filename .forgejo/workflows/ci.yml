@@ -9,7 +9,6 @@ jobs:
         vim:
           - nightly
     steps:
-      - uses: actions/setup-python@v6
       - name: Setup Vim
         uses: https://github.com/rhysd/action-setup-vim@v1
         id: vim
