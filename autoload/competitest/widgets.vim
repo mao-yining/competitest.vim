@@ -2,7 +2,7 @@ vim9script
 # File: autoload/competitest/widgets.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: CompetiTest UI Module Testcase editor and picker.
-# Last Modified: 2026-01-02
+# Last Modified: 2026-01-04
 
 import autoload "./config.vim"
 import autoload "./testcases.vim"
@@ -49,7 +49,7 @@ export def Editor(bufnr: number, tcnum: number): void # {{{
   SetKeymaps(output_win, input_win, mappings)
 enddef # }}}
 
-export def Picker(bufnr: number, tctbl: dict<any>, title: string, CallBack: func(number)): void # {{{
+export def Picker(bufnr: number, tctbl: dict<any>, title: string, CallBack: func(number): any): void # {{{
   if empty(tctbl)
     utils.EchoErr("picker: there's no testcase to pick from.")
     return
