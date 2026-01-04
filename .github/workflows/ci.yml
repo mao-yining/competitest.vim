@@ -1,0 +1,28 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        vim:
+          - nightly
+    steps:
+      - uses: actions/setup-python@v6
+      - name: Setup Vim
+        uses: rhysd/action-setup-vim@v1
+        id: vim
+        with:
+          version: ${{ matrix.vim }}
+      - uses: actions/checkout@v6
+      - name: Test
+        working-directory: ./test
+        env:
+          VIMPRG: ${{ steps.vim.outputs.executable }}
+        run: |
+          uname -a
+          gcc --version
+          python --version
+          $VIMPRG --version
+          ./launch_tests.sh

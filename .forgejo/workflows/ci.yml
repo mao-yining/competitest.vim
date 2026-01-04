@@ -1,29 +1,28 @@
-name: unit-tests
+name: CI
 on: [push, pull_request]
 jobs:
-  linux:
-    name: linux
-    runs-on: ubuntu-latest
+  test:
+    name: Test
+    runs-on: codeberg-small
     strategy:
       matrix:
         vim:
           - nightly
     steps:
-      - name: Install packages
-        run: |
-          sudo apt update
-          sudo apt install -y python3
-          sudo apt install -y gcc
+      - uses: actions/setup-python@v6
       - name: Setup Vim
-        uses: rhysd/action-setup-vim@v1
+        uses: https://github.com/rhysd/action-setup-vim@v1
         id: vim
         with:
           version: ${{ matrix.vim }}
       - uses: actions/checkout@v6
-      - name: Run Tests
+      - name: Test
         working-directory: ./test
+        env:
+          VIMPRG: ${{ steps.vim.outputs.executable }}
         run: |
           uname -a
-          export VIMPRG=${{ steps.vim.outputs.executable }}
+          gcc --version
+          python --version
           $VIMPRG --version
           ./launch_tests.sh
