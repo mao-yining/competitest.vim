@@ -2,7 +2,7 @@ vim9script
 # File: autoload/competitest/runner.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: A class that manage all testcases' process.
-# Last Modified: 2026-01-02
+# Last Modified: 2026-01-04
 
 import autoload "./utils.vim"
 import autoload "./config.vim" as cfg
@@ -228,8 +228,8 @@ export class TCRunner
           0,                                                # stdin_bufnr
           InitBuf(this.bufnr .. "_stdout_compile", "out"),  # stdour_bufnr
           InitBuf(this.bufnr .. "_stderr_compile", "err"),  # stderr_bufnr
-          "",                                               # ans_bufname
-          "",                                               # stdin_bufname
+          null_string,                                      # ans_bufname
+          null_string,                                      # stdin_bufname
           this.bufnr .. "_stdout_compile",                  # stdout_bufname
           this.bufnr .. "_stderr_compile",                  # stderr_bufname
           "Compile",                                        # tcnum
@@ -245,11 +245,11 @@ export class TCRunner
         add(this.tcdata,
           TestcaseData.new(
             tc.ans_bufnr,                                   # ans_bufnr
-            tc.input_bufnr,                                 # stdin_bufnr
+            tc->get("input_bufnr"),                         # stdin_bufnr
             InitBuf($"{this.bufnr}_stdout_{tcnum}", "out"), # stdour_bufnr
             InitBuf($"{this.bufnr}_stderr_{tcnum}", "err"), # stderr_bufnr
             tc.ans_bufname,                                 # ans_bufname
-            tc.input_bufname,                               # stdin_bufname
+            tc->get("input_bufname", null_string),          # stdin_bufname
             $"{this.bufnr}_stdout_{tcnum}",                 # stdout_bufname
             $"{this.bufnr}_stderr_{tcnum}",                 # stderr_bufname
             tcnum,                                          # tcnum
