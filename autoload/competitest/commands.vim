@@ -2,7 +2,7 @@ vim9script
 # File: autoload/competitest/commands.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: Handle Commands
-# Last Modified: 2026-01-02
+# Last Modified: 2026-01-04
 
 import autoload "./config.vim"
 import autoload "./runner.vim"
@@ -36,42 +36,30 @@ export def Handle(arguments: string): void # {{{
   const args = arguments->split(' ')
 
   # Check if current subcommand has the correct number of arguments
-  def CheckSubargs(min_args: number, max_args: number): bool
+  def CheckSubargs(min_args: number, max_args: number)
     const count = len(args) - 1
     if min_args <= count && count <= max_args
-      return true
+      return
     endif
     if min_args == max_args
-      utils.EchoErr($"commands: {args[0]}: exactly {min_args} sub-arguments required.")
+      throw $"commands: {args[0]}: exactly {min_args} sub-arguments required."
     else
-      utils.EchoErr($"commands: {args[0]}: from {min_args} to {max_args} sub-arguments required.")
+      throw $"commands: {args[0]}: from {min_args} to {max_args} sub-arguments required."
     endif
-    return false
   enddef
 
   const subcommands = {
     add_testcase: () => {
-      if CheckSubargs(0, 0)
-        EditTestcase(true)
-      endif
+      CheckSubargs(0, 0)
+      AddTestcase()
     },
     edit_testcase: () => {
-      if CheckSubargs(0, 1)
-        if len(args) == 2
-          EditTestcase(false, str2nr(args[1]))
-        else
-          EditTestcase(false)
-        endif
-      endif
+      CheckSubargs(0, 1)
+      EditTestcase(args->get(1, '-1')->str2nr())
     },
     delete_testcase: () => {
-      if CheckSubargs(0, 1)
-        if len(args) == 2
-          DeleteTestcase(str2nr(args[1]))
-        else
-          DeleteTestcase()
-        endif
-      endif
+      CheckSubargs(0, 1)
+      DeleteTestcase(args->get(1, '-1')->str2nr())
     },
     run: () => {
       const testcases_list = len(args) >= 2 ? args[1 : ] : null_list
@@ -82,64 +70,64 @@ export def Handle(arguments: string): void # {{{
       RunTestcases(testcases_list, false)
     },
     show_ui: () => {
-      if CheckSubargs(0, 0)
-        RunTestcases(null_list, false, true)
-      endif
+      CheckSubargs(0, 0)
+      RunTestcases(null_list, false, true)
     },
     receive: () => {
-      if CheckSubargs(1, 1)
-        Receive(args[1])
-      endif
+      CheckSubargs(1, 1)
+      Receive(args[1])
     },
   }
 
-  if subcommands->has_key(args[0])
-    subcommands[args[0]]()
-  else
-    utils.EchoErr($"commands: subcommand {args[0]} doesn't exist!")
-  endif
-enddef # }}}
-
-def EditTestcase(add_testcase: bool, tcnum = -1): void # {{{
-  const bufnr = bufnr()
-  config.LoadBufferConfig(bufnr) # reload buffer configuration since it may have been updated in the meantime
-  final tctbl = testcases.BufGetTestcases(bufnr)
-  def StartEditor(n: number)
-    if !tctbl->has_key(n)
-      utils.EchoErr($"edit_testcase: testcase {n} doesn't exist!")
-      return
+  try
+    if subcommands->has_key(args[0])
+      subcommands[args[0]]()
+    else
+      throw $"commands: subcommand {args[0]} doesn't exist!"
     endif
-    widgets.Editor(bufnr, n)
-  enddef
-
-  if add_testcase
-    var num = 0
-    while tctbl->has_key(num)
-      num = num + 1
-    endwhile
-    tctbl[num] = { input: "", output: "" }
-    StartEditor(num)
-  elseif tcnum == -1
-    widgets.Picker(bufnr, tctbl, "Edit a Testcase", StartEditor)
-  else
-    StartEditor(tcnum)
-  endif
+  catch /^commands:/
+    utils.EchoErr(v:exception)
+  endtry
 enddef # }}}
 
-def DeleteTestcase(tcnum = -1): void # {{{
+def AddTestcase() # {{{
+  const bufnr = bufnr()
+  final tctbl = testcases.BufGetTestcases(bufnr)
+  var tcnum = 0
+  while tctbl->has_key(tcnum)
+    tcnum = tcnum + 1
+  endwhile
+  tctbl[tcnum] = { input: null_string, output: null_string }
+  widgets.Editor(bufnr, tcnum)
+enddef # }}}
+
+def EditTestcase(tcnum: number): void # {{{
   const bufnr = bufnr()
   const tctbl = testcases.BufGetTestcases(bufnr)
-  def Delete(num: number): void
-    if !tctbl->has_key(num)
-      utils.EchoErr($"delete_testcase: testcase {num} doesn't exist!")
+  if tcnum == -1
+    widgets.Picker(bufnr, tctbl, "Edit a Testcase",
+      (n: number) => widgets.Editor(bufnr, n))
+  else
+    if !tctbl->has_key(tcnum)
+      utils.EchoErr($"edit_testcase: testcase {tcnum} doesn't exist!")
       return
     endif
-    testcases.IOFilesDelete(bufnr, num)
-  enddef
+    widgets.Editor(bufnr, tcnum)
+  endif
+enddef # }}}
+
+def DeleteTestcase(tcnum: number): void # {{{
+  const bufnr = bufnr()
+  const tctbl = testcases.BufGetTestcases(bufnr)
   if tcnum == -1
-    widgets.Picker(bufnr, tctbl, "Delete a Testcase", Delete)
+    widgets.Picker(bufnr, tctbl, "Delete a Testcase",
+      (n: number) => testcases.IOFilesDelete(bufnr, n))
   else
-    Delete(tcnum)
+    if !tctbl->has_key(tcnum)
+      utils.EchoErr($"delete_testcase: testcase {tcnum} doesn't exist!")
+      return
+    endif
+    testcases.IOFilesDelete(bufnr, tcnum)
   endif
 enddef # }}}
 
@@ -181,8 +169,7 @@ def RunTestcases(testcases_list: list<string>, compile: bool, only_show = false)
 
   if testcases_list != null_list
     final new_tctbl = {}
-    for i in testcases_list
-      const tcnum = i # if i is empty or error, return 0。
+    for tcnum in testcases_list
       if !tctbl->has_key(tcnum) # invalid testcase
         utils.EchoWarn($"run_testcases: testcase {tcnum} doesn't exist!")
       else
