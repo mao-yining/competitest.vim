@@ -382,9 +382,8 @@ def CompareOutput(out_bufnr: number, ans_bufnr: number, method: any): bool # {{{
   silent bufload(ans_bufnr)
   sleep 1m # should wait, for datas aren't fully loaded
 
-  # For some unknown reasons, somtimes will mixed with some ^M
-  const output = getbufline(out_bufnr, 1, "$")->join("\n")->substitute("\r\n", "\n", "g")
-  const answer = getbufline(ans_bufnr, 1, "$")->join("\n")->substitute("\r\n", "\n", "g")
+  const output = out_bufnr->getbufline(1, "$")->join("\n")
+  const answer = ans_bufnr->getbufline(1, "$")->join("\n")
 
   if type(method) == v:t_string && methods->has_key(method)
     return methods[method](output, answer)
