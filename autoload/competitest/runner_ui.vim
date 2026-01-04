@@ -2,7 +2,7 @@ vim9script
 # File: autoload/competitest/runner_ui.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: A class show information of runner.
-# Last Modified: 2026-01-02
+# Last Modified: 2026-01-04
 
 import autoload "./runner.vim" as r
 
@@ -179,15 +179,6 @@ export class RunnerUI
     this.latest_line = 0
   enddef # }}}
 
-  def AdjustString(len: number, str: string, fchar: string): string # {{{
-    const strlen = strchars(str)
-    if strlen <= len
-      return str .. repeat(fchar, len - strlen)
-    else
-      return strcharpart(str, 0, len - 1) .. "…"
-    endif
-  enddef # }}}
-
   def Update(line = -1) # {{{
     if !this.visible || empty(this.runner.tcdata)
       return
@@ -201,11 +192,11 @@ export class RunnerUI
     var compile_error = false
     this.update_details = true
 
-    var lines = []
-    var hlregions = []
+    var lines: list<dict<string>>
+    var hlregions: list<dict<any>>
 
     for [tcindex, data] in items(this.runner.tcdata)
-      var l = { header: "TC " .. data.tcnum, status: data.status, time: "" }
+      final l = { header: "TC " .. data.tcnum, status: data.status, time: null_string }
       if data.tcnum == "Compile"
         l.header = data.tcnum
         if this.runner.config.runner_ui.open_when_compilation_fails
@@ -229,9 +220,18 @@ export class RunnerUI
       add(hlregions, { line: tcindex, start: 10, end: 10 + strlen(l.status), group: data.hlgroup })
     endfor
 
-    var buffer_lines = []
+    def AdjustString(len: number, str: string, fchar: string): string # {{{
+      const strlen = strchars(str)
+      if strlen <= len
+        return str .. repeat(fchar, len - strlen)
+      else
+        return strcharpart(str, 0, len - 1) .. "…"
+      endif
+    enddef # }}}
+
+    var buffer_lines: list<string>
     for l in lines
-      add(buffer_lines, this.AdjustString(10, l.header, " ") .. this.AdjustString(10, l.status, " ") .. l.time)
+      add(buffer_lines, AdjustString(10, l.header, " ") .. AdjustString(10, l.status, " ") .. l.time)
     endfor
 
     # add first, delete next to keep cursor's position
@@ -255,7 +255,7 @@ export class RunnerUI
 
       if compile_error
         tabnew
-        execute "buffer " .. data.stderr_bufnr
+        execute "buffer" data.stderr_bufnr
       endif
     endif
   enddef # }}}
