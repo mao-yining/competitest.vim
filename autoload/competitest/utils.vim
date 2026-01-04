@@ -58,7 +58,7 @@ const file_format_modifiers = { # {{{
   "FEXT": (filepath: string) => fnamemodify(filepath, ":e"),
   "FNAME": (filepath: string) => fnamemodify(filepath, ":t"),
   "FNOEXT": (filepath: string) => fnamemodify(filepath, ":t:r"),
-  "HOME": (_) => expand("~"),
+  "HOME": expand("~"),
 } # }}}
 
 export def EvalString(filepath: string, str: string): string # {{{
@@ -72,7 +72,7 @@ enddef # }}}
 
 export def LoadFileAsString(filepath: string): string # {{{
   if filereadable(filepath)
-    return readfile(filepath)->join("\n")->substitute("\r\n", "\n", "g")
+    return readfile(filepath)->join("\n")
   else
     return null_string
   endif
@@ -80,7 +80,7 @@ enddef # }}}
 
 export def CreateDirectory(dirpath: string) # {{{
   if !isdirectory(dirpath)
-    const safedirpath = substitute(dirpath, '[/\\]\+$', "", "")
+    const safedirpath = dirpath->trim('/\\', 2)
     const upper_dir = fnamemodify(safedirpath, ":h")
     if upper_dir != safedirpath
       CreateDirectory(upper_dir)
