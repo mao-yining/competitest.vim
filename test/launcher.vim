@@ -1,5 +1,5 @@
-if !has("patch-9.1.1000")
-  call writefile(["Warning: Needs Vim version 9.1.1000 and above"], "results.txt", "a")
+if !has("patch-9.1.2054")
+  call writefile(["Warning: Needs Vim version 9.1.2054 and above"], "results.txt", "a")
   quitall!
 endif
 

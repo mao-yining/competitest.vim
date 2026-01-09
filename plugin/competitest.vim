@@ -1,5 +1,5 @@
-if !has("patch-9.1.1000")
-  echoerr "Needs Vim version 9.1.1000 and above"
+if !has("patch-9.1.2054")
+  echoerr "Needs Vim version 9.1.2054 and above"
   finish
 endif
 

@@ -66,7 +66,7 @@ def IOFilesLoad(directory: string, input_file_match: string, output_file_match: 
 enddef
 
 # I/O files:
-export def IOFileLocate(bufnr: number, tcnum: number): list<string>
+export def IOFileLocate(bufnr: number, tcnum: number): tuple<string, string>
   const dir = BufGetTestcasesPath(bufnr)
   const filepath = bufname(bufnr)
   const cfg = config.GetBufferConfig(bufnr)
@@ -89,7 +89,7 @@ export def IOFileLocate(bufnr: number, tcnum: number): list<string>
   const input_file = printf(input_format, tcnum)
   const output_file = printf(output_format, tcnum)
 
-  return [dir .. input_file, dir .. output_file]
+  return (dir .. input_file, dir .. output_file)
 enddef
 
 export def IOSingleFileWrite(bufnr: number, tctbl: dict<any>)

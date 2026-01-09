@@ -19,7 +19,7 @@ Inspired by <https://github.com/xeluxee/competitest.nvim>.
 
 ## Installation
 
-REQUIREMENT: Vim > 9.1 and a python in environment for receive function.
+REQUIREMENT: Vim > 9.1.2054 and a python in environment for receive function.
 
 This plugin follows the standard runtime path structure, and as such it can be installed with a variety of plugin managers:
 

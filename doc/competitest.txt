@@ -50,7 +50,7 @@ FEATURES				*competitest-features*
 ==============================================================================
 INSTALLATION				*competitest-installation*
 
-REQUIREMENT: Vim > 9.1 and a python in environment for receive function.
+REQUIREMENT: Vim > 9.1.2054 and a python in environment for receive function.
 
 Install with plugin manager:
 
