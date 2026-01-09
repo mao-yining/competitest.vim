@@ -460,4 +460,4 @@ hi CompetiTestWrong   ctermfg=red    guifg=Red
 
 GNU 通用公共许可证第 3 版（GPL v3）或任何更高版本
 
-版权所有 © 2025 Mao-Yining <mao.yining@outlook.com>
+版权所有 © 2025-2026 Mao-Yining <mao.yining@outlook.com>
