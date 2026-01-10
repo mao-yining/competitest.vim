@@ -2,7 +2,7 @@ vim9script
 # File: autoload/competitest/runner_ui.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: A class show information of runner.
-# Last Modified: 2026-01-04
+# Last Modified: 2026-01-09
 
 import autoload "./runner.vim" as r
 
@@ -27,40 +27,38 @@ export class RunnerUI
     if !this.visible
       # Create a New Tab {{{
       const bufnr = this.runner.bufnr
+
       execute("tabnew Testcases" .. bufnr)
       const new_tab = tabpagenr()
-      setlocal winfixbuf
-
       this.windows.tc = { winid: win_getid(), bufnr: bufnr() }
-      setlocal nobuflisted
-      setlocal diffopt+=iwhiteeol
-      setlocal diffopt+=iblank
-      setlocal filetype=competitest_testcases
+      setl winfixbuf
+      setl diffopt+=iwhiteeol,iblank
+      setl filetype=competitest_testcases
       set winwidth=37 # Testcases windows width
 
       rightbelow vsplit
       this.windows.stdout = { winid: win_getid(), bufnr: bufnr() }
-      setlocal filetype=competitest_out
+      setl filetype=competitest_out
 
       execute("rightbelow split Input")
       this.windows.stdin = { winid: win_getid(), bufnr: bufnr() }
-      setlocal filetype=competitest_in
+      setl filetype=competitest_in
 
       wincmd l | rightbelow vsplit
       this.windows.stderr = { winid: win_getid(), bufnr: bufnr() }
-      setlocal filetype=competitest_err
+      setl filetype=competitest_err
 
       wincmd k | execute("rightbelow vsplit Answer")
       this.windows.ans = { winid: win_getid(), bufnr: bufnr() }
-      setlocal filetype=competitest_ans
+      setl filetype=competitest_ans
       # }}}
 
-      for win in values(this.windows)
-        setbufvar(win.bufnr, "&buftype", "nofile")
-        setbufvar(win.bufnr, "&swapfile", false)
-        setbufvar(win.bufnr, "&buflisted", false)
-        setbufvar(win.bufnr, "&bufhidden", "hide")
-      endfor
+      windo setl buftype=nofile
+      windo setl noswapfile
+      windo setl nobuflisted
+      windo setl bufhidden=delete
+
+      win_gotoid(this.windows.tc.winid)
 
       var runner_ui_mappings = {}
       for [action, maps] in items(this.runner.config.runner_ui.mappings)
@@ -72,7 +70,6 @@ export class RunnerUI
       endfor
 
       const buf_runner = $"call getbufvar({bufnr}, 'competitest_runner')"
-      win_gotoid(this.windows.tc.winid)
       def SetMaps(type: string, method: string)
         for map in get(runner_ui_mappings, type, [])
           execute($"nnoremap <buffer><nowait> {map} <Cmd>{buf_runner}.{method}<CR>")
