@@ -32,6 +32,8 @@ export def FormatStringModifiers(str: string, modifiers: dict<any>, argument: an
         throw $"FormatStringModifiers: unrecognized modifier $({mod})"
       elseif type(replacement) == v:t_string
         evaluated_str->add(replacement)
+      elseif type(replacement) == v:t_number
+        evaluated_str->add(string(replacement))
       elseif type(replacement) == v:t_func
         const Replacement = replacement
         evaluated_str->add(Replacement(argument))

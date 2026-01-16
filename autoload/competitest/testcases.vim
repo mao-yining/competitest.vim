@@ -72,22 +72,12 @@ export def IOFileLocate(bufnr: number, tcnum: number): tuple<string, string>
   const cfg = config.GetBufferConfig(bufnr)
 
   def ComputeFormat(format: string): string
-    final parts = format->split("$(TCNUM)", 1)
-    for idx in parts->len()->range()
-      const evaluated = utils.EvalString(filepath, parts[idx])
-      if evaluated == null_string
-        return null_string
-      endif
-      parts[idx] = evaluated->escape("%")
-    endfor
-    return parts->join("%d")
+    return utils.EvalString(filepath, format,
+      utils.file_format_modifiers->copy()->extend({"TCNUM": tcnum}))
   enddef
 
-  const input_format = ComputeFormat(cfg.testcases_input_file_format)
-  const output_format = ComputeFormat(cfg.testcases_output_file_format)
-
-  const input_file = printf(input_format, tcnum)
-  const output_file = printf(output_format, tcnum)
+  const input_file = ComputeFormat(cfg.testcases_input_file_format)
+  const output_file = ComputeFormat(cfg.testcases_output_file_format)
 
   return (dir .. input_file, dir .. output_file)
 enddef
@@ -123,9 +113,9 @@ def IOFilesLoadEvalFormatString(directory: string, filepath: string, input_file_
       if evaluated == null_string
         return null_string
       endif
-      parts[idx] = evaluated->substitute("([^%w])", "%%%1", "g")->escape('^$~.*[]\\')
+      parts[idx] = evaluated->substitute('(\W)', '%%%1', "g")->escape('^$~.*[]\\')
     endfor
-    return "^" .. parts->join('\([0-9]\+\)') .. "$"
+    return "^" .. parts->join('\(\d\+\)') .. "$"
   enddef
 
   const input_match = ComputeMatch(input_file_format)
@@ -163,8 +153,8 @@ def IOFilesWrite(directory: string, tctbl: dict<any>, input_file_format: string,
   for [tcnum, tc] in items(tctbl)
     const input_file = printf(input_file_format, str2nr(tcnum))
     const output_file = printf(output_file_format, str2nr(tcnum))
-    const input_content = tc->get("input", null)
-    const output_content = tc->get("output", null)
+    const input_content = tc->get("input", v:none)
+    const output_content = tc->get("output", v:none)
 
     WriteFile(directory .. input_file, input_content)
     WriteFile(directory .. output_file, output_content)
@@ -173,17 +163,9 @@ enddef
 
 # Write using format strings with modifiers
 export def IOFilesWriteEvalFormatString(directory: string, tctbl: dict<any>, filepath: string, input_file_format: string, output_file_format: string)
-  # Helper: Convert format string with modifiers
   def ComputeFormat(format: string): string
-    final parts = format->split("$(TCNUM)", 1)
-    for idx in parts->len()->range()
-      const evaluated = utils.EvalString(filepath, parts[idx])
-      if evaluated == null_string
-        return null_string
-      endif
-      parts[idx] = evaluated->escape("%")
-    endfor
-    return parts->join("%d")
+    return utils.EvalString(filepath, format,
+      utils.file_format_modifiers->copy()->extend({"TCNUM": "%d"}))
   enddef
 
   const input_format = ComputeFormat(input_file_format)
