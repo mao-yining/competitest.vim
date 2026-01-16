@@ -2,7 +2,7 @@ vim9script
 # File: autoload/competitest/commands.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: Handle Commands
-# Last Modified: 2026-01-04
+# Last Modified: 2026-01-16
 
 import autoload "./config.vim"
 import autoload "./runner.vim"
@@ -13,8 +13,10 @@ import autoload "./utils.vim"
 
 var complete_cache: string
 export def Complete(arglead: string, cmdline: string, cursorpos: number): string # {{{
-  const parts = cmdline->strpart(0, cursorpos)->split()
-    ->extend(arglead == null_string ? [' '] : [])
+  var parts = cmdline->strpart(0, cursorpos)->split()
+  if arglead == null_string
+    parts = parts->add(' ')
+  endif
   if parts->len() == 2
     return "add_testcase\nedit_testcase\ndelete_testcase\nrun\nrun_no_compile\nshow_ui\nreceive"
   elseif parts->len() == 3
