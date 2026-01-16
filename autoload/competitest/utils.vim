@@ -53,7 +53,7 @@ export def FormatStringModifiers(str: string, modifiers: dict<any>, argument: an
   return evaluated_str->join(null_string)
 enddef # }}}
 
-const file_format_modifiers = { # {{{
+export const file_format_modifiers = { # {{{
   "": "$",
   "ABSDIR": (filepath: string) => fnamemodify(filepath, ":p:h"),
   "FABSPATH": (filepath: string) => filepath,
