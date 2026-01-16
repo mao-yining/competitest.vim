@@ -2,7 +2,7 @@ vim9script
 # File: autoload/competitest/testcases.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: Handle testcases tasks.
-# Last Modified: 2026-01-02
+# Last Modified: 2026-01-16
 
 import autoload "./config.vim"
 import autoload "./utils.vim"
