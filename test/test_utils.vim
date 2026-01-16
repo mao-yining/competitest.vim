@@ -6,6 +6,7 @@ def g:Test_FormatStringModifiers()
     "AGE": "30",
     "CITY": "New York",
     "get_year": (_) => "2026",
+    "num": (n: number) => string(n),
     "get_uppercase": (name: string): string => name->toupper(),
   }
 
@@ -30,8 +31,8 @@ def g:Test_FormatStringModifiers()
   result = utils.FormatStringModifiers("Price: $()100", {"": "$"})
   result->assert_equal("Price: $100")
 
-  result = utils.FormatStringModifiers("The $(NAME) $(CITY) project", modifiers)
-  result->assert_equal("The John New York project")
+  result = utils.FormatStringModifiers("Num: $(num)", modifiers, 100)
+  result->assert_equal("Num: 100")
 
   try
     utils.FormatStringModifiers("Hello $(UNKNOWN)", modifiers)

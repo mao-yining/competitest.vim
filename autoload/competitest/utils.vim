@@ -2,12 +2,12 @@ vim9script
 # File: autoload/competitest/utils.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: utility functions
-# Last Modified: 2026-01-02
+# Last Modified: 2026-01-16
 
 # Formats string by replacing $(modifier) tokens with corresponding values
 # from the provided dictionary, supporting both static string values and
 # callback functions for dynamic replacement.
-export def FormatStringModifiers(str: string, modifiers: dict<any>, argument = null_string): string # {{{
+export def FormatStringModifiers(str: string, modifiers: dict<any>, argument: any = v:none): string # {{{
   var evaluated_str: list<string>
   var mod_start = 0  # 0: idle, -1: saw '$', >0: position of '('
 
@@ -27,7 +27,7 @@ export def FormatStringModifiers(str: string, modifiers: dict<any>, argument = n
       endif
     elseif mod_start != 0 && c == ')'
       const mod = str[mod_start + 1 : i - 1]
-      const replacement = modifiers->get(mod, null)
+      const replacement = modifiers->get(mod, v:none)
       if type(replacement) == v:t_none
         throw $"FormatStringModifiers: unrecognized modifier $({mod})"
       elseif type(replacement) == v:t_string
@@ -61,9 +61,9 @@ const file_format_modifiers = { # {{{
   "HOME": expand("~"),
 } # }}}
 
-export def EvalString(filepath: string, str: string): string # {{{
+export def EvalString(filepath: string, str: string, modifier = file_format_modifiers): string # {{{
   try
-    return FormatStringModifiers(str, file_format_modifiers, filepath)
+    return FormatStringModifiers(str, modifier, filepath)
   catch /^FormatStringModifiers:/
     EchoErr(string(v:exception))
   endtry
@@ -80,7 +80,7 @@ enddef # }}}
 
 export def CreateDirectory(dirpath: string) # {{{
   if !isdirectory(dirpath)
-    const safedirpath = dirpath->trim('/\\', 2)
+    const safedirpath = dirpath->trim('/\', 2)
     const upper_dir = fnamemodify(safedirpath, ":h")
     if upper_dir != safedirpath
       CreateDirectory(upper_dir)
