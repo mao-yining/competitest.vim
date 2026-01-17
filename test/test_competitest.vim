@@ -90,6 +90,11 @@ def g:Test_Runner_c()
     while getbufvar(bufnr, "competitest_runner").tcdata[i].status ==# "RUNNING"
       sleep 1m
     endwhile
+    var out_bufnr = getbufvar(bufnr, "competitest_runner").tcdata[i].stdout_bufnr
+    var ans_bufnr = getbufvar(bufnr, "competitest_runner").tcdata[i].ans_bufnr
+    const output = out_bufnr->getbufline(1, "$")->join("\n")
+    const answer = ans_bufnr->getbufline(1, "$")->join("\n")
+    output->assert_equal(answer)
     getline(i + 1)->assert_match($'TC {i}      CORRECT   \d.\d\d\d seconds')
   endfor
 enddef
