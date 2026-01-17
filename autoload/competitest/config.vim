@@ -2,7 +2,7 @@ vim9script
 # File: autoload/competitest/config.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: Deal with settings of the plugin.
-# Last Modified: 2026-01-16
+# Last Modified: 2026-01-17
 
 import autoload "./utils.vim"
 
@@ -88,13 +88,12 @@ enddef # }}}
 
 # Update configuration table with new options
 def UpdateConfigTable(cfg_tbl: dict<any>, opts: dict<any>): dict<any> # {{{
-  if opts == {}
+  if opts->empty()
     return deepcopy(cfg_tbl ?? default_config)
   endif
 
   const base_cfg = cfg_tbl ?? default_config
-  const opts_copy = deepcopy(opts)
-  var new_config = RecursiveExtend(base_cfg, opts_copy)
+  var new_config = RecursiveExtend(base_cfg, deepcopy(opts))
 
   # Handle compile_command args replacement
   if opts->get("compile_command")->type() == v:t_dict
@@ -124,15 +123,20 @@ export def LoadLocalConfig(directory: string): dict<any> # {{{
   while prev_len != len(dir)
     prev_len = len(dir)
     const config_file = $"{dir}/{g:competitest_configs.local_config_file_name}"
-    if config_file->filereadable()
-      const local_config = config_file->readfile()->join("\n")->eval()
-      if type(local_config) != v:t_dict
-        echo $"LoadLocalConfig: \"{config_file}\" doesn't return a dict."
-        return null_dict
+    try
+      if config_file->filereadable()
+        const local_config = config_file->readfile()->join("\n")->eval()
+        if type(local_config) != v:t_dict
+          throw $"LoadLocalConfig: \"{config_file}\" doesn't return a dict."
+        endif
+        return local_config
       endif
-      return local_config
-    endif
-    dir = fnamemodify(dir, ":h")
+    catch /^LoadLocalConfig:/
+      utils.EchoWarn(v:exception)
+    catch
+      utils.EchoWarn($"LoadLocalConfig: \"{config_file}\" can't eval.\n {v:exception}")
+    endtry
+    dir = dir->fnamemodify(":h")
   endwhile
   return null_dict
 enddef # }}}
