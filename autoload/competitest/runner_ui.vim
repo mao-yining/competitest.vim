@@ -37,16 +37,14 @@ export class RunnerUI
       set winwidth=37 # Testcases windows width
 
       rightbelow vsplit
-      this.windows.stdout = { winid: win_getid(), bufnr: bufnr() }
-      setl filetype=competitest_out
+      this.windows.stdout = { winid: win_getid() }
 
       execute("rightbelow split Input")
       this.windows.stdin = { winid: win_getid(), bufnr: bufnr() }
       setl filetype=competitest_in
 
       wincmd l | rightbelow vsplit
-      this.windows.stderr = { winid: win_getid(), bufnr: bufnr() }
-      setl filetype=competitest_err
+      this.windows.stderr = { winid: win_getid() }
 
       wincmd k | execute("rightbelow vsplit Answer")
       this.windows.ans = { winid: win_getid(), bufnr: bufnr() }
@@ -56,7 +54,7 @@ export class RunnerUI
       windo setl buftype=nofile
       windo setl noswapfile
       windo setl nobuflisted
-      windo setl bufhidden=delete
+      windo setl bufhidden=unload
 
       win_gotoid(this.windows.tc.winid)
 
