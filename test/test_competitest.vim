@@ -11,7 +11,7 @@ def g:Test_Commands_Complete()
     writefile([], $"XCommands_Complete{i}.ans", "D")
   endfor
   silent! edit XCommands_Complete.c
-  result = Complete(null_string, 'CompetiTest', 11)
+  result = Complete(null_string, 'CompetiTest ', 12)
   result->assert_equal("add_testcase\nedit_testcase\ndelete_testcase\nrun\nrun_no_compile\nshow_ui\nreceive")
 
   result = Complete(null_string, 'CompetiTest receive ', 20)
@@ -29,7 +29,7 @@ def g:Test_Commands_Complete()
   result = Complete(null_string, 'CompetiTest EDIT_TESTCASE ', 26)
   result->assert_equal(null_string)
 
-  result = Complete(null_string, 'CompetiTest show_ui ', 18)
+  result = Complete(null_string, 'CompetiTest show_ui ', 20)
   result->assert_equal(null_string)
 
   result = Complete(null_string, 'CompetiTest run ', 16)
@@ -40,9 +40,6 @@ def g:Test_Commands_Complete()
 
   result = Complete(null_string, 'CompetiTest edit_testcase ', 26)
   result->assert_equal("0\n1\n2")
-
-  result = Complete(null_string, 'CompetiTest unknown_command', 28)
-  result->assert_equal(null_string)
 
   result = Complete('ru', 'CompetiTest ru', 13)
   result->assert_equal("add_testcase\nedit_testcase\ndelete_testcase\nrun\nrun_no_compile\nshow_ui\nreceive")

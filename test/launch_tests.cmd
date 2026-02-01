@@ -5,7 +5,7 @@ REM Script to run the unit-tests for the CompetiTest.Vim plugin on MS-Windows
 SETLOCAL
 SET VIMPRG="vim.exe"
 SET VIM_CMD=%VIMPRG% -u NONE -U NONE -i NONE --noplugin -N --not-a-term
-set TESTS=test_config.vim
+set TESTS=test_competitest.vim test_utils.vim test_config.vim
 
 REM Main execution
 for %%f in (%TESTS%) do (
