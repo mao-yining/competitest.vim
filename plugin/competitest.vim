@@ -3,28 +3,11 @@ if !has("patch-9.1.2054")
   finish
 endif
 
-vim9script noclear
+vim9script
 # Vim global plugin for competitive programing
 # Maintainer:     Mao-Yining <mao.yining@outlook.com>
-# Last Modified:  2026-01-16
-
-if get(g:, 'loaded_competitest', false)
-  finish
-endif
-g:loaded_competitest = true
+# Last Modified:  2026-02-01
 
 import autoload "../autoload/competitest/commands.vim"
 
 command -bar -nargs=+ -complete=custom,commands.Complete CompetiTest commands.Handle(<q-args>)
-
-def SetHighlight()
-  hi CompetiTestRunning cterm=bold     gui=bold
-  hi CompetiTestDone    cterm=none     gui=none
-  hi CompetiTestCorrect ctermfg=green  guifg=Green
-  hi CompetiTestWarning ctermfg=yellow guifg=Yellow
-  hi CompetiTestWrong   ctermfg=red    guifg=Red
-enddef
-
-SetHighlight()
-
-autocmd ColorScheme * SetHighlight()

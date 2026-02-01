@@ -2,7 +2,7 @@ vim9script
 # File: autoload/competitest/config.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: Deal with settings of the plugin.
-# Last Modified: 2026-01-17
+# Last Modified: 2026-02-01
 
 import autoload "./utils.vim"
 
@@ -163,3 +163,15 @@ export def GetBufferConfig(bufnr: number): dict<any> # {{{
 enddef # }}}
 
 g:competitest_configs = UpdateConfigTable({}, get(g:, "competitest_configs", {}))
+
+def SetHighlight()
+  hi CompetiTestRunning cterm=bold     gui=bold
+  hi CompetiTestDone    cterm=none     gui=none
+  hi CompetiTestCorrect ctermfg=green  guifg=Green
+  hi CompetiTestWarning ctermfg=yellow guifg=Yellow
+  hi CompetiTestWrong   ctermfg=red    guifg=Red
+enddef
+
+SetHighlight()
+
+autocmd ColorScheme * SetHighlight()
