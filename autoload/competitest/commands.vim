@@ -2,7 +2,7 @@ vim9script
 # File: autoload/competitest/commands.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: Handle Commands
-# Last Modified: 2026-01-16
+# Last Modified: 2026-02-01
 
 import autoload "./config.vim"
 import autoload "./runner.vim"
@@ -12,19 +12,16 @@ import autoload "./receive.vim"
 import autoload "./utils.vim"
 
 var complete_cache: string
-export def Complete(arglead: string, cmdline: string, cursorpos: number): string # {{{
-  var parts = cmdline->strpart(0, cursorpos)->split()
-  if arglead == null_string
-    parts = parts->add(' ')
-  endif
+export def Complete(_, cmdline: string, cursorpos: number): string # {{{
+  const parts = cmdline->strpart(0, cursorpos)->split('\s\+', true)
   if parts->len() == 2
     return "add_testcase\nedit_testcase\ndelete_testcase\nrun\nrun_no_compile\nshow_ui\nreceive"
   elseif parts->len() == 3
     if parts[1] == 'receive'
       return "testcases\nproblem\ncontest\npersistently\nstatus\nstop"
-    elseif parts[1] =~# 'edit_testcase\|delete_testcase'
+    elseif parts[1] =~# '^edit_testcase\|delete_testcase$'
       return testcases.BufGetTestcases(bufnr())->keys()->join("\n")
-    elseif parts[1] =~# 'run\|run_no_compile'
+    elseif parts[1] =~# '^run\|run_no_compile$'
       complete_cache = testcases.BufGetTestcases(bufnr())->keys()->join("\n")
       return complete_cache
     endif
