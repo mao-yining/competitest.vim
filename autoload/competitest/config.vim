@@ -93,7 +93,7 @@ def UpdateConfigTable(cfg_tbl: dict<any>, opts: dict<any>): dict<any> # {{{
   endif
 
   const base_cfg = cfg_tbl ?? default_config
-  var new_config = RecursiveExtend(base_cfg, deepcopy(opts))
+  var new_config = RecursiveExtend(base_cfg, opts)
 
   # Handle compile_command args replacement
   if opts->get("compile_command")->type() == v:t_dict
