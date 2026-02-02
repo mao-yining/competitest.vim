@@ -35,12 +35,6 @@ def g:Test_LoadLocalConfig()
   result.save_current_file->assert_equal(false)
   result.maximum_time->assert_equal(3000)
 
-  # Test 4: Invalid config file (not returning dict)
-  writefile(["'string'"], temp_dir .. "/.competitest.vim")
-  result = config.LoadLocalConfig(temp_dir)
-  result->assert_equal(null_dict)
-  execute("message")->split('\n')[-1]->assert_match('doesn''t return a dict.$')
-
   writefile(["ab c"], temp_dir .. "/.competitest.vim")
   result = config.LoadLocalConfig(temp_dir)
   execute("message")->split('\n')[-1]->assert_match('Undefined variable: ab$')

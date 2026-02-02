@@ -2,7 +2,7 @@ vim9script
 # File: autoload/competitest/runner_ui.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: A class show information of runner.
-# Last Modified: 2026-01-09
+# Last Modified: 2026-02-02
 
 import autoload "./runner.vim" as r
 

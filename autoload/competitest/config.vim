@@ -2,7 +2,7 @@ vim9script
 # File: autoload/competitest/config.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: Deal with settings of the plugin.
-# Last Modified: 2026-02-01
+# Last Modified: 2026-02-02
 
 import autoload "./utils.vim"
 
@@ -118,26 +118,15 @@ enddef # }}}
 
 # Load local configuration for a directory
 export def LoadLocalConfig(directory: string): dict<any> # {{{
-  var prev_len = -1
-  var dir = directory
-  while prev_len != len(dir)
-    prev_len = len(dir)
-    const config_file = $"{dir}/{g:competitest_configs.local_config_file_name}"
+  const config_file = g:competitest_configs.local_config_file_name->findfile(directory .. ';')
+  if !empty(config_file)
     try
-      if config_file->filereadable()
-        const local_config = config_file->readfile()->join("\n")->eval()
-        if type(local_config) != v:t_dict
-          throw $"LoadLocalConfig: \"{config_file}\" doesn't return a dict."
-        endif
-        return local_config
-      endif
-    catch /^LoadLocalConfig:/
-      utils.EchoWarn(v:exception)
+      return config_file->readfile()->join("\n")->eval()
     catch
-      utils.EchoWarn($"LoadLocalConfig: \"{config_file}\" can't eval.\n {v:exception}")
+      utils.EchoWarn($'LoadLocalConfig: Fail to eval "{config_file}".')
+      utils.EchoWarn(v:exception)
     endtry
-    dir = dir->fnamemodify(":h")
-  endwhile
+  endif
   return null_dict
 enddef # }}}
 
