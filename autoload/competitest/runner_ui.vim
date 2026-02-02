@@ -31,10 +31,8 @@ export class RunnerUI
       execute("tabnew Testcases" .. bufnr)
       const new_tab = tabpagenr()
       this.windows.tc = { winid: win_getid(), bufnr: bufnr() }
-      setl winfixbuf
-      setl diffopt+=iwhiteeol,iblank
-      setl filetype=competitest_testcases
-      set winwidth=37 # Testcases windows width
+      setl winfixbuf diffopt+=iwhiteeol,iblank filetype=competitest_testcases
+      setl winwidth=37
 
       rightbelow vsplit
       this.windows.stdout = { winid: win_getid() }
@@ -51,10 +49,7 @@ export class RunnerUI
       setl filetype=competitest_ans
       # }}}
 
-      windo setl buftype=nofile
-      windo setl noswapfile
-      windo setl nobuflisted
-      windo setl bufhidden=unload
+      windo setl buftype=nofile noswapfile nobuflisted bufhidden=unload
 
       win_gotoid(this.windows.tc.winid)
 
