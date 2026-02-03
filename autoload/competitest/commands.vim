@@ -2,7 +2,7 @@ vim9script
 # File: autoload/competitest/commands.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: Handle Commands
-# Last Modified: 2026-02-01
+# Last Modified: 2026-02-03
 
 import autoload "./config.vim"
 import autoload "./runner.vim"
@@ -31,9 +31,7 @@ export def Complete(_, cmdline: string, cursorpos: number): string # {{{
   return null_string
 enddef # }}}
 
-export def Handle(arguments: string): void # {{{
-  const args = arguments->split(' ')
-
+export def Handle(...args: list<string>) # {{{
   # Check if current subcommand has the correct number of arguments
   def CheckSubargs(min_args: number, max_args: number)
     const count = len(args) - 1
@@ -61,12 +59,10 @@ export def Handle(arguments: string): void # {{{
       DeleteTestcase(args->get(1, '-1')->str2nr())
     },
     run: () => {
-      const testcases_list = len(args) >= 2 ? args[1 : ] : null_list
-      RunTestcases(testcases_list, true)
+      RunTestcases(len(args) >= 2 ? args[1 : ] : null_list, true)
     },
     run_no_compile: () => {
-      const testcases_list = len(args) >= 2 ? args[1 : ] : null_list
-      RunTestcases(testcases_list, false)
+      RunTestcases(len(args) >= 2 ? args[1 : ] : null_list, false)
     },
     show_ui: () => {
       CheckSubargs(0, 0)

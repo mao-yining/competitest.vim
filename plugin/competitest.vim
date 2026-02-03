@@ -6,8 +6,8 @@ endif
 vim9script
 # Vim global plugin for competitive programing
 # Maintainer:     Mao-Yining <mao.yining@outlook.com>
-# Last Modified:  2026-02-01
+# Last Modified:  2026-02-03
 
 import autoload "../autoload/competitest/commands.vim"
 
-command -bar -nargs=+ -complete=custom,commands.Complete CompetiTest commands.Handle(<q-args>)
+command! -bar -nargs=+ -complete=custom,commands.Complete CompetiTest commands.Handle(<f-args>)
