@@ -57,11 +57,11 @@ def g:Test_LoadLocalConfigAndExtend()
       runner_ui: { open_when_compilation_fails: false }
     }
   END
-  writefile(config_content, temp_dir .. "/.competitest.vim")
+  config_content->writefile(temp_dir .. "/.competitest.vim")
 
   # Create a buffer in the temp directory
   const test_file = temp_dir .. "/test.cpp"
-  writefile(["int main() { return 0; }"], test_file)
+  ["int main() { return 0; }"]->writefile(test_file)
   silent! edit `=test_file`
   const bufnr = bufnr()
 
@@ -141,4 +141,12 @@ def g:Test_GetBufferConfig()
   var result = config.GetBufferConfig(bufnr)
   result.maximum_time->assert_equal(1000)
   result.custom_value->assert_equal("test")
+enddef
+
+def g:Test_Same_Dict()
+  const bufnr = bufnr()
+  const id1 = config.GetBufferConfig(bufnr)->id()
+  config.LoadBufferConfig(bufnr)
+  const id2 = config.GetBufferConfig(bufnr)->id()
+  id1->assert_equal(id2, "The dict id in one buffer should always same")
 enddef

@@ -2,7 +2,7 @@ vim9script
 # File: autoload/competitest/config.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: Deal with settings of the plugin.
-# Last Modified: 2026-02-02
+# Last Modified: 2026-02-04
 
 import autoload "./utils.vim"
 
@@ -75,31 +75,29 @@ const default_config = { # {{{
 
 # Recursively extend two dictionaries
 def RecursiveExtend(base: dict<any>, overrides: dict<any>): dict<any> # {{{
-  var ret = deepcopy(base)
   for [key, value] in items(overrides)
-    if type(value) == v:t_dict && type(ret->get(key)) == v:t_dict
-      ret[key] = RecursiveExtend(ret[key], value)
+    if type(value) == v:t_dict && type(base->get(key)) == v:t_dict
+      base[key] = RecursiveExtend(base[key], value)
     else
-      ret[key] = deepcopy(value)
+      base[key] = value
     endif
   endfor
-  return ret
+  return base
 enddef # }}}
 
 # Update configuration table with new options
 def UpdateConfigTable(cfg_tbl: dict<any>, opts: dict<any>): dict<any> # {{{
   if opts->empty()
-    return deepcopy(cfg_tbl ?? default_config)
+    return cfg_tbl ?? deepcopy(default_config)
   endif
 
-  const base_cfg = cfg_tbl ?? default_config
-  var new_config = RecursiveExtend(base_cfg, opts)
+  final new_config = RecursiveExtend(cfg_tbl ?? deepcopy(default_config), opts)
 
   # Handle compile_command args replacement
   if opts->get("compile_command")->type() == v:t_dict
     for [lang, compile_command] in items(opts.compile_command)
       if compile_command->has_key("args")
-        new_config.compile_command[lang].args = deepcopy(compile_command.args)
+        new_config.compile_command[lang].args = compile_command.args
       endif
     endfor
   endif
@@ -108,7 +106,7 @@ def UpdateConfigTable(cfg_tbl: dict<any>, opts: dict<any>): dict<any> # {{{
   if opts->get("run_command")->type() == v:t_dict
     for [lang, run_command] in items(opts.run_command)
       if run_command->has_key("args")
-        new_config.run_command[lang].args = deepcopy(run_command.args)
+        new_config.run_command[lang].args = run_command.args
       endif
     endfor
   endif

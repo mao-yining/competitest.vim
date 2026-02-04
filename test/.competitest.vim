@@ -1,3 +1,0 @@
-{
-  template_file: false
-}
