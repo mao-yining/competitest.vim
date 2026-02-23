@@ -187,28 +187,27 @@ export class RunnerUI
       if data.time != -1
         l.time = printf("%.3f seconds", data.time / 1000.0)
       endif
-      add(lines, l)
-      add(hlregions, { line: tcindex, start: 10, end: 10 + strlen(l.status), group: data.hlgroup })
+      lines->add(l)
+      hlregions->add({ line: tcindex, start: 10, end: 10 + strlen(l.status), group: data.hlgroup })
     endfor
 
     def AdjustString(len: number, str: string, fchar: string): string # {{{
       const strlen = strchars(str)
       if strlen <= len
-        return str .. repeat(fchar, len - strlen)
+        return str .. fchar->repeat(len - strlen)
       else
-        return strcharpart(str, 0, len - 1) .. "…"
+        return str->strcharpart(0, len - 1) .. "…"
       endif
     enddef # }}}
 
     var buffer_lines: list<string>
     for l in lines
-      add(buffer_lines, AdjustString(10, l.header, " ") .. AdjustString(10, l.status, " ") .. l.time)
+      buffer_lines->add(AdjustString(10, l.header, " ") .. AdjustString(10, l.status, " ") .. l.time)
     endfor
 
     # add first, delete next to keep cursor's position
     setbufvar(this.windows.tc.bufnr, "&modifiable", true)
-    setbufline(this.windows.tc.bufnr, 1, buffer_lines)
-    deletebufline(this.windows.tc.bufnr, len(buffer_lines) + 1, "$")
+    buffer_lines->setbufline(this.windows.tc.bufnr, 1)
     setbufvar(this.windows.tc.bufnr, "&modifiable", false)
 
     for hl in hlregions
