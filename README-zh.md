@@ -309,22 +309,12 @@ g:competitest_configs = {
 
     ```vim
     received_problems_path: (task, file_extension): string => {
-      const hyphen = stridx(task.group, " - ") # Codeforces' contest
-      var judge: string
-      var contest: string
-      if hyphen == -1
-        judge = task.group
-        contest = "problems"
-      else
-        judge = strpart(task.group, 0, hyphen)
-        contest = strpart(task.group, hyphen + 3)
-            ->substitute('[<>:"/\\|?*#]', '_', 'g')
-      endif
+      const parts = task.group->split(" - ") # Codeforces' contest
       return printf(
         "D:/Competitive-Programming/%s/%s/%s/_.%s",
-        judge,
-        contest,
-        task.name->split(' ')[0]->substitute('[#.]', '', 'g'),
+        parts[0]->substitute('[<>:"/\\|?*#]', '_', 'g'), # judge platform
+        parts->get(1, 'problems')->substitute('[<>:"/\\|?*#]', '_', 'g'),
+        task.name->split()[0]->substitute('[#.]', '', 'g'),
         file_extension
       )
     },
