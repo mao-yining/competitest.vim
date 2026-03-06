@@ -96,6 +96,10 @@ export def WriteStringOnFile(filepath: string, content: string) # {{{
   writefile(content->split("\n"), filepath)
 enddef # }}}
 
+export def EchoMsg(msg: string) # {{{
+  echom $"[competitest] {msg}"
+enddef # }}}
+
 export def EchoErr(msg: string) # {{{
   echohl ErrorMsg | echom $"[competitest] {msg}" | echohl None
 enddef # }}}
