@@ -11,17 +11,19 @@ def g:Test_Commands_Complete()
     writefile([], $"XCommands_Complete{i}.ans", "D")
   endfor
   silent! edit XCommands_Complete.c
+  const main_commands = "add_testcase\nedit_testcase\ndelete_testcase\nconvert\nrun\nrun_no_compile\nshow_ui\nreceive\nsubmit\nsubmit_multiple"
+  const receive_commands = "testcases\nproblem\ncontest\npersistently\nstatus\nstop"
   result = Complete(null_string, 'CompetiTest ', 12)
-  result->assert_equal("add_testcase\nedit_testcase\ndelete_testcase\nrun\nrun_no_compile\nshow_ui\nreceive")
+  result->assert_equal(main_commands)
 
   result = Complete(null_string, 'CompetiTest receive ', 20)
-  result->assert_equal("testcases\nproblem\ncontest\npersistently\nstatus\nstop")
+  result->assert_equal(receive_commands)
 
   result = Complete('t', 'CompetiTest receive t', 21)
-  result->assert_equal("testcases\nproblem\ncontest\npersistently\nstatus\nstop")
+  result->assert_equal(receive_commands)
 
   result = Complete('edit_testcase', 'CompetiTest edit_testcase', 25)
-  result->assert_equal("add_testcase\nedit_testcase\ndelete_testcase\nrun\nrun_no_compile\nshow_ui\nreceive")
+  result->assert_equal(main_commands)
 
   result = Complete(null_string, 'CompetiTest edit_testcase ', 26)
   result->assert_equal("0\n1\n2")
@@ -42,7 +44,7 @@ def g:Test_Commands_Complete()
   result->assert_equal("0\n1\n2")
 
   result = Complete('ru', 'CompetiTest ru', 13)
-  result->assert_equal("add_testcase\nedit_testcase\ndelete_testcase\nrun\nrun_no_compile\nshow_ui\nreceive")
+  result->assert_equal(main_commands)
 enddef
 
 def g:Test_Command_error()

@@ -2,7 +2,7 @@ vim9script
 # File: autoload/competitest/commands.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: Handle Commands
-# Last Modified: 2026-02-03
+# Last Modified: 2026-03-06
 
 import autoload "./config.vim"
 import autoload "./runner.vim"
@@ -10,12 +10,13 @@ import autoload "./testcases.vim"
 import autoload "./widgets.vim"
 import autoload "./receive.vim"
 import autoload "./utils.vim"
+import autoload "./submit.vim"
 
 var complete_cache: string
 export def Complete(_, cmdline: string, cursorpos: number): string # {{{
   const parts = cmdline->strpart(0, cursorpos)->split('\s\+', true)
   if parts->len() == 2
-    return "add_testcase\nedit_testcase\ndelete_testcase\nrun\nrun_no_compile\nshow_ui\nreceive"
+    return "add_testcase\nedit_testcase\ndelete_testcase\nconvert\nrun\nrun_no_compile\nshow_ui\nreceive\nsubmit\nsubmit_multiple"
   elseif parts->len() == 3
     if parts[1] == 'receive'
       return "testcases\nproblem\ncontest\npersistently\nstatus\nstop"
@@ -24,6 +25,8 @@ export def Complete(_, cmdline: string, cursorpos: number): string # {{{
     elseif parts[1] =~# '^run\|run_no_compile$'
       complete_cache = testcases.BufGetTestcases(bufnr())->keys()->join("\n")
       return complete_cache
+    elseif parts[1] == 'submit' || parts[1] == 'submit_multiple'
+      return submit.ListProviders()->join("\n")
     endif
   elseif parts->len() > 3 && parts[1] =~# 'run\|run_no_compile'
     return complete_cache
@@ -71,6 +74,18 @@ export def Handle(...args: list<string>) # {{{
     receive: () => {
       CheckSubargs(1, 1)
       Receive(args[1])
+    },
+    submit: () => {
+      # submit [provider] [problem_id]
+      const provider_name = args->get(1, null_string)
+      const problem_id = args->get(2, null_string)
+      submit.Submit(provider_name, bufnr(), problem_id, false)
+    },
+    submit_multiple: () => {
+      # submit_multiple [provider] [problem_id]
+      const provider_name = args->get(1, null_string)
+      const problem_id = args->get(2, null_string)
+      submit.SubmitMultiple(provider_name, bufnr(), problem_id)
     },
   }
 

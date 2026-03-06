@@ -2,7 +2,7 @@ vim9script
 # File: autoload/competitest/config.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: Deal with settings of the plugin.
-# Last Modified: 2026-02-04
+# Last Modified: 2026-03-06
 
 import autoload "./utils.vim"
 
@@ -47,6 +47,14 @@ const default_config = { # {{{
     rust: { exec: "./$(FNOEXT)" },
     python: { exec: "python", args: ["$(FNAME)"] },
     java: { exec: "java", args: ["$(FNOEXT)"] },
+  },
+  submit: {
+    ui: {
+      auto_close_on_success: true,
+    },
+    kattis: {
+      config_file: null_string, # auto-discover from ~/.kattisrc or /usr/local/etc/kattisrc
+    },
   },
   multiple_testing: -1,
   maximum_time: 5000,
@@ -147,6 +155,11 @@ export def GetBufferConfig(bufnr: number): dict<any> # {{{
     LoadBufferConfig(bufnr)
   endif
   return bufnr->getbufvar("competitest_configs")
+enddef # }}}
+
+# Get buffer configuration
+export def GetGlobalConfig(): dict<any> # {{{
+  return g:competitest_configs
 enddef # }}}
 
 g:competitest_configs = UpdateConfigTable({}, get(g:, "competitest_configs", {}))
