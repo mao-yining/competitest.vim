@@ -2,7 +2,7 @@ vim9script
 # File: autoload/competitest/runner_ui.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: A class show information of runner.
-# Last Modified: 2026-02-02
+# Last Modified: 2026-03-07
 
 import autoload "./runner.vim" as r
 
@@ -29,7 +29,6 @@ export class RunnerUI
       const bufnr = this.runner.bufnr
 
       execute("tabnew Testcases" .. bufnr)
-      const new_tab = tabpagenr()
       this.windows.tc = { winid: win_getid(), bufnr: bufnr() }
       setl winfixbuf diffopt+=iwhiteeol,iblank filetype=competitest_testcases
       setl winwidth=37

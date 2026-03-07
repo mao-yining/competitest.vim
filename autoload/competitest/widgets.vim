@@ -2,13 +2,13 @@ vim9script
 # File: autoload/competitest/widgets.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: CompetiTest UI Module Testcase editor and picker.
-# Last Modified: 2026-01-04
+# Last Modified: 2026-03-07
 
 import autoload "./config.vim"
 import autoload "./testcases.vim"
 import autoload "./utils.vim"
 
-export def Editor(bufnr: number, tcnum: number): void # {{{
+export def Editor(bufnr: number, tcnum: number) # {{{
   const [input_path, output_path] = testcases.IOFileLocate(bufnr, tcnum)
 
   tabnew
@@ -37,7 +37,7 @@ export def Editor(bufnr: number, tcnum: number): void # {{{
       win_execute(winid, $"nnoremap <buffer><nowait> {action} <Cmd>call win_gotoid({other_winid})<CR>")
     endfor
     for action in mappings.save_and_close
-      win_execute(winid, $"nnoremap <buffer><nowait> {action} <Cmd>write <Bar> tabclose<CR>")
+      win_execute(winid, $"nnoremap <buffer><nowait> {action} <Cmd>write<Bar>tabclose<CR>")
     endfor
     for action in mappings.cancel
       win_execute(winid, $"nnoremap <buffer><nowait> {action} <Cmd>tabclose<CR>")
@@ -49,16 +49,14 @@ export def Editor(bufnr: number, tcnum: number): void # {{{
   SetKeymaps(output_win, input_win, mappings)
 enddef # }}}
 
-export def Picker(bufnr: number, tctbl: dict<any>, title: string, CallBack: func(number): any): void # {{{
+export def Picker(bufnr: number, tctbl: dict<any>, title: string, CallBack: func(number): any) # {{{
   if empty(tctbl)
     utils.EchoErr("picker: there's no testcase to pick from.")
     return
   endif
 
-  var menu_items = []
-  for tcnum in tctbl->keys()->sort("N")
-    menu_items->add({ text: "Testcase " .. tcnum, num: tcnum })
-  endfor
+  const menu_items = tctbl->keys()->map((_, v) => str2nr(v))->sort('n')
+      ->map((_, v) => ({text: "Testcase " .. v, num: v}))
 
   const popup_borderchars = config.GetBufferConfig(bufnr).popup_borderchars
   const popup = popup_menu(menu_items, {
@@ -66,7 +64,7 @@ export def Picker(bufnr: number, tctbl: dict<any>, title: string, CallBack: func
     borderchars: popup_borderchars,
     callback: (_, result) => {
       if result > 0
-        CallBack(menu_items[result - 1].num->str2nr())
+        CallBack(menu_items[result - 1].num)
       endif
     }
   })
