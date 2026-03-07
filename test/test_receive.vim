@@ -8,6 +8,7 @@ def SendTestData(port: number, data: dict<any>): string
   const tmpfile = "XSendData"
   writefile([json_str], tmpfile, 'D')
 
+  sleep 100m
   # curl arguments as list for easy modification
   const cmd = [
     'curl',
