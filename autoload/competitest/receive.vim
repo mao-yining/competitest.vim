@@ -318,8 +318,7 @@ def StoreReceivedTaskConfig(filepath: string, confirm_overwriting: bool, task: C
       const evaluated_str = EvalReceiveModifiers(str, task, file_extension, false, cfg.date_format)
       utils.WriteStringOnFile(filepath, evaluated_str)
     else
-      mkdir(file_directory, "p")
-      writefile(readfile(template_file), filepath)
+      utils.WriteStringOnFile(filepath, readfile(template_file))
     endif
   else
     utils.WriteStringOnFile(filepath, null_string)
@@ -338,8 +337,8 @@ def StoreReceivedTaskConfig(filepath: string, confirm_overwriting: bool, task: C
 enddef # }}}
 
 def StoreSingleProblem(task: CCTask, cfg: dict<any>, Finished: func() = null_function): void # {{{
-  const evaluated_problem_path = EvalPath(cfg.received_problems_path, task, cfg.received_files_extension)
-  if evaluated_problem_path == null_string
+  var filepath = EvalPath(cfg.received_problems_path, task, cfg.received_files_extension)
+  if empty(filepath)
     EchoMsg($"\"received_problems_path\" evaluation failed for task \"{task.name}\"")
     if Finished != null_function
       Finished()
@@ -348,29 +347,25 @@ def StoreSingleProblem(task: CCTask, cfg: dict<any>, Finished: func() = null_fun
   endif
 
   if cfg.received_problems_prompt_path
-    const filepath = input("Choose problem path: ", evaluated_problem_path, "file")
+    filepath = input("Choose problem path: ", filepath, "file")
     if filepath == null_string
       EchoMsg("operation interrupted")
       return
     endif
-    const local_cfg = config.LoadLocalConfigAndExtend(fnamemodify(filepath, ":h"))
-    StoreReceivedTaskConfig(filepath, true, task, local_cfg)
-    if local_cfg.open_received_problems
-      execute "edit " .. fnameescape(filepath)
-    endif
-    if Finished != null_function
-      Finished()
-    endif
-  else
-    if Finished != null_function
-      Finished()
-    endif
+  endif
+  const local_cfg = config.LoadLocalConfigAndExtend(fnamemodify(filepath, ":h"))
+  StoreReceivedTaskConfig(filepath, true, task, local_cfg)
+  if local_cfg.open_received_problems
+    execute "edit" fnameescape(filepath)
+  endif
+  if Finished != null_function
+    Finished()
   endif
 enddef # }}}
 
 def StoreContest(tasks: list<CCTask>, cfg: dict<any>, Finished: func() = null_function): void # {{{
-  const contest_directory = EvalPath(cfg.received_contests_directory, tasks[0], cfg.received_files_extension)
-  if contest_directory == null_string
+  var directory = EvalPath(cfg.received_contests_directory, tasks[0], cfg.received_files_extension)
+  if directory == null_string
     EchoMsg("\"received_contests_directory\" evaluation failed")
     if Finished != null_function
       Finished()
@@ -378,43 +373,40 @@ def StoreContest(tasks: list<CCTask>, cfg: dict<any>, Finished: func() = null_fu
     return
   endif
 
+  const local_cfg = config.LoadLocalConfigAndExtend(directory)
+
+  var file_extension = local_cfg.received_files_extension
+
   if cfg.received_contests_prompt_directory
-    const directory = input("Choose contest directory: ", contest_directory, "file")
+    directory = input("Choose contest directory: ", directory, "file")
     if directory == null_string
       EchoMsg("operation interrupted")
       return
     endif
-    const local_cfg = config.LoadLocalConfigAndExtend(directory)
     if local_cfg.received_contests_prompt_extension
-      const file_extension = input( "Choose files extension: ", local_cfg.received_files_extension)
+      file_extension = input( "Choose files extension: ", local_cfg.received_files_extension)
       if file_extension == null_string
         EchoMsg("operation interrupted")
         return
       endif
-      for task in tasks
-        const problem_path = EvalPath(local_cfg.received_contests_problems_path, task, file_extension)
-        if problem_path != null_string
-          const filepath = directory .. "/" .. problem_path
-          StoreReceivedTaskConfig(filepath, true, task, local_cfg)
-          if local_cfg.open_received_contests
-            execute "edit " .. fnameescape(filepath)
-          endif
-        else
-          EchoMsg($"\"received_contests_problems_path\" evaluation failed for task \"{task.name}\"")
-        endif
-      endfor
-      if Finished != null_function
-        Finished()
+    endif
+  endif
+
+  for task in tasks
+    const problem_path = EvalPath(local_cfg.received_contests_problems_path, task, file_extension)
+    if problem_path != null_string
+      const filepath = directory .. "/" .. problem_path
+      StoreReceivedTaskConfig(filepath, true, task, local_cfg)
+      if local_cfg.open_received_contests
+        execute "edit" fnameescape(filepath)
       endif
     else
-      if Finished != null_function
-        Finished()
-      endif
+      EchoMsg($"\"received_contests_problems_path\" evaluation failed for task \"{task.name}\"")
     endif
-  else
-    if Finished != null_function
-      Finished()
-    endif
+  endfor
+
+  if Finished != null_function
+    Finished()
   endif
 enddef # }}}
 
