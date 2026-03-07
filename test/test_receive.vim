@@ -8,17 +8,27 @@ def SendTestData(port: number, data: dict<any>): string
   const tmpfile = "XSendData"
   writefile([json_str], tmpfile, 'D')
 
+  if !filereadable(tmpfile)
+    sleep 10m
+  endif
+
   # curl arguments as list for easy modification
   const cmd = [
     'curl',
     '-s',
     '-X', 'POST',
     '-H', 'Content-Type: application/json',
-    has('win32') ? '--data' : '--data-binary', '@' .. tmpfile,
+    '--data', '@' .. tmpfile,
     'http://localhost:' .. port
   ]
 
-  return system(cmd->join())
+  const result = system(cmd->join())
+
+  if v:shell_error != 0
+    echoerr "curl failed: " .. result
+  endif
+
+  return result
 enddef
 
 # Helper to check if receiver is running
