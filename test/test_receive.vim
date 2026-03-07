@@ -21,16 +21,6 @@ def SendTestData(port: number, data: dict<any>): string
   return system(cmd->join())
 enddef
 
-# Helper to check if receiver is running
-def IsReceiverRunning(): bool
-  return execute("CompetiTest receive status") !~ 'not enabled'
-enddef
-
-# Helper to confirm dialog choices in persistent mode
-def ConfirmDialog(choice: string)
-  feedkeys(choice .. "\<CR>", 't')
-enddef
-
 # Test receiver startup and shutdown
 def g:Test_Receive_StartStop()
   try
