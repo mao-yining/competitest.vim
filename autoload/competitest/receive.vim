@@ -21,7 +21,11 @@ class Receiver # {{{
   var server: job
   def new(this.port, this.CallBack)
     this.server = $"python3 {SCRIPT_DIR}/receiver.py {this.port}"->job_start({
-      out_cb: (_, msg: string) => this.CallBack(json_decode(msg)),
+      out_cb: (_, msg: string) => {
+        if !empty(msg)
+          this.CallBack(json_decode(msg))
+        endif
+      },
       err_cb: (_, msg: string) => utils.EchoErr("receiver.py: " .. msg)
     })
     if this.server->job_status() == "fail"
