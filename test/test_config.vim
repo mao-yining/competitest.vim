@@ -5,8 +5,7 @@ import autoload "../autoload/competitest/config.vim"
 def g:Test_LoadLocalConfig()
   var result: dict<any>
   const temp_dir = tempname()
-  mkdir(temp_dir, "p")
-  defer delete(temp_dir, "rf")
+  mkdir(temp_dir, "pR")
 
   const sub_dir = temp_dir .. "/subdir"
   mkdir(sub_dir, "p")
@@ -46,8 +45,7 @@ enddef
 def g:Test_LoadLocalConfigAndExtend()
   # Setup temporary directory with config
   const temp_dir = tempname()
-  mkdir(temp_dir, "p")
-  defer delete(temp_dir, "rf")
+  mkdir(temp_dir, "pR")
 
   const config_content =<< trim END
     {
@@ -95,8 +93,7 @@ enddef
 def g:Test_LoadBufferConfig()
   # Setup temporary directory
   const temp_dir = tempname()
-  mkdir(temp_dir, "p")
-  defer delete(temp_dir, "rf")
+  mkdir(temp_dir, "pR")
 
   # Create config file
   const config_content =<< trim END
@@ -125,8 +122,7 @@ enddef
 
 def g:Test_GetBufferConfig()
   const temp_dir = tempname()
-  mkdir(temp_dir, "p")
-  defer delete(temp_dir, "rf")
+  mkdir(temp_dir, "pR")
 
   writefile(["{ maximum_time: 500 }"], temp_dir .. "/.competitest.vim")
 
