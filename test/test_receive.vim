@@ -385,3 +385,67 @@ def g:Test_Receive_MalformedData()
   endtry
 enddef
 
+# Test batch processing with multiple tasks
+def g:Test_Receive_BatchProcessing()
+  const Xdir = "./XReceiveBatch/"->fnamemodify(":p")
+  mkdir(Xdir, "pR")
+
+  const cfg = {
+    received_files_extension: "cpp",
+    received_contests_directory: Xdir .. "/$(CONTEST)",
+    received_contests_problems_path: "$(PROBLEM).$(FEXT)",
+    received_contests_prompt_directory: false,
+    received_contests_prompt_extension: false,
+    open_received_contests: false,
+    testcases_input_file_format: "$(FNOEXT)$(TCNUM).in",
+    testcases_output_file_format: "$(FNOEXT)$(TCNUM).ans",
+    replace_received_testcases: true
+  }
+
+  const batch_id = "batch-" .. localtime()
+  var tasks = []
+  for i in range(3)
+    tasks->add({
+      name: $"Problem{i}",
+      group: "NowCoder - Batch Test",
+      url: $"https://foo/bar/{i}",
+      memoryLimit: 256,
+      timeLimit: 1000,
+      tests: [ { input: $"{i}\n", output: $"{i * 2}\n" } ],
+      batch: { id: batch_id, size: 3 },
+      languages: { java: { mainClass: "Main", taskClass: $"p{i}" } }
+    })
+  endfor
+
+  try
+    receive.StartReceiving("contest", 27129, false, cfg, 0)
+
+    # Send tasks in random order to test batch collection
+    const shuffled = [1, 0, 2]
+    for idx in shuffled
+      SendTestData(27129, tasks[idx])->assert_equal('{"status":"ok"}')
+    endfor
+
+    const contest_dir = Xdir .. "/Batch Test"
+    var max_wait = 15
+    while max_wait > 0 && !isdirectory(contest_dir)
+      sleep 10m
+      max_wait -= 1
+    endwhile
+    isdirectory(contest_dir)->assert_true()
+
+    for i in range(3)
+      const problem_file = contest_dir .. $"/Problem{i}.cpp"
+      filereadable(problem_file)->assert_true()
+
+      const tcfile_in = contest_dir .. $"/Problem{i}0.in"
+      const tcfile_ans = contest_dir .. $"/Problem{i}0.ans"
+      filereadable(tcfile_in)->assert_true()
+      filereadable(tcfile_ans)->assert_true()
+      readfile(tcfile_in)->join("\n")->assert_equal($"{i}")
+      readfile(tcfile_ans)->join("\n")->assert_equal($"{i * 2}")
+    endfor
+  finally
+    receive.StopReceiving()
+  endtry
+enddef
