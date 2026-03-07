@@ -23,25 +23,7 @@ def SendTestData(port: number, data: dict<any>): string
     'http://localhost:' .. port
   ]
 
-  if !executable('curl')
-    assert_report("curl is not installed or not in PATH")
-    return ""
-  endif
-
-  const check_cmd = 'curl -s -o /dev/null -w "%{http_code}" http://localhost:' .. port
-  const http_code = system(check_cmd)
-  if http_code !~ '^[0-9]\+$'
-    assert_report("Receiver not responding on port " .. port)
-    return ""
-  endif
-
-  const result = system(cmd->join())
-
-  if v:shell_error != 0
-    echom "curl failed: " .. result
-  endif
-
-  return result
+  return system(cmd->join())
 enddef
 
 # Helper to check if receiver is running
@@ -58,6 +40,7 @@ enddef
 def g:Test_Receive_StartStop()
   try
     receive.StartReceiving("testcases", 27122, false, {}, bufnr())
+    sleep 100m
     execute("CompetiTest receive status")
       ->assert_equal("\n[competitest] receive: receiving testcases, listening on port 27122.")
     receive.StopReceiving()
@@ -99,6 +82,7 @@ def g:Test_Receive_SingleTestcase()
 
   try
     receive.StartReceiving("testcases", 27123, false, cfg, bufnr())
+    sleep 100m
     SendTestData(27123, test_data)->assert_equal('{"status":"ok"}')
 
     const Xfile0_in  = Xdir .. "Xtest0.in"
@@ -168,6 +152,7 @@ def g:Test_Receive_Problem()
 
   try
     receive.StartReceiving("problem", 27124, false, cfg, 0)
+    sleep 100m
     SendTestData(27124, test_data)->assert_equal('{"status":"ok"}')
     const problem_file = Xdir .. "/sum.cpp"
     var max_wait = 10
@@ -239,6 +224,7 @@ def g:Test_Receive_Contest()
 
   try
     receive.StartReceiving("contest", 27125, false, cfg, 0)
+    sleep 100m
 
     for task in tasks
       SendTestData(27125, task)->assert_equal('{"status":"ok"}')
@@ -318,6 +304,7 @@ def g:Test_Receive_Persistently()
 
   try
     receive.StartReceiving("persistently", 27126, false, cfg, bufnr())
+    sleep 100m
 
     SendTestData(27126, tasks[0])->assert_equal('{"status":"ok"}')
 
@@ -368,6 +355,7 @@ enddef
 def g:Test_Receive_InvalidMode()
   try
     receive.StartReceiving("invalid_mode", 27127, false, {}, bufnr())
+    sleep 100m
     assert_false(true, "Should have thrown an error for invalid_mode")
   catch /^receive:/
     # Expected error
@@ -387,6 +375,7 @@ enddef
 def g:Test_Receive_MalformedData()
   try
     receive.StartReceiving("testcases", 27128, false, {}, bufnr())
+    sleep 100m
 
     const tmpfile = "XMalformedData"
     writefile(['{invalid json}'], tmpfile, 'D')
@@ -442,6 +431,7 @@ def g:Test_Receive_BatchProcessing()
 
   try
     receive.StartReceiving("contest", 27129, false, cfg, 0)
+    sleep 100m
 
     # Send tasks in random order to test batch collection
     const shuffled = [1, 0, 2]
@@ -505,6 +495,7 @@ def g:Test_Receive_CustomTestcasesDir()
 
   try
     receive.StartReceiving("testcases", 27131, false, cfg, bufnr())
+    sleep 100m
     SendTestData(27131, test_data)->assert_equal('{"status":"ok"}')
 
     const Xfile_in = custom_tcdir .. "Xtest0.in"
