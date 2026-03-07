@@ -18,7 +18,7 @@ def SendTestData(port: number, data: dict<any>): string
     'http://localhost:' .. port
   ]
 
-  return system(cmd->join(' '))
+  return system(cmd->join())
 enddef
 
 # Helper to check if receiver is running
@@ -168,6 +168,86 @@ def g:Test_Receive_Problem()
     filereadable(Xfile_ans)->assert_true()
     readfile(Xfile_in)->join("\n")->assert_equal("1 2")
     readfile(Xfile_ans)->join("\n")->assert_equal("3")
+  finally
+    receive.StopReceiving()
+  endtry
+enddef
+
+# Test receiving contest
+def g:Test_Receive_Contest()
+  const Xdir = "./XReceiveContest/"->fnamemodify(":p")
+  mkdir(Xdir, "pR")
+
+  const cfg = {
+    received_files_extension: "cpp",
+    received_contests_directory: Xdir .. "/$(CONTEST)",
+    received_contests_problems_path: "$(PROBLEM).$(FEXT)",
+    received_contests_prompt_directory: false,
+    received_contests_prompt_extension: false,
+    open_received_contests: false,
+    testcases_input_file_format: "$(FNOEXT)$(TCNUM).in",
+    testcases_output_file_format: "$(FNOEXT)$(TCNUM).ans",
+    replace_received_testcases: true
+  }
+  g:competitest_configs = get(g:, 'competitest_configs', {})->extend(cfg)
+
+  const tasks = [
+    {
+      name: "A",
+      group: "Codeforces - Round 100",
+      url: "https://foo/bar/1",
+      memoryLimit: 256,
+      timeLimit: 1000,
+      tests: [ { input: "1\n", output: "1\n" } ],
+      batch: { id: "contest-batch", size: 2 },
+      languages: { java: { mainClass: "Main", taskClass: "test" } }
+    },
+    {
+      name: "B",
+      group: "Codeforces - Round 100",
+      url: "https://foo/bar/2",
+      memoryLimit: 256,
+      timeLimit: 1000,
+      tests: [ { input: "2\n", output: "4\n" } ],
+      batch: { id: "contest-batch", size: 2 },
+      languages: { java: { mainClass: "Main", taskClass: "test" } }
+    }
+  ]
+
+  try
+    receive.StartReceiving("contest", 27125, false, cfg, 0)
+
+    for task in tasks
+      SendTestData(27125, task)->assert_equal('{"status":"ok"}')
+    endfor
+
+    const contest_dir = Xdir .. "/Round 100"
+    var max_wait = 10
+    while max_wait > 0 && !isdirectory(contest_dir)
+      sleep 10m
+      max_wait -= 1
+    endwhile
+    isdirectory(contest_dir)->assert_true()
+
+    const problem_a = contest_dir .. "/A.cpp"
+    const problem_b = contest_dir .. "/B.cpp"
+    filereadable(problem_a)->assert_true()
+    filereadable(problem_b)->assert_true()
+
+    const Xa_in  = contest_dir .. "/A0.in"
+    const Xa_ans = contest_dir .. "/A0.ans"
+    const Xb_in  = contest_dir .. "/B0.in"
+    const Xb_ans = contest_dir .. "/B0.ans"
+
+    filereadable(Xa_in)->assert_true()
+    filereadable(Xa_ans)->assert_true()
+    filereadable(Xb_in)->assert_true()
+    filereadable(Xb_ans)->assert_true()
+
+    readfile(Xa_in)->join("\n")->assert_equal("1")
+    readfile(Xa_ans)->join("\n")->assert_equal("1")
+    readfile(Xb_in)->join("\n")->assert_equal("2")
+    readfile(Xb_ans)->join("\n")->assert_equal("4")
   finally
     receive.StopReceiving()
   endtry
