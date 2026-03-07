@@ -36,8 +36,7 @@ def g:Test_LoadLocalConfig()
   result.maximum_time->assert_equal(3000)
 
   writefile(["ab c"], temp_dir .. "/.competitest.vim")
-  result = config.LoadLocalConfig(temp_dir)
-  execute("message")->split('\n')[-1]->assert_match('Undefined variable: ab$')
+  execute($"config.LoadLocalConfig('{temp_dir}')")->assert_match('Undefined variable: ab$')
 
   # Test 5: Non-existent directory
   result = config.LoadLocalConfig("/non/existent/directory")
