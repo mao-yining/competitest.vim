@@ -14,7 +14,7 @@ def SendTestData(port: number, data: dict<any>): string
     '-s',
     '-X', 'POST',
     '-H', 'Content-Type: application/json',
-    '--data', '@' .. tmpfile,
+    has('win32') ? '--data' : '--data-binary', '@' .. tmpfile,
     'http://localhost:' .. port
   ]
 
