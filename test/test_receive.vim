@@ -351,3 +351,37 @@ def g:Test_Receive_InvalidMode()
   endtry
   receive.StopReceiving()
 enddef
+
+def g:Test_Receive_status()
+  execute("CompetiTest receive status")->assert_equal("\n[competitest] receive: receiving not enabled.")
+enddef
+
+def g:Test_Receive_SubCommand()
+  execute("CompetiTest receive start")->assert_equal("\n[competitest] receive: unrecognized mode 'start'")
+enddef
+
+# Test malformed data handling
+def g:Test_Receive_MalformedData()
+  try
+    receive.StartReceiving("testcases", 27128, false, {}, bufnr())
+
+    const tmpfile = "XMalformedData"
+    writefile(['{invalid json}'], tmpfile, 'D')
+    const curl_args = [
+      'curl',
+      '-s',
+      '-X', 'POST',
+      '-H', 'Content-Type: application/json',
+      '--data', '@' .. tmpfile,
+      'http://localhost:27128'
+    ]
+    system(curl_args->join(' '))
+
+    # Receiver should still be running
+    execute("CompetiTest receive status")
+      ->assert_equal("\n[competitest] receive: receiving testcases, listening on port 27128.")
+  finally
+    receive.StopReceiving()
+  endtry
+enddef
+
