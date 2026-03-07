@@ -449,3 +449,55 @@ def g:Test_Receive_BatchProcessing()
     receive.StopReceiving()
   endtry
 enddef
+
+# Test receive with custom testcases directory
+def g:Test_Receive_CustomTestcasesDir()
+  const Xdir = "./XReceiveCustomDir/"->fnamemodify(":p")
+  mkdir(Xdir, "pR")
+  const test_file = Xdir .. "/Xtest.cpp"
+  writefile(["int main() { return 0; }"], test_file)
+  execute("edit " .. test_file, "silent!")
+
+  const custom_tcdir = Xdir .. "/my_testcases/"
+  mkdir(custom_tcdir, "p")
+
+  const cfg = {
+    testcases_directory: "my_testcases",
+    testcases_input_file_format: "$(FNOEXT)$(TCNUM).in",
+    testcases_output_file_format: "$(FNOEXT)$(TCNUM).ans",
+    replace_received_testcases: true,
+  }
+  g:competitest_configs = get(g:, 'competitest_configs', {})->extend(cfg)
+
+  const test_data = {
+    name: "A+B Problem",
+    group: "ABC - Test",
+    url: "https://blablabla/problems/test",
+    memoryLimit: 1024,
+    timeLimit: 1000,
+    tests: [ { input: "1 2\n", output: "3\n" } ],
+    batch: { id: "test-batch", size: 1 },
+    languages: { java: { mainClass: "Main", taskClass: "test" } }
+  }
+
+  try
+    receive.StartReceiving("testcases", 27131, false, cfg, bufnr())
+    SendTestData(27131, test_data)->assert_equal('{"status":"ok"}')
+
+    const Xfile_in = custom_tcdir .. "Xtest0.in"
+    const Xfile_ans = custom_tcdir .. "Xtest0.ans"
+
+    var max_wait = 10
+    while max_wait > 0 && !filereadable(Xfile_in)
+      sleep 10m
+      max_wait -= 1
+    endwhile
+
+    filereadable(Xfile_in)->assert_true()
+    filereadable(Xfile_ans)->assert_true()
+    readfile(Xfile_in)->join("\n")->assert_equal("1 2")
+    readfile(Xfile_ans)->join("\n")->assert_equal("3")
+  finally
+    receive.StopReceiving()
+  endtry
+enddef
