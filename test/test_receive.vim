@@ -16,16 +16,29 @@ def SendTestData(port: number, data: dict<any>): string
   const cmd = [
     'curl',
     '-s',
+    '-v',
     '-X', 'POST',
     '-H', 'Content-Type: application/json',
-    '--data', '@' .. tmpfile,
+    has('win32') ? '--data' : '--data-binary', '@' .. tmpfile,
     'http://localhost:' .. port
   ]
+
+  if !executable('curl')
+    assert_report("curl is not installed or not in PATH")
+    return ""
+  endif
+
+  const check_cmd = 'curl -s -o /dev/null -w "%{http_code}" http://localhost:' .. port
+  const http_code = system(check_cmd)
+  if http_code !~ '^[0-9]\+$'
+    assert_report("Receiver not responding on port " .. port)
+    return ""
+  endif
 
   const result = system(cmd->join())
 
   if v:shell_error != 0
-    echoerr "curl failed: " .. result
+    echom "curl failed: " .. result
   endif
 
   return result
