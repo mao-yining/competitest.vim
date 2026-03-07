@@ -16,7 +16,6 @@ def SendTestData(port: number, data: dict<any>): string
   const cmd = [
     'curl',
     '-s',
-    '-v',
     '-X', 'POST',
     '-H', 'Content-Type: application/json',
     has('win32') ? '--data' : '--data-binary', '@' .. tmpfile,
