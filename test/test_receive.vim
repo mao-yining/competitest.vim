@@ -181,6 +181,7 @@ def g:Test_Receive_Contest()
     testcases_output_file_format: "$(FNOEXT)$(TCNUM).ans",
     replace_received_testcases: true
   }
+  g:competitest_configs = get(g:, 'competitest_configs', {})->extend(cfg)
 
   const tasks = [
     {
@@ -242,6 +243,7 @@ def g:Test_Receive_Contest()
   finally
     receive.StopReceiving()
   endtry
+  g:competitest_configs->extend(config.default_config)
 enddef
 
 # Test receive mode persistence
@@ -260,6 +262,7 @@ def g:Test_Receive_Persistently()
     testcases_output_file_format: "$(FNOEXT)$(TCNUM).ans",
     replace_received_testcases: true
   }
+  g:competitest_configs = get(g:, 'competitest_configs', {})->extend(cfg)
 
   const tasks = [
     {
@@ -330,6 +333,7 @@ def g:Test_Receive_Persistently()
   finally
     receive.StopReceiving()
   endtry
+  g:competitest_configs->extend(config.default_config)
 enddef
 
 # Test error handling - invalid receive mode
@@ -392,6 +396,7 @@ def g:Test_Receive_BatchProcessing()
     testcases_output_file_format: "$(FNOEXT)$(TCNUM).ans",
     replace_received_testcases: true
   }
+  g:competitest_configs = get(g:, 'competitest_configs', {})->extend(cfg)
 
   const batch_id = "batch-" .. localtime()
   var tasks = []
@@ -439,6 +444,7 @@ def g:Test_Receive_BatchProcessing()
   finally
     receive.StopReceiving()
   endtry
+  g:competitest_configs->extend(config.default_config)
 enddef
 
 # Test receive with custom testcases directory
