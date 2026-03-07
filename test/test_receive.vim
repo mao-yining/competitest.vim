@@ -171,6 +171,7 @@ def g:Test_Receive_Problem()
   finally
     receive.StopReceiving()
   endtry
+  g:competitest_configs->extend(config.default_config)
 enddef
 
 # Test receiving contest
@@ -189,7 +190,6 @@ def g:Test_Receive_Contest()
     testcases_output_file_format: "$(FNOEXT)$(TCNUM).ans",
     replace_received_testcases: true
   }
-  g:competitest_configs = get(g:, 'competitest_configs', {})->extend(cfg)
 
   const tasks = [
     {
@@ -500,4 +500,5 @@ def g:Test_Receive_CustomTestcasesDir()
   finally
     receive.StopReceiving()
   endtry
+  g:competitest_configs->extend(config.default_config)
 enddef

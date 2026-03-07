@@ -2,7 +2,7 @@ vim9script
 # File: autoload/competitest/receive.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: Receive contest, problem and testcases from competitive-companion
-# Last Modified: 2026-01-02
+# Last Modified: 2026-03-07
 
 import autoload "./config.vim"
 import autoload "./testcases.vim"

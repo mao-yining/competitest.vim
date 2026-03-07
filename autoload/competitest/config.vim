@@ -2,11 +2,11 @@ vim9script
 # File: autoload/competitest/config.vim
 # Author: Mao-Yining <mao.yining@outlook.com>
 # Description: Deal with settings of the plugin.
-# Last Modified: 2026-03-06
+# Last Modified: 2026-03-07
 
 import autoload "./utils.vim"
 
-const default_config = { # {{{
+export const default_config = { # {{{
   local_config_file_name: ".competitest.vim",
   popup_borderchars: ["─", "│", "─", "│", "╭", "╮", "╯", "╰"],
   editor_ui: {
@@ -157,7 +157,7 @@ export def GetBufferConfig(bufnr: number): dict<any> # {{{
   return bufnr->getbufvar("competitest_configs")
 enddef # }}}
 
-# Get buffer configuration
+# Get global configuration
 export def GetGlobalConfig(): dict<any> # {{{
   return g:competitest_configs
 enddef # }}}
