@@ -23,5 +23,6 @@ jobs:
           uname -a
           gcc --version
           python --version
+          curl --version
           $VIMPRG --version
           ./launch_tests.sh
