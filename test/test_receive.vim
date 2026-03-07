@@ -252,3 +252,91 @@ def g:Test_Receive_Contest()
     receive.StopReceiving()
   endtry
 enddef
+
+# Test receive mode persistence
+def g:Test_Receive_Persistently()
+  const Xdir = "./XReceivePersistent/"->fnamemodify(":p")
+  mkdir(Xdir, "pR")
+
+  const cfg = {
+    received_files_extension: "cpp",
+    received_contests_directory: Xdir .. "/$(CONTEST)",
+    received_contests_problems_path: "$(PROBLEM).$(FEXT)",
+    received_contests_prompt_directory: false,
+    received_contests_prompt_extension: false,
+    open_received_contests: false,
+    testcases_input_file_format: "$(FNOEXT)$(TCNUM).in",
+    testcases_output_file_format: "$(FNOEXT)$(TCNUM).ans",
+    replace_received_testcases: true
+  }
+
+  const tasks = [
+    {
+      name: "A",
+      group: "Codeforces - Round 100",
+      url: "https://foo/bar/1",
+      memoryLimit: 256,
+      timeLimit: 1000,
+      tests: [ { input: "1\n", output: "1\n" } ],
+      batch: { id: "contest-batch", size: 2 },
+      languages: { java: { mainClass: "Main", taskClass: "test" } }
+    },
+    {
+      name: "B",
+      group: "Codeforces - Round 100",
+      url: "https://foo/bar/2",
+      memoryLimit: 256,
+      timeLimit: 1000,
+      tests: [ { input: "2\n", output: "4\n" } ],
+      batch: { id: "contest-batch", size: 2 },
+      languages: { java: { mainClass: "Main", taskClass: "test" } }
+    }
+  ]
+
+  try
+    receive.StartReceiving("persistently", 27126, false, cfg, bufnr())
+
+    SendTestData(27126, tasks[0])->assert_equal('{"status":"ok"}')
+
+    # Receiver should still be running
+    execute("CompetiTest receive status")
+      ->assert_equal("\n[competitest] receive: receiving persistently, listening on port 27126.")
+
+    # Send second task
+    SendTestData(27126, tasks[1])->assert_equal('{"status":"ok"}')
+
+    # Receiver should still be running
+    execute("CompetiTest receive status")
+      ->assert_equal("\n[competitest] receive: receiving persistently, listening on port 27126.")
+
+    const contest_dir = Xdir .. "/Round 100"
+    var max_wait = 10
+    while max_wait > 0 && !isdirectory(contest_dir)
+      sleep 10m
+      max_wait -= 1
+    endwhile
+    isdirectory(contest_dir)->assert_true()
+
+    const problem_a = contest_dir .. "/A.cpp"
+    const problem_b = contest_dir .. "/B.cpp"
+    filereadable(problem_a)->assert_true()
+    filereadable(problem_b)->assert_true()
+
+    const Xa_in  = contest_dir .. "/A0.in"
+    const Xa_ans = contest_dir .. "/A0.ans"
+    const Xb_in  = contest_dir .. "/B0.in"
+    const Xb_ans = contest_dir .. "/B0.ans"
+
+    filereadable(Xa_in)->assert_true()
+    filereadable(Xa_ans)->assert_true()
+    filereadable(Xb_in)->assert_true()
+    filereadable(Xb_ans)->assert_true()
+
+    readfile(Xa_in)->join("\n")->assert_equal("1")
+    readfile(Xa_ans)->join("\n")->assert_equal("1")
+    readfile(Xb_in)->join("\n")->assert_equal("2")
+    readfile(Xb_ans)->join("\n")->assert_equal("4")
+  finally
+    receive.StopReceiving()
+  endtry
+enddef
