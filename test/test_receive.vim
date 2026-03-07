@@ -340,3 +340,14 @@ def g:Test_Receive_Persistently()
     receive.StopReceiving()
   endtry
 enddef
+
+# Test error handling - invalid receive mode
+def g:Test_Receive_InvalidMode()
+  try
+    receive.StartReceiving("invalid_mode", 27127, false, {}, bufnr())
+    assert_false(true, "Should have thrown an error for invalid_mode")
+  catch /^receive:/
+    # Expected error
+  endtry
+  receive.StopReceiving()
+enddef

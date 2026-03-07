@@ -181,6 +181,8 @@ export def StartReceiving(mode: ReceiveMode, companion_port: number, notify: boo
         endif
       endif
     }
+  else
+     throw $"receive: unrecognized mode {string(mode)}"
   endif # }}}
   const batches_serial_processor = BatchesSerialProcessor.new(BSP_CallBack)
   const tasks_collector = TasksCollector.new((tasks: list<CCTask>) => {
