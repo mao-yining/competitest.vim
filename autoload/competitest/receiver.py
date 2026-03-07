@@ -1,6 +1,6 @@
 # File: receiver.py
 # Author: Mao-Yining <mao.yining@outlook.com>
-# Last Modified: 2026-01-02
+# Last Modified: 2026-03-07
 
 # This Python program implements a lightweight HTTP server that receives
 # competitive programming problem data via POST requests and relays it to a Vim
@@ -15,19 +15,24 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 class CompetitiveHandler(BaseHTTPRequestHandler):
     def do_POST(self):
         try:
-            post_data = self.rfile.read(int(self.headers["Content-Length"]))
+            # Read POST data
+            content_length = int(self.headers["Content-Length"])
+            post_data = self.rfile.read(content_length)
 
-            json.loads(post_data)  # check data
-
-            sys.stdout.buffer.write(post_data)
-            sys.stdout.buffer.write(b"\n")
+            # Parse JSON and format for Vim
+            task_data = json.loads(post_data)
+            sys.stdout.buffer.write(json.dumps([0, task_data]).encode('utf-8'))
             sys.stdout.flush()
 
+            # Send HTTP response
             self.send_response(200)
             self.send_header("Content-type", "application/json")
             self.end_headers()
             self.wfile.write(b'{"status":"ok"}')
 
+        except json.JSONDecodeError as e:
+            print(f"JSON Error: {e}", file=sys.stderr)
+            self.send_error(400, f"Invalid JSON: {e}")
         except Exception as e:
             print(f"Error: {e}", file=sys.stderr)
             self.send_error(500, str(e))

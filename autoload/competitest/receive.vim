@@ -21,11 +21,8 @@ class Receiver # {{{
   var server: job
   def new(this.port, this.CallBack)
     this.server = $"python3 {SCRIPT_DIR}/receiver.py {this.port}"->job_start({
-      out_cb: (_, msg: string) => {
-        if !empty(msg)
-          this.CallBack(json_decode(msg))
-        endif
-      },
+      out_mode: "json",
+      out_cb: (_, msg: dict<any>) => this.CallBack(msg),
       err_cb: (_, msg: string) => utils.EchoErr("receiver.py: " .. msg)
     })
     if this.server->job_status() == "fail"
@@ -186,7 +183,7 @@ export def StartReceiving(mode: ReceiveMode, companion_port: number, notify: boo
       endif
     }
   else
-     throw $"receive: unrecognized mode {string(mode)}"
+    throw $"receive: unrecognized mode {string(mode)}"
   endif # }}}
   const batches_serial_processor = BatchesSerialProcessor.new(BSP_CallBack)
   const tasks_collector = TasksCollector.new((tasks: list<CCTask>) => {
