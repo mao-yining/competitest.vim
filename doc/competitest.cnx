@@ -60,7 +60,7 @@ Plug              Plug 'mao-yining/competitest.vim'
 Dein              call dein#add('mao-yining/competitest.vim')
 minpac            call minpac#add('mao-yining/competitest.vim')
 
-原生包管理： >
+原生包管理： >sh
     git clone https://github.com/mao-yining/competitest.vim
     ~/.vim/pack/dist/start/competitest.vim
     :helptags ALL
@@ -136,7 +136,7 @@ q/Q    关闭 UI
 
 自定义文件夹结构			*competitest-custom-folder*
 
-配置示例： >
+配置示例： >vim9
     received_problems_path = "$(HOME)/CP/$(JUDGE)/$(CONTEST)/$(PROBLEM).$(FEXT)"
     received_contests_directory = "$(HOME)/CP/$(JUDGE)/$(CONTEST)"
     received_contests_problems_path = "$(PROBLEM)/main.$(FEXT)"
@@ -144,7 +144,7 @@ q/Q    关闭 UI
 
 模板					*competitest-templates*
 
-使用 `template_file` 选项启用。C++ 示例： >
+使用 `template_file` 选项启用。C++ 示例： >cpp
     // Problem: $(PROBLEM)
     // Contest: $(CONTEST)
     // Judge: $(JUDGE)
@@ -166,7 +166,7 @@ q/Q    关闭 UI
 
 本地配置				*competitest-local-config*
 
-在项目文件夹中创建 `.competitest.vim`： >
+在项目文件夹中创建 `.competitest.vim`： >vim9
     {
         template_file: "~/templates/cp.$(FEXT)",
         output_compare_method: (out, ans) => tolower(out) == tolower(ans),
@@ -197,7 +197,7 @@ $(DATE)       当前日期/时间
 ==============================================================================
 默认配置				*competitest-default-config*
 
-完整配置 (g:competitest_configs)： >
+完整配置 (g:competitest_configs)： >vim9
   {
       local_config_file_name: ".competitest.vim",
       popup_borderchars: ['─', '│', '─', '│', '╭', '╮', '╯', '╰'],
@@ -331,7 +331,7 @@ compile_command				*competitest-config-compile_command*
   类型：字典
   默认：见上文
   每种语言的编译命令。支持：c，cpp，rust，java
-  添加新语言： >
+  添加新语言： >vim9
       some_lang：{ exec: 'compiler', args: ['$(FNAME)'] }
 <
 
@@ -344,14 +344,14 @@ run_command				*competitest-config-run_command*
   类型：字典
   默认：见上文
   每种语言的执行命令。支持：c，cpp，rust，python，java
-  添加新语言： >
+  添加新语言： >vim9
       some_lang: { exec: 'interpreter', args: ['$(FNAME)'] }
 <
 
 multiple_testing			*competitest-config-multiple_testing*
   类型：数字
   默认：-1
-  并发测试执行数： >
+  并发测试执行数：
       -1 = 使用所有 CPU 核心
        0 = 全部一起运行
       >0 = 指定并发数
@@ -431,7 +431,7 @@ received_problems_path			*competitest-config-received_problems_path*
   类型：字符串 或 函数
   默认："$(CWD)/$(PROBLEM).$(FEXT)"
   接收题目的存储路径
-  自定义函数： >
+  自定义函数： >vim9
   (task, file_extension): string => {
       const parts = task.group->split(" - ") # Codeforces' contest
       return printf(
@@ -491,7 +491,7 @@ replace_received_testcases		*competitest-config-replace_received_testcases*
 UI 窗口有特殊的文件类型:
 competitest_{testcases, out, in, err, ans}
 
-用于 vim-airline： >
+用于 vim-airline： >vim
     if !exists("g:airline_filetype_overrides")
         let g:airline_filetype_overrides = {}
     endif
@@ -504,7 +504,7 @@ competitest_{testcases, out, in, err, ans}
 
 高亮					*competitest-highlights*
 
-默认高亮组：
+默认高亮组： >vim
     hi CompetiTestRunning cterm=bold     gui=bold
     hi CompetiTestDone    cterm=none     gui=none
     hi CompetiTestCorrect ctermfg=green  guifg=Green

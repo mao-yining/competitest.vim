@@ -61,7 +61,7 @@ Plug               Plug 'mao-yining/competitest.vim'
 Dein               call dein#add('mao-yining/competitest.vim')
 minpac             call minpac#add('mao-yining/competitest.vim')
 
-Native package: >
+Native package: >sh
     git clone https://github.com/mao-yining/competitest.vim
     ~/.vim/pack/dist/start/competitest.vim
     :helptags ALL
@@ -137,7 +137,7 @@ After command, click green "+" in browser extension.
 
 CUSTOM FOLDER STRUCTURE			*competitest-custom-folder*
 
-Example configurations: >
+Example configurations: >vim9
     received_problems_path = "$(HOME)/CP/$(JUDGE)/$(CONTEST)/$(PROBLEM).$(FEXT)"
     received_contests_directory = "$(HOME)/CP/$(JUDGE)/$(CONTEST)"
     received_contests_problems_path = "$(PROBLEM)/main.$(FEXT)"
@@ -145,7 +145,7 @@ Example configurations: >
 
 TEMPLATES				*competitest-templates*
 
-Enable with `template_file` option. C++ example: >
+Enable with `template_file` option. C++ example: >cpp
     // Problem: $(PROBLEM)
     // Contest: $(CONTEST)
     // Judge: $(JUDGE)
@@ -167,7 +167,7 @@ CONFIGURATION				*competitest-configuration*
 
 LOCAL CONFIGURATION			*competitest-local-config*
 
-Create `.competitest.vim` in project folder: >
+Create `.competitest.vim` in project folder: >vim9
     {
         template_file: "~/templates/cp.$(FEXT)",
         output_compare_method: (out, ans) => tolower(out) == tolower(ans),
@@ -198,7 +198,7 @@ $(DATE)       Current date/time
 ==============================================================================
 DEFAULT CONFIGURATION			*competitest-default-config*
 
-Full configuration (g:competitest_configs): >
+Full configuration (g:competitest_configs): >vim9
   {
       local_config_file_name: ".competitest.vim",
       popup_borderchars: ['─', '│', '─', '│', '╭', '╮', '╯', '╰'],
@@ -333,7 +333,7 @@ compile_command				*competitest-config-compile_command*
   Type: dictionary
   Default: See above
   Compilation commands per language. Supported: c, cpp, rust, java
-  Add new languages: >
+  Add new languages: >vim9
       some_lang: { exec: 'compiler', args: ['$(FNAME)'] }
 <
 
@@ -346,7 +346,7 @@ run_command				*competitest-config-run_command*
   Type: dictionary
   Default: See above
   Execution commands per language. Supported: c, cpp, rust, python, java
-  Add new languages: >
+  Add new languages: >vim9
       some_lang: { exec: 'interpreter', args: ['$(FNAME)'] }
 <
 
@@ -433,7 +433,7 @@ received_problems_path			*competitest-config-received_problems_path*
   Type: string or function
   Default: "$(CWD)/$(PROBLEM).$(FEXT)"
   Storage path for received problems
-  Custom funciton: >
+  Custom funciton: >vim9
   (task, file_extension): string => {
       const parts = task.group->split(" - ") # Codeforces' contest
       return printf(
@@ -444,7 +444,7 @@ received_problems_path			*competitest-config-received_problems_path*
           file_extension
       )
   },
->
+<
 received_problems_prompt_path		*competitest-config-received_problems_prompt_path*
   Type: boolean
   Default: true
@@ -493,7 +493,7 @@ STATUSLINE				*competitest-statusline*
 UI windows have special filetypes:
 competitest_{testcases, out, in, err, ans}
 
-For vim-airline: >
+For vim-airline: >vim
     if !exists("g:airline_filetype_overrides")
         let g:airline_filetype_overrides = {}
     endif
@@ -506,7 +506,7 @@ For vim-airline: >
 
 HIGHLIGHTS				*competitest-highlights*
 
-Default highlight groups: >
+Default highlight groups: >vim
     hi CompetiTestRunning cterm=bold     gui=bold
     hi CompetiTestDone    cterm=none     gui=none
     hi CompetiTestCorrect ctermfg=green  guifg=Green
