@@ -1,3 +1,9 @@
+> [!Important]
+>
+> This project has moved to <https://codeberg.org/mao-yining/vim-competitest>
+
+
+
 # CompetiTest.Vim
 
 Inspired by <https://github.com/xeluxee/competitest.nvim>.
